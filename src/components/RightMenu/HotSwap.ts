@@ -1,5 +1,5 @@
 export class RightMenu_HotSwap {
-  readonly panelPinCheckbox = document.getElementById('rm_button_panel_pin') as HTMLInputElement;
+  readonly panelPinCheckbox = document.getElementById('rm-button-panel-pin') as HTMLInputElement;
   constructor() {
     // this.panelPinCheckbox.checked = set initial from saved state
     this.panelPinCheckbox.nextElementSibling?.addEventListener('click', () => {

@@ -67,7 +67,7 @@
       <div class="drawer-content">
       </div>
     </div>
-    <div id="rightNavHolder" class="drawer">
+    <div class="drawer">
       <div class="drawer-toggle drawer-header">
         <div class="drawer-icon fa-solid fa-address-card fa-fw" title="Character Management"></div>
       </div>
@@ -75,8 +75,8 @@
         <div class="flex-container flex-nowrap">
           <div class="flex-flow-column flex-container">
             <div class="align-items-flex-start" title="Locked = Character Management panel will stay open">
-              <input id="rm_button_panel_pin" type="checkbox">
-              <label for="rm_button_panel_pin">
+              <input id="rm-button-panel-pin" type="checkbox">
+              <label for="rm-button-panel-pin">
                 <div class="fa-solid fa-unlock right-menu-button"></div>
               </label>
             </div>
@@ -84,9 +84,70 @@
             </div>
           </div>
           <div class="align-items-center flex-container margin-0auto width-100p space-evenly">
-            <div class="hotswap avatars_inline scroll-reset-container expander"
-              title="Favorite characters to add them to HotSwaps"><small><span><i
-                    class="fa-solid fa-star"></i>&nbsp;Favorite characters to add them to HotSwaps</span></small></div>
+            <div class="hotswap avatars-inline scroll-reset-container expander"
+              title="Favorite characters to add them to HotSwaps"><small>
+                <span>
+                  <i class="fa-solid fa-star"></i>&nbsp;Favorite characters to add them to HotSwaps</span>
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="scrollableInner">
+          <div name="Character List Panel" id="rm-characters-block">
+            <div id="char-list-fixed-top">
+              <div id="rm-button-bar">
+                <div id="rm-button-create" title="Create New Character" class="menu-button fa-solid fa-user-plus"></div>
+                <div id="character-import-button" title="Import Character from File"
+                  class="menu-button fa-solid fa-file-import"></div>
+                <div id="external-import-button" title="Import content from external URL"
+                  class="menu-button fa-solid fa-cloud-arrow-down">
+                </div>
+                <div id="rm-button-group-chats" title="Create New Chat Group"
+                  class="menu-button fa-solid fa-users-gear"></div>
+                <div id="rm-buttons-container">
+                  <!-- Container for additional buttons added by extensions -->
+                </div>
+                <select id="character-sort-order" class="text-pole" title="Characters sorting order">
+                  <option data-field="search" data-order="desc" hidden>Search</option>
+                  <option data-field="name" data-order="asc">A-Z</option>
+                  <option data-field="name" data-order="desc">Z-A</option>
+                  <option data-field="create_date" data-order="desc">Newest</option>
+                  <option data-field="create_date" data-order="asc">Oldest</option>
+                  <option data-field="fav" data-order="desc" data-rule="boolean">Favorites
+                  </option>
+                  <option data-field="date_last_chat" data-order="desc">Recent</option>
+                  <option data-field="chat_size" data-order="desc">Most chats</option>
+                  <option data-field="chat_size" data-order="asc">Least chats</option>
+                  <option data-field="data_size" data-order="desc">Most tokens</option>
+                  <option data-field="data_size" data-order="asc">Least tokens</option>
+                  <option data-field="name" data-order="random">Random</option>
+                </select>
+                <div id="rm-button-search" class="right-menu-button fa-fw fa-solid fa-search" title="Toggle search bar">
+                </div>
+              </div>
+              <div id="form-character-search-form">
+                <input id="character-search-bar" class="text-pole width-100p" type="search" placeholder="Search..." />
+              </div>
+              <div class="rm-tag-controls">
+                <div class="tags rm-tag-filter"></div>
+                <div class="tags rm-tag-bogus-drilldown"></div>
+              </div>
+            </div>
+
+            <div id="rm-print-characters-pagination">
+              <i id="char-list-grid-toggle" class="fa-solid fa-table-cells-large menu-button"
+                title="Toggle character grid view"></i>
+              <i id="bulk-edit-button" class="fa-solid fa-edit menu-button bulk-edit-button"
+                title="Bulk edit characters&#13;&#13;Click to toggle characters&#13;Shift + Click to select/deselect a range of characters&#13;Right-click for actions"></i>
+              <div id="bulk-selected-count" class="bulk-edit-option-element paginationjs-nav"></div>
+              <i id="bulk-select-all-button"
+                class="fa-solid fa-check-double menu-button bulk-edit-option-element bulk-select-all-button"
+                title="Bulk select all characters" style="display: none;"></i>
+              <i id="bulk-delete-button"
+                class="fa-solid fa-trash menu-button bulk-edit-option-element bulk-delete-button"
+                title="Bulk delete characters" style="display: none;"></i>
+            </div>
+            <div id="rm-print-characters-block" class="flex-flow-column"></div>
           </div>
         </div>
       </div>
@@ -104,8 +165,8 @@
           </div>
           <textarea id="send-textarea" placeholder="Type a message, or /? for help" autocomplete="off"></textarea>
           <div class="right-send-form">
-            <div id="mes_continue" class="fa-fw fa-solid fa-arrow-right" title="Continue the last message"></div>
-            <div id="send_but" class="fa-solid fa-paper-plane" title="Send a message"></div>
+            <div id="mes-continue" class="fa-fw fa-solid fa-arrow-right" title="Continue the last message"></div>
+            <div id="send-but" class="fa-solid fa-paper-plane" title="Send a message"></div>
           </div>
         </div>
       </div>

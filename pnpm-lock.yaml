@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@fortawesome/fontawesome-free':
+        specifier: ^7.1.0
+        version: 7.1.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.3.4
@@ -307,6 +311,10 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fortawesome/fontawesome-free@7.1.0':
+    resolution: {integrity: sha512-+WxNld5ZCJHvPQCr/GnzCTVREyStrAJjisUPtUxG5ngDA8TMlPnKp6dddlTpai4+1GNmltAeuk1hJEkBohwZYA==}
+    engines: {node: '>=6'}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -1315,6 +1323,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.9':
     optional: true
+
+  '@fortawesome/fontawesome-free@7.1.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

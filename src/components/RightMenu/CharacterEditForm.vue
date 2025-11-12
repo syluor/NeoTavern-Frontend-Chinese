@@ -90,10 +90,9 @@ function handleEditorSubmit({ value }: { value: string }) {
   }
 }
 
-function handleAdvancedSave(updatedData: Character) {
+function handleAdvancedUpdate(updatedData: Character) {
   formData.value = updatedData;
-  isAdvancedDefinitionsVisible.value = false;
-  // TODO: Add toast notification for save
+  // TODO: Trigger save-to-backend logic from here
 }
 </script>
 
@@ -243,7 +242,7 @@ function handleAdvancedSave(updatedData: Character) {
       v-if="isAdvancedDefinitionsVisible"
       :character-data="formData"
       @close="isAdvancedDefinitionsVisible = false"
-      @save="handleAdvancedSave"
+      @update="handleAdvancedUpdate"
     />
   </div>
 </template>

@@ -5,13 +5,15 @@ import { depth_prompt_depth_default, depth_prompt_role_default, talkativeness_de
 import type { Character, PopupOptions } from '../../types';
 import { POPUP_TYPE } from '../../types';
 import Popup from '../Popup/Popup.vue';
+import { DebounceTimeout } from '../../constants';
 
 const props = defineProps({
   characterData: { type: Object as PropType<Partial<Character>>, required: true },
 });
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(['close', 'update']);
 
 const localFormData = ref<Partial<Character> & { data?: any }>({});
+const autoSaveTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
 // Drawer states
 const isPromptOverridesOpen = ref(true);
@@ -52,6 +54,17 @@ watch(
     localFormData.value = dataCopy;
   },
   { immediate: true, deep: true },
+);
+
+watch(
+  localFormData,
+  (newData) => {
+    if (autoSaveTimeout.value) clearTimeout(autoSaveTimeout.value);
+    autoSaveTimeout.value = setTimeout(() => {
+      emit('update', newData);
+    }, DebounceTimeout.RELAXED);
+  },
+  { deep: true },
 );
 
 const characterName = computed(() => localFormData.value.name);
@@ -97,10 +110,6 @@ function handleEditorSubmit({ value }: { value: string }) {
     }
     current[fields[fields.length - 1]] = value;
   }
-}
-
-function saveData() {
-  emit('save', localFormData.value);
 }
 
 function close() {
@@ -340,9 +349,6 @@ function close() {
           <div class="token-counter">Tokens: <span>counting...</span></div>
         </div>
       </div>
-
-      <hr />
-      <button class="menu-button advanced-definitions-popup__save-button" @click="saveData">Save</button>
     </div>
     <Popup
       :visible="isEditorPopupVisible"

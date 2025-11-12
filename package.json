@@ -20,6 +20,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.4",
     "@types/node": "^22.18.1",
+    "@vitejs/plugin-vue": "^6.0.0",
     "@vitest/coverage-istanbul": "3.2.4",
     "sass": "^1.93.3",
     "typescript": "^5.9.2",
@@ -34,7 +35,8 @@
     "cropperjs": "^2.1.0",
     "dompurify": "^3.3.0",
     "localforage": "^1.10.0",
-    "nanostores": "^1.0.1",
-    "showdown": "^2.1.0"
+    "pinia": "^3.0.4",
+    "showdown": "^2.1.0",
+    "vue": "^3.4.31"
   }
 }

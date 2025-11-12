@@ -1,6 +1,11 @@
-import { atom } from 'nanostores';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import type { Group } from '../types';
 
-export const groups = atom<Array<Group>>([]);
-export const activeGroupId = atom<string | null>(null);
-export const isGroupGenerating = atom<boolean>(false);
+export const useGroupStore = defineStore('group', () => {
+  const groups = ref<Array<Group>>([]);
+  const activeGroupId = ref<string | null>(null);
+  const isGroupGenerating = ref<boolean>(false);
+
+  return { groups, activeGroupId, isGroupGenerating };
+});

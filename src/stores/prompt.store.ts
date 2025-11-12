@@ -1,38 +1,39 @@
-import { atom } from 'nanostores';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import localforage from 'localforage';
 import type { ExtensionPrompt } from '../types';
 
-export const extensionPrompts = atom<Record<string, ExtensionPrompt>>({});
-export const itemizedPrompts = atom<Array<any>>([]);
-
 const promptStorage = localforage.createInstance({ name: 'SillyTavern_Prompts' });
 
-/**
- * Saves the itemized prompts for a chat.
- */
-export async function saveItemizedPrompts(chatId?: string) {
-  try {
-    if (!chatId) {
-      return;
+export const usePromptStore = defineStore('prompt', () => {
+  const extensionPrompts = ref<Record<string, ExtensionPrompt>>({});
+  const itemizedPrompts = ref<Array<any>>([]);
+
+  async function saveItemizedPrompts(chatId?: string) {
+    try {
+      if (!chatId) {
+        return;
+      }
+      // localforage can store arrays directly
+      await promptStorage.setItem(chatId, itemizedPrompts.value);
+    } catch {
+      console.log('Error saving itemized prompts for chat', chatId);
     }
-
-    await promptStorage.setItem(chatId, itemizedPrompts.get());
-  } catch {
-    console.log('Error saving itemized prompts for chat', chatId);
   }
-}
 
-export async function loadItemizedPrompts(chatId?: string) {
-  try {
-    if (!chatId) {
-      itemizedPrompts.set([]);
-      return;
+  async function loadItemizedPrompts(chatId?: string) {
+    try {
+      if (!chatId) {
+        itemizedPrompts.value = [];
+        return;
+      }
+      const prompts = (await promptStorage.getItem(chatId)) as any[] | null;
+      itemizedPrompts.value = prompts ?? [];
+    } catch {
+      console.log('Error loading itemized prompts for chat', chatId);
+      itemizedPrompts.value = [];
     }
-
-    const prompts = await promptStorage.getItem(chatId);
-    itemizedPrompts.set((prompts as any[]) ?? []);
-  } catch {
-    console.log('Error loading itemized prompts for chat', chatId);
-    itemizedPrompts.set([]);
   }
-}
+
+  return { extensionPrompts, itemizedPrompts, saveItemizedPrompts, loadItemizedPrompts };
+});

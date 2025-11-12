@@ -1,10 +1,23 @@
-import { atom } from 'nanostores';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import type { MenuType } from '../types';
 
-export const isChatSaving = atom<boolean>(false);
-export const isDeleteMode = atom<boolean>(false);
-export const isSendPress = atom<boolean>(false);
-export const selectedButton = atom<MenuType | null>(null);
-export const menuType = atom<MenuType | null>(null);
-export const cropData = atom<any>(null);
-export const activePlayerName = atom<string>('User');
+export const useUiStore = defineStore('ui', () => {
+  const isChatSaving = ref<boolean>(false);
+  const isDeleteMode = ref<boolean>(false);
+  const isSendPress = ref<boolean>(false);
+  const selectedButton = ref<MenuType | null>(null);
+  const menuType = ref<MenuType | null>(null);
+  const cropData = ref<any>(null);
+  const activePlayerName = ref<string>('User');
+
+  return {
+    isChatSaving,
+    isDeleteMode,
+    isSendPress,
+    selectedButton,
+    menuType,
+    cropData,
+    activePlayerName,
+  };
+});

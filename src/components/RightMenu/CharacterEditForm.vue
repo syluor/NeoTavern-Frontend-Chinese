@@ -7,6 +7,7 @@ import { default_avatar } from '../../constants';
 import type { Character } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
+import AdvancedDefinitions from './AdvancedDefinitions.vue';
 
 const characterStore = useCharacterStore();
 const uiStore = useUiStore();
@@ -18,6 +19,7 @@ const formData = ref<Partial<Character> & { data?: any }>({});
 // --- State for new features ---
 const areDetailsHidden = ref(settingsStore.powerUser.spoiler_free_mode);
 const isCreatorNotesOpen = ref(true);
+const isAdvancedDefinitionsVisible = ref(false);
 
 // Popup state for maximizing editors
 type EditableField = 'description' | 'first_mes' | 'data.creator_notes';
@@ -87,6 +89,12 @@ function handleEditorSubmit({ value }: { value: string }) {
     }
   }
 }
+
+function handleAdvancedSave(updatedData: Character) {
+  formData.value = updatedData;
+  isAdvancedDefinitionsVisible.value = false;
+  // TODO: Add toast notification for save
+}
 </script>
 
 <template>
@@ -116,7 +124,11 @@ function handleEditorSubmit({ value }: { value: string }) {
               :class="{ fav_on: formData.fav }"
               title="Add to Favorites"
             ></div>
-            <div class="menu-button fa-solid fa-book" title="Advanced Definitions"></div>
+            <div
+              @click="isAdvancedDefinitionsVisible = true"
+              class="menu-button fa-solid fa-book"
+              title="Advanced Definitions"
+            ></div>
             <div class="menu-button fa-solid fa-globe" title="Character Lore"></div>
             <div class="menu-button fa-solid fa-passport" title="Chat Lore"></div>
             <div class="menu-button fa-solid fa-face-smile" title="Connected Personas"></div>
@@ -225,6 +237,13 @@ function handleEditorSubmit({ value }: { value: string }) {
       :options="editorPopupOptions"
       @submit="handleEditorSubmit"
       @close="isEditorPopupVisible = false"
+    />
+
+    <AdvancedDefinitions
+      v-if="isAdvancedDefinitionsVisible"
+      :character-data="formData"
+      @close="isAdvancedDefinitionsVisible = false"
+      @save="handleAdvancedSave"
     />
   </div>
 </template>

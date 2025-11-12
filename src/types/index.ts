@@ -1,3 +1,5 @@
+export type MessageRole = 'user' | 'assistant' | 'system';
+
 export interface Character {
   fav?: boolean | string;
   create_date?: string;
@@ -17,6 +19,15 @@ export interface Character {
   data?: {
     alternate_greetings?: string[];
     creator_notes?: string;
+    creator?: string;
+    character_version?: string;
+    system_prompt?: string;
+    post_history_instructions?: string;
+    depth_prompt?: {
+      prompt: string;
+      depth: number;
+      role: MessageRole;
+    };
   } & Record<string, any>;
 }
 

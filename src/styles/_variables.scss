@@ -1,0 +1,136 @@
+// =============================================================================
+// Core Variables
+// =============================================================================
+
+// Base color palette
+$black: #000;
+$white: #fff;
+
+$grey-10: rgb(25, 25, 25);
+$grey-30: rgb(75, 75, 75);
+$grey-50: rgb(125, 125, 125);
+$grey-70: rgb(175, 175, 175);
+$grey-75: rgb(190, 190, 190);
+
+$red: #f00;
+$green: #006400; // dark green
+$blue: #6464ff; // cobalt-ish
+$ivory: rgb(220, 220, 210);
+$golden: rgb(248, 211, 0);
+
+// Base metrics
+$base-font-scale: 1;
+$base-font-size: 15px;
+$base-animation-duration: 125ms;
+$base-border-radius: 2px;
+$base-border-radius-round: 50%;
+$base-border-radius-rounded: 10px;
+
+// =============================================================================
+// CSS Custom Properties (:root)
+// =============================================================================
+
+:root {
+  // --- Color System ---
+  --transparent: rgba(0, 0, 0, 0);
+
+  // Black with alpha
+  --black-30a: #{rgba($black, 0.3)};
+  --black-50a: #{rgba($black, 0.5)};
+  --black-60a: #{rgba($black, 0.6)};
+  --black-70a: #{rgba($black, 0.7)};
+  --black-90a: #{rgba($black, 0.9)};
+  --black-100: #{$black};
+
+  // White with alpha
+  --white-20a: #{rgba($white, 0.2)};
+  --white-30a: #{rgba($white, 0.3)};
+  --white-50a: #{rgba($white, 0.5)};
+  --white-60a: #{rgba($white, 0.6)};
+  --white-70a: #{rgba($white, 0.7)};
+  --white-100: #{$white};
+
+  // Grey with alpha
+  --grey-30a: #{rgba($grey-30, 0.3)};
+  --grey-5020a: #{rgba($grey-50, 0.2)};
+  --grey-5050a: #{rgba($grey-50, 0.5)};
+  --grey-7070a: #{rgba($grey-70, 0.7)};
+  --grey-cai-bg: rgb(36, 36, 37);
+
+  // Accents & Status
+  --color-accent-red: #{$red};
+  --color-accent-crimson-70a: #{rgba(100, 0, 0, 0.7)};
+  --color-accent-crimson-hover: #{rgba(150, 50, 50, 0.5)};
+  --color-accent-green-70a: #{rgba($green, 0.7)};
+  --color-accent-cobalt-30a: #{rgba($blue, 0.3)};
+  --color-golden: #{$golden};
+  --color-warning: #{rgba($red, 0.9)};
+  --color-active: rgb(88, 182, 0);
+  --color-preferred: rgb(244, 67, 54);
+
+  // --- Default Theme ---
+  --theme-text-color: #{$ivory};
+  --theme-emphasis-color: #{rgb(145, 145, 145)};
+  --theme-underline-color: #{rgb(188, 231, 207)};
+  --theme-quote-color: #{rgb(225, 138, 36)};
+  --theme-background-tint: #{rgb(23, 23, 23)};
+  --theme-chat-tint: #{rgb(23, 23, 23)};
+  --theme-user-message-tint: #{rgba(0, 0, 0, 0.3)};
+  --theme-bot-message-tint: #{rgba(60, 60, 60, 0.3)};
+  --theme-shadow-color: #{rgba(0, 0, 0, 0.5)};
+  --theme-border-color: #{rgba(0, 0, 0, 0.5)};
+
+  // Checkbox colors for calculating tick color
+  --theme-checkbox-bg-r: 220;
+  --theme-checkbox-bg-g: 220;
+  --theme-checkbox-bg-b: 210;
+
+  // Calculates a contrasting tick color (black/white) based on luminance.
+  --theme-checkbox-tick-color-value: calc((((((var(--theme-checkbox-bg-r) * 299) + (var(--theme-checkbox-bg-g) * 587) + (var(--theme-checkbox-bg-b) * 114)) / 1000) - 128) * -1000));
+  --theme-checkbox-tick-color: rgb(var(--theme-checkbox-tick-color-value),
+      var(--theme-checkbox-tick-color-value),
+      var(--theme-checkbox-tick-color-value));
+
+  // --- Layout & Sizing ---
+  --layout-panel-width: 50vw;
+  --layout-message-right-spacing: 30px;
+
+  // Font
+  --font-scale: #{$base-font-scale};
+  --font-size-main: calc(var(--font-scale) * #{$base-font-size});
+  --font-family-main: 'Noto Sans', sans-serif;
+  --font-family-mono: 'Noto Sans Mono', 'Courier New', Consolas, monospace;
+
+  // Send Form
+  --send-form-padding: calc(var(--font-size-main) / 2.5);
+  --send-form-icon-size: calc(var(--font-size-main) * 1.9);
+  --send-form-height: calc(var(--send-form-icon-size) + var(--send-form-padding));
+
+  // Top Bar
+  --top-bar-padding: calc(var(--font-size-main) / 3);
+  --top-bar-icon-size: calc(var(--font-size-main) * 2);
+  --top-bar-height: calc(var(--top-bar-icon-size) + var(--top-bar-padding));
+
+  // Avatars
+  --avatar-height: 50px;
+  --avatar-width: 50px;
+  --avatar-border-radius: #{$base-border-radius};
+  --avatar-border-radius-round: #{$base-border-radius-round};
+  --avatar-border-radius-rounded: #{$base-border-radius-rounded};
+  --avatar-inline-small-factor: 0.6;
+
+  // --- Effects ---
+  --blur-strength: 10; // Unitless value for slider controls
+  --blur-radius: calc(var(--blur-strength) * 1px);
+  --shadow-width: 2; // Unitless value for slider controls
+  --shadow-blur-radius: calc(var(--shadow-width) * 1px);
+
+  // --- Animations ---
+  --animation-duration: #{$base-animation-duration};
+  --animation-duration-2x: calc(var(--animation-duration) * 2);
+  --animation-duration-3x: calc(var(--animation-duration) * 3);
+
+  // --- Interactables ---
+  --interactable-outline-color: var(--white-100);
+  --interactable-outline-color-faint: var(--white-20a);
+}

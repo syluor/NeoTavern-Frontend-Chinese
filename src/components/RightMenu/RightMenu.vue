@@ -19,17 +19,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex-container flex-nowrap">
-    <div class="flex-flow-column flex-container">
-      <div class="align-items-flex-start" title="Locked = Character Management panel will stay open">
-        <input id="rm-button-panel-pin" type="checkbox" v-model="isPanelPinned" />
-        <label for="rm-button-panel-pin">
-          <div class="fa-solid right-menu-button" :class="isPanelPinned ? 'fa-lock' : 'fa-unlock'"></div>
+  <div class="u-flex u-flex-nowrap">
+    <div class="u-flex-col u-flex u-items-start">
+      <div title="Locked = Character Management panel will stay open">
+        <input id="right-menu-pin-toggle" type="checkbox" v-model="isPanelPinned" />
+        <label for="right-menu-pin-toggle">
+          <div class="menu-button-icon" :class="isPanelPinned ? 'fa-lock' : 'fa-unlock'"></div>
         </label>
       </div>
-      <div class="right-menu-button fa-solid fa-list-ul" title="Select/Create Characters"></div>
+      <div class="menu-button-icon fa-solid fa-list-ul" title="Select/Create Characters"></div>
     </div>
-    <div class="align-items-center flex-container margin-0auto width-100p space-evenly">
+    <div class="u-items-center u-flex u-mx-auto u-w-full u-justify-evenly">
       <div
         class="hotswap avatars-inline scroll-reset-container expander"
         title="Favorite characters to add them to HotSwaps"
@@ -41,10 +41,10 @@ onMounted(() => {
     </div>
   </div>
   <div class="scrollableInner">
-    <div name="Character List Panel" id="rm-characters-block">
-      <div id="char-list-fixed-top">
-        <div id="rm-button-bar">
-          <div id="rm-button-create" title="Create New Character" class="menu-button fa-solid fa-user-plus"></div>
+    <div id="right-menu-panel" class="right-menu-panel">
+      <div class="right-menu-panel__header">
+        <div class="right-menu-panel__actions">
+          <div id="character-create-button" title="Create New Character" class="menu-button fa-solid fa-user-plus"></div>
           <div
             id="character-import-button"
             title="Import Character from File"
@@ -55,8 +55,8 @@ onMounted(() => {
             title="Import content from external URL"
             class="menu-button fa-solid fa-cloud-arrow-down"
           ></div>
-          <div id="rm-button-group-chats" title="Create New Chat Group" class="menu-button fa-solid fa-users-gear"></div>
-          <div id="rm-buttons-container">
+          <div id="group-create-button" title="Create New Chat Group" class="menu-button fa-solid fa-users-gear"></div>
+          <div id="right-menu-extensions-container">
             <!-- Container for additional buttons added by extensions -->
           </div>
           <select id="character-sort-order" class="text-pole" title="Characters sorting order">
@@ -74,29 +74,29 @@ onMounted(() => {
             <option data-field="name" data-order="random">Random</option>
           </select>
           <div
-            id="rm-button-search"
-            class="right-menu-button fa-fw fa-solid fa-search"
+            id="character-search-toggle"
+            class="menu-button-icon fa-fw fa-solid fa-search"
             title="Toggle search bar"
             @click="isSearchActive = !isSearchActive"
           ></div>
         </div>
-        <div id="form-character-search-form" :class="{ active: isSearchActive }">
-          <input id="character-search-bar" class="text-pole width-100p" type="search" placeholder="Search..." />
+        <div id="character-search-form" :class="{ active: isSearchActive }">
+          <input id="character-search-input" class="text-pole u-w-full" type="search" placeholder="Search..." />
         </div>
-        <div class="rm-tag-controls">
-          <div class="tags rm-tag-filter"></div>
-          <div class="tags rm-tag-bogus-drilldown"></div>
+        <div class="tag-controls">
+          <div class="tags tag-filter"></div>
+          <div class="tags tag-bogus-drilldown"></div>
         </div>
       </div>
 
-      <div id="rm-print-characters-pagination">
+      <div class="right-menu-panel__pagination">
         <i
-          id="char-list-grid-toggle"
+          id="character-grid-toggle"
           class="fa-solid fa-table-cells-large menu-button"
           title="Toggle character grid view"
         ></i>
         <i
-          id="bulk-edit-button"
+          id="bulk-edit-toggle"
           class="fa-solid fa-edit menu-button bulk-edit-button"
           title="Bulk edit characters&#13;&#13;Click to toggle characters&#13;Shift + Click to select/deselect a range of characters&#13;Right-click for actions"
         ></i>
@@ -114,26 +114,26 @@ onMounted(() => {
           style="display: none"
         ></i>
       </div>
-      <div id="rm-print-characters-block" class="flex-flow-column">
+      <div id="character-list" class="u-flex-col">
         <div v-if="characterStore.displayableEntities.length === 0">Loading...</div>
         <template v-for="entity in characterStore.displayableEntities" :key="entity.id">
           <!-- Character Block -->
           <div
             v-if="entity.type === 'character'"
-            class="character_select"
-            :class="{ selected_char: characterStore.activeCharacterIndex === entity.id }"
+            class="character-item"
+            :class="{ 'is-active': characterStore.activeCharacterIndex === entity.id }"
             @click="characterStore.selectCharacterById(entity.id as number)"
           >
-            <div class="avatar">
+            <div class="character-item__avatar">
               <img :src="getAvatarUrl((entity.item as Character).avatar)" alt="Character Avatar" />
             </div>
-            <div class="ch_name">{{ (entity.item as Character).name }}</div>
+            <div class="character-item__name">{{ (entity.item as Character).name }}</div>
           </div>
 
           <!-- Group Block -->
-          <div v-if="entity.type === 'group'" class="character_select group_select">
+          <div v-if="entity.type === 'group'" class="character-item is-group">
             <!-- Group rendering logic here -->
-            <div class="ch_name">GROUP: {{ (entity.item as Group).id }}</div>
+            <div class="character-item__name">GROUP: {{ (entity.item as Group).id }}</div>
           </div>
         </template>
       </div>
@@ -143,7 +143,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 /* Basic styles to replicate the character list appearance */
-.character_select {
+.character-item {
   display: flex;
   align-items: center;
   padding: 5px;
@@ -155,12 +155,12 @@ onMounted(() => {
     background-color: var(--white-20a);
   }
 
-  &.selected_char {
+  &.is-active {
     background-color: var(--color-active);
   }
 }
 
-.avatar img {
+.character-item__avatar img {
   width: 40px;
   height: 40px;
   border-radius: 5px;
@@ -168,7 +168,7 @@ onMounted(() => {
   object-fit: cover;
 }
 
-.ch_name {
+.character-item__name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

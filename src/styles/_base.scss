@@ -1,0 +1,134 @@
+// =============================================================================
+// Custom Scrollbar
+// =============================================================================
+
+::-webkit-scrollbar {
+  width: 0.7rem;
+  scrollbar-gutter: stable;
+}
+
+::-webkit-scrollbar-track {
+  cursor: default;
+
+  &:hover {
+    background-color: rgba(126, 126, 126, 0.2);
+  }
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  background-color: var(--grey-7070a);
+  box-shadow: inset 0 0 0 1px var(--black-50a);
+  border-radius: 10px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// =============================================================================
+// Global Styles & Resets
+// =============================================================================
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 0 0 var(--shadow-blur-radius) var(--theme-shadow-color);
+}
+
+html {
+  // Performance tweak for Chrome to prevent flickering on blurred elements.
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; // Use dynamic viewport height where supported
+  overflow: hidden; // App manages its own scrolling regions
+
+  background-color: var(--theme-background-tint);
+  // background-image property would be set here if there is one
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+
+  font-family: var(--font-family-main);
+  font-size: var(--font-size-main);
+  color: var(--theme-text-color);
+
+  // Enforce a light color-scheme to prevent browser-native dark mode UI
+  // from overriding app styles (e.g., for form controls).
+  color-scheme: light;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  display: block;
+  border: 1px solid var(--theme-border-color);
+  border-radius: 5px;
+  outline: none;
+  background-color: var(--black-30a);
+  color: var(--theme-text-color);
+  font-family: var(--font-family-main);
+  font-size: var(--font-size-main);
+  padding: 5px 10px;
+}
+
+select {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 3px 5px;
+  background-color: var(--black-30a);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 5px;
+  margin-bottom: 5px;
+  height: min-content;
+  background-image: url('/img/down-arrow.svg');
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 8px 5px;
+}
+
+select option {
+  /* works to highlight selected/active option */
+  background-color: var(--white-50a);
+  color: var(--black-70a);
+}
+
+select option:not(:checked) {
+  /* works to color unselected items */
+  background-color: var(--black-70a);
+  color: var(--white-70a);
+}
+
+select option[disabled]:not(:checked) {
+  color: var(--white-30a);
+}
+
+.text-pole {
+  background-color: var(--black-30a);
+  color: var(--theme-text-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 5px;
+  font-family: var(--font-family-main);
+  padding: 3px 5px;
+  width: 100%;
+  margin: 5px 0;
+  height: fit-content;
+}
+
+select.text-pole {
+  padding-right: 20px;
+}

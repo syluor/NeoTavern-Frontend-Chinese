@@ -1,0 +1,118 @@
+.menu-button {
+  color: var(--theme-text-color);
+  filter: grayscale(0.5);
+  background-color: var(--theme-background-tint);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 5px;
+  padding: 3px 5px;
+  width: min-content;
+  cursor: pointer;
+  margin: 5px 0;
+  transition: var(--animation-duration-2x);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  &:not(.disabled):not([disabled]):hover,
+  &:not(.disabled):not([disabled]).active {
+    background-color: var(--white-30a);
+  }
+}
+
+.menu-button-icon {
+  display: block;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 0;
+  padding: 1px;
+  filter: brightness(75%);
+  transition: all var(--animation-duration-3x) ease-in-out;
+
+  &.active,
+  &:hover {
+    filter: brightness(150%);
+  }
+}
+
+#right-menu-pin-toggle {
+  display: none;
+}
+
+.right-menu-panel {
+  display: flex;
+  overflow-y: hidden;
+  height: 100%;
+  flex-direction: column;
+
+  &__header {
+    padding: 5px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .menu-button {
+      width: calc(var(--font-size-main) * 1.7);
+      aspect-ratio: 1;
+      margin: 0;
+    }
+
+    #character-sort-order {
+      flex: 1;
+      border-radius: 5px;
+      margin: 0;
+      min-width: 75px;
+    }
+
+    #character-search-toggle.menu-button-icon {
+      padding-right: 15px;
+      font-size: 1.1em;
+      margin: 0 2px;
+    }
+  }
+
+  #character-search-form {
+    display: none;
+    flex-direction: row;
+    align-items: stretch;
+    column-gap: 5px;
+
+    &.active {
+      display: flex;
+    }
+  }
+
+  .tag-controls {
+    display: flex;
+    column-gap: 10px;
+    row-gap: 5px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 5px;
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
+
+  &__pagination {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 1px;
+  }
+
+  #character-list {
+    display: flex;
+    overflow-y: auto;
+    flex-grow: 1;
+    height: 100%;
+    padding: 1px;
+  }
+}

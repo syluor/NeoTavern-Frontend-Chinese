@@ -1,38 +1,38 @@
 import { useSettingsStore } from './stores/settings.store';
 
 // const MIGRATED_MARKER = '__migrated';
-const MIGRATABLE_KEYS = [
-  /^AlertRegex_/,
-  /^AlertWI_/,
-  /^Assets_SkipConfirm_/,
-  /^Characters_PerPage$/,
-  /^DataBank_sortField$/,
-  /^DataBank_sortOrder$/,
-  /^extension_update_nag$/,
-  /^extensions_sortByName$/,
-  /^FeatherlessModels_PerPage$/,
-  /^GroupMembers_PerPage$/,
-  /^GroupCandidates_PerPage$/,
-  /^LNavLockOn$/,
-  /^LNavOpened$/,
-  /^mediaWarningShown:/,
-  /^NavLockOn$/,
-  /^NavOpened$/,
-  /^Personas_PerPage$/,
-  /^Personas_GridView$/,
-  /^Proxy_SkipConfirm_/,
-  /^qr--executeShortcut$/,
-  /^qr--syntax$/,
-  /^qr--tabSize$/,
-  /^qr--wrap$/,
-  /^RegenerateWithCtrlEnter$/,
-  /^SelectedNavTab$/,
-  /^sendAsNamelessWarningShown$/,
-  /^StoryStringValidationCache$/,
-  /^WINavOpened$/,
-  /^WI_PerPage$/,
-  /^world_info_sort_order$/,
-];
+// const MIGRATABLE_KEYS = [
+//   /^AlertRegex_/,
+//   /^AlertWI_/,
+//   /^Assets_SkipConfirm_/,
+//   /^Characters_PerPage$/,
+//   /^DataBank_sortField$/,
+//   /^DataBank_sortOrder$/,
+//   /^extension_update_nag$/,
+//   /^extensions_sortByName$/,
+//   /^FeatherlessModels_PerPage$/,
+//   /^GroupMembers_PerPage$/,
+//   /^GroupCandidates_PerPage$/,
+//   /^LNavLockOn$/,
+//   /^LNavOpened$/,
+//   /^mediaWarningShown:/,
+//   /^NavLockOn$/,
+//   /^NavOpened$/,
+//   /^Personas_PerPage$/,
+//   /^Personas_GridView$/,
+//   /^Proxy_SkipConfirm_/,
+//   /^qr--executeShortcut$/,
+//   /^qr--syntax$/,
+//   /^qr--tabSize$/,
+//   /^qr--wrap$/,
+//   /^RegenerateWithCtrlEnter$/,
+//   /^SelectedNavTab$/,
+//   /^sendAsNamelessWarningShown$/,
+//   /^StoryStringValidationCache$/,
+//   /^WINavOpened$/,
+//   /^WI_PerPage$/,
+//   /^world_info_sort_order$/,
+// ];
 
 /**
  * Provides access to account storage of arbitrary key-value pairs.
@@ -48,23 +48,23 @@ class AccountStorage {
    */
   #ready = false;
 
-  #migrateLocalStorage() {
-    const localStorageKeys = [];
-    for (let i = 0; i < globalThis.localStorage.length; i++) {
-      localStorageKeys.push(globalThis.localStorage.key(i));
-    }
-    for (const key of localStorageKeys) {
-      // @ts-ignore
-      if (MIGRATABLE_KEYS.some((k) => k.test(key))) {
-        // @ts-ignore
-        const value = globalThis.localStorage.getItem(key);
-        // @ts-ignore
-        this.#state[key] = value;
-        // @ts-ignore
-        globalThis.localStorage.removeItem(key);
-      }
-    }
-  }
+  // #migrateLocalStorage() {
+  //   const localStorageKeys = [];
+  //   for (let i = 0; i < globalThis.localStorage.length; i++) {
+  //     localStorageKeys.push(globalThis.localStorage.key(i));
+  //   }
+  //   for (const key of localStorageKeys) {
+  //     // @ts-ignore
+  //     if (MIGRATABLE_KEYS.some((k) => k.test(key))) {
+  //       // @ts-ignore
+  //       const value = globalThis.localStorage.getItem(key);
+  //       // @ts-ignore
+  //       this.#state[key] = value;
+  //       // @ts-ignore
+  //       globalThis.localStorage.removeItem(key);
+  //     }
+  //   }
+  // }
 
   /**
    * Initialize the account storage.

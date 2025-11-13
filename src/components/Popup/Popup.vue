@@ -90,9 +90,11 @@ function handleResult(result: number) {
     }
   }
   emit('submit', payload);
+  emit('close');
 }
 
 function onCancel() {
+  emit('submit', { result: POPUP_RESULT.CANCELLED, value: null });
   emit('close');
 }
 

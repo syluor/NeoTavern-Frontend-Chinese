@@ -445,10 +445,11 @@ function close() {
       </div>
     </div>
     <Popup
+      id="advanced-definitions-editor-popup"
       :visible="isEditorPopupVisible"
       :title="editorPopupTitle"
       :type="POPUP_TYPE.INPUT"
-      v-model:inputValue="editorPopupValue"
+      :inputValue="editorPopupValue"
       :options="editorPopupOptions"
       @submit="handleEditorSubmit"
       @close="isEditorPopupVisible = false"

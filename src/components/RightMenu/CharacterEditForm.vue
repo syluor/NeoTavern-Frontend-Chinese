@@ -312,10 +312,11 @@ function handleEditorSubmit({ value }: { value: string }) {
     </form>
 
     <Popup
+      id="character-edit-form-editor-popup"
       :visible="isEditorPopupVisible"
       :title="editorPopupTitle"
       :type="POPUP_TYPE.INPUT"
-      v-model:inputValue="editorPopupValue"
+      :inputValue="editorPopupValue"
       :options="editorPopupOptions"
       @submit="handleEditorSubmit"
       @close="isEditorPopupVisible = false"

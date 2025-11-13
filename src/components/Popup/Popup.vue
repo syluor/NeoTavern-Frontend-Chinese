@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type PopupOptions } from '../../types';
 
@@ -15,6 +16,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit']);
 
+const { t } = useI18n();
 const settings = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
 const mainInput = ref<HTMLTextAreaElement | null>(null);
@@ -29,20 +31,20 @@ function resolveOptions() {
   const { okButton, cancelButton } = props.options;
   switch (props.type) {
     case POPUP_TYPE.CONFIRM:
-      okText.value = typeof okButton === 'string' ? okButton : 'Yes';
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : 'No';
+      okText.value = typeof okButton === 'string' ? okButton : t('common.yes');
+      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.no');
       showOk.value = okButton !== false;
       showCancel.value = cancelButton !== false;
       break;
     case POPUP_TYPE.INPUT:
-      okText.value = typeof okButton === 'string' ? okButton : 'Save';
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : 'Cancel';
+      okText.value = typeof okButton === 'string' ? okButton : t('common.save');
+      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.cancel');
       showOk.value = okButton !== false;
       showCancel.value = cancelButton !== false;
       break;
     default: // TEXT
-      okText.value = typeof okButton === 'string' ? okButton : 'OK';
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : 'Cancel';
+      okText.value = typeof okButton === 'string' ? okButton : t('common.ok');
+      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.cancel');
       showOk.value = okButton !== false;
       showCancel.value = !!cancelButton;
   }

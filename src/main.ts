@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 import { useAuthStore } from './stores/auth.store';
 import { toast } from './composables/useToast';
+import i18n from './i18n';
 import * as Vue from 'vue';
 
 import './styles/main.scss';
@@ -15,13 +16,14 @@ async function initializeApp() {
   const app = createApp(App);
   const pinia = createPinia();
   app.use(pinia);
+  app.use(i18n);
 
   // Fetch CSRF token before mounting
   try {
     const authStore = useAuthStore();
     await authStore.fetchToken();
   } catch (error) {
-    toast.error("Couldn't get CSRF token. Please refresh the page.", 'Error', {
+    toast.error(i18n.global.t('errors.csrfToken'), 'Error', {
       timeout: 0,
     });
     console.error('Initialization failed:', error);

@@ -2,7 +2,9 @@
 import { ref, computed } from 'vue';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition } from '../../types';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 const searchTerm = ref('');
 const collapsedCategories = ref<string[]>([]);
@@ -14,8 +16,8 @@ const filteredDefinitions = computed(() => {
   const lowerCaseSearch = searchTerm.value.toLowerCase();
   return settingsStore.definitions.filter(
     (def) =>
-      def.label.toLowerCase().includes(lowerCaseSearch) ||
-      def.description?.toLowerCase().includes(lowerCaseSearch) ||
+      t(def.label).toLowerCase().includes(lowerCaseSearch) ||
+      (def.description && t(def.description).toLowerCase().includes(lowerCaseSearch)) ||
       def.category.toLowerCase().includes(lowerCaseSearch),
   );
 });
@@ -109,11 +111,11 @@ function afterLeave(el: Element) {
 <template>
   <div class="user-settings-drawer">
     <div class="user-settings-drawer__header">
-      <h3>User Settings</h3>
+      <h3>{{ $t('userSettings.title') }}</h3>
       <input
         type="search"
         class="text-pole user-settings-drawer__search"
-        placeholder="Search Settings"
+        :placeholder="$t('userSettings.searchPlaceholder')"
         v-model="searchTerm"
       />
       <!-- TODO: Implement Account/Admin/Logout buttons -->
@@ -121,7 +123,7 @@ function afterLeave(el: Element) {
 
     <div class="user-settings-drawer__content">
       <div v-if="Object.keys(groupedSettings).length === 0" class="user-settings-drawer__no-results">
-        No settings found.
+        {{ $t('userSettings.noResults') }}
       </div>
       <div v-for="(settings, category) in groupedSettings" :key="category" class="user-settings-drawer__category">
         <div class="user-settings-drawer__category-header" @click="toggleCategoryCollapse(category)">
@@ -145,8 +147,8 @@ function afterLeave(el: Element) {
             <div class="user-settings-drawer__category-content">
               <div v-for="setting in settings" :key="setting.id" class="user-settings-drawer__setting">
                 <div class="setting-details">
-                  <label :for="setting.id">{{ setting.label }}</label>
-                  <small v-if="setting.description">{{ setting.description }}</small>
+                  <label :for="setting.id">{{ $t(setting.label) }}</label>
+                  <small v-if="setting.description">{{ $t(setting.description) }}</small>
                 </div>
                 <div class="setting-control">
                   <!-- Checkbox -->
@@ -168,7 +170,7 @@ function afterLeave(el: Element) {
                     @change="updateSetting(setting.id, $event)"
                   >
                     <option v-for="option in setting.options" :key="option.value" :value="option.value">
-                      {{ option.label }}
+                      {{ $t(option.label) }}
                     </option>
                   </select>
 

@@ -6,6 +6,7 @@ import { fetchChatCompletionStatus } from '../api/connection';
 import { toast } from '../composables/useToast';
 import { useSettingsStore } from './settings.store';
 import { defaultsDeep, isEqual } from 'lodash-es';
+import i18n from '../i18n';
 
 export const useApiStore = defineStore('api', () => {
   const settingsStore = useSettingsStore();
@@ -70,12 +71,12 @@ export const useApiStore = defineStore('api', () => {
     if (isConnecting.value) return;
 
     if (mainApi.value !== 'openai') {
-      onlineStatus.value = 'Not connected... (Not implemented)';
+      onlineStatus.value = i18n.global.t('api.status.notConnected') + ' (Not implemented)';
       return;
     }
 
     isConnecting.value = true;
-    onlineStatus.value = 'Connecting...';
+    onlineStatus.value = i18n.global.t('api.status.connecting');
 
     try {
       // TODO: Implement secret management. For now, we pass the key directly.
@@ -86,12 +87,12 @@ export const useApiStore = defineStore('api', () => {
         throw new Error(response.error);
       }
 
-      onlineStatus.value = response.bypass ? 'Status check bypassed' : 'Valid';
-      toast.success('Connected successfully!');
+      onlineStatus.value = response.bypass ? i18n.global.t('api.status.bypassed') : i18n.global.t('api.status.valid');
+      toast.success(i18n.global.t('api.connectSuccess'));
       // TODO: Handle model list from response
     } catch (error: any) {
-      onlineStatus.value = 'No connection...';
-      toast.error(error.message || 'Failed to connect.');
+      onlineStatus.value = i18n.global.t('api.status.noConnection');
+      toast.error(error.message || i18n.global.t('api.connectFailed'));
       console.error(error);
     } finally {
       isConnecting.value = false;

@@ -1,0 +1,216 @@
+{
+  "topbar": {
+    "aiConfig": "AI Response Configuration",
+    "apiConnections": "API Connections",
+    "formatting": "AI Response Formatting",
+    "worldInfo": "World Info",
+    "userSettings": "User Settings",
+    "backgrounds": "Change Background Image",
+    "extensions": "Extensions",
+    "personaManagement": "Persona Management",
+    "characterManagement": "Character Management"
+  },
+  "userSettings": {
+    "title": "User Settings",
+    "searchPlaceholder": "Search Settings",
+    "noResults": "No settings found."
+  },
+  "api": {
+    "connectSuccess": "Connected successfully!",
+    "connectFailed": "Failed to connect.",
+    "status": {
+      "bypassed": "Status check bypassed",
+      "valid": "Valid",
+      "noConnection": "No connection...",
+      "notConnected": "Not connected...",
+      "connecting": "Connecting..."
+    }
+  },
+  "errors": {
+    "csrfToken": "Couldn't get CSRF token. Please refresh the page."
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "loading": "Loading...",
+    "tokens": "Tokens",
+    "permanent": "Permanent"
+  },
+  "chat": {
+    "inputPlaceholder": "Type a message, or /? for help",
+    "options": "Options",
+    "extensions": "Extensions",
+    "continue": "Continue the last message",
+    "send": "Send a message",
+    "saveError": "Cannot save: No active character selected.",
+    "loadError": "Failed to load chat."
+  },
+  "character": {
+    "import": {
+      "aborted": "Import aborted",
+      "abortedMessage": "Cannot import characters while generating. Stop the request and try again.",
+      "unsupportedType": "Unsupported file type: .{ext}",
+      "success": "Character Imported: {fileName}",
+      "error": "Could not import character",
+      "errorMessage": "The file is likely invalid or corrupted.",
+      "tagsImported": "Tags Imported",
+      "tagsImportedMessage": "Imported tags for {characterName}:\n{tags}"
+    },
+    "save": {
+      "error": "Failed to save character.",
+      "noActive": "Cannot save character: No active character or avatar found."
+    },
+    "fetch": {
+      "error": "The active character is no longer available. The page will be refreshed to prevent data loss."
+    },
+    "switch": {
+      "wait": "Please wait until the chat is saved before switching characters."
+    }
+  },
+  "rightMenu": {
+    "pinToggle": "Locked = Character Management panel will stay open",
+    "selectCharacter": "Select/Create Characters",
+    "hotSwaps": "Favorite characters to add them to HotSwaps",
+    "tokenInfo": "Token counts may be inaccurate and provided just for reference.",
+    "totalTokens": "Total tokens",
+    "permanentTokens": "Permanent tokens",
+    "aboutTokens": "About Token 'Limits'",
+    "stats": "Click for stats!",
+    "togglePanel": "Toggle character info panel",
+    "createNew": "Create New Character",
+    "importFile": "Import Character from File",
+    "importUrl": "Import content from external URL",
+    "createGroup": "Create New Chat Group",
+    "searchToggle": "Toggle search bar",
+    "searchPlaceholder": "Search...",
+    "gridView": "Toggle character grid view",
+    "bulkEdit": "Bulk edit characters\n\nClick to toggle characters\nShift + Click to select/deselect a range of characters\nRight-click for actions",
+    "bulkSelectAll": "Bulk select all characters",
+    "bulkDelete": "Bulk delete characters"
+  },
+  "characterEditor": {
+    "avatar": "Click to select a new avatar for this character",
+    "back": "Back to Character List",
+    "favorite": "Add to Favorites",
+    "advancedDefinitions": "Advanced Definitions",
+    "lore": "Character Lore",
+    "chatLore": "Chat Lore",
+    "personas": "Connected Personas",
+    "export": "Export and Download",
+    "duplicate": "Duplicate Character",
+    "delete": "Delete Character",
+    "more": "More...",
+    "searchTags": "Search / Create tags",
+    "viewAllTags": "View all tags",
+    "creatorNotes": "Creator's Notes",
+    "toggleStyles": "Allow / Forbid global styles",
+    "toggleSpoiler": "Show / Hide Description and First Message",
+    "noCreatorNotes": "No Creator's Notes provided.",
+    "detailsHidden": "Character details are hidden.",
+    "description": "Description",
+    "firstMessage": "First message",
+    "expandEditor": "Expand the editor",
+    "descriptionPlaceholder": "Describe your character's physical and mental traits here.",
+    "firstMessagePlaceholder": "This will be the first message from the character that starts every chat."
+  },
+  "advancedDefinitions": {
+    "title": "{characterName} - Advanced Definitions",
+    "promptOverrides": "Prompt Overrides",
+    "promptOverridesHint": "(For Chat Completion and Instruct Mode)",
+    "promptHint": "Insert {'{{original}}'} into either box to include the respective default prompt.",
+    "mainPrompt": "Main Prompt",
+    "mainPromptPlaceholder": "Any contents here will replace the default Main Prompt.",
+    "postHistoryInstructions": "Post-History Instructions",
+    "postHistoryInstructionsPlaceholder": "Any contents here will replace the default Post-History Instructions.",
+    "metadata": "Creator's Metadata",
+    "metadataHint": "(Not sent with the AI Prompt)",
+    "metadataOptional": "Everything here is optional",
+    "createdBy": "Created by",
+    "createdByPlaceholder": "(Botmaker's name / Contact info)",
+    "characterVersion": "Character Version",
+    "characterVersionPlaceholder": "(If you want to track character versions)",
+    "creatorNotes": "Creator's Notes",
+    "creatorNotesPlaceholder": "(Describe the bot, give use tips, etc.)",
+    "tagsToEmbed": "Tags to Embed",
+    "tagsToEmbedPlaceholder": "(Write a comma-separated list of tags)",
+    "personality": "Personality summary",
+    "personalityPlaceholder": "(A brief description of the personality)",
+    "scenario": "Scenario",
+    "scenarioPlaceholder": "(Circumstances and context of the interaction)",
+    "characterNote": "Character's Note",
+    "characterNotePlaceholder": "(Text to be inserted in-chat)",
+    "depth": "{'@'} Depth",
+    "role": "Role",
+    "talkativeness": "Talkativeness",
+    "talkativenessHint": "How often the character speaks in group chats!",
+    "talkativenessShy": "Shy",
+    "talkativenessNormal": "Normal",
+    "talkativenessChatty": "Chatty",
+    "dialogueExamples": "Examples of dialogue",
+    "dialogueExamplesHint": "Important to set the character's writing style.",
+    "dialogueExamplesPlaceholder": "(Examples of chat dialog. Begin each example with <START> on a new line.)",
+    "editingTitle": "Editing: {title}"
+  },
+  "extensions": {
+    "title": "Extensions",
+    "notifyUpdates": "Notify on extension updates",
+    "manage": "Manage extensions",
+    "install": "Install extension",
+    "managePopupNotImplemented": "Manage extensions popup not implemented yet.",
+    "installPopupNotImplemented": "Install extension popup not implemented yet."
+  },
+  "apiConnections": {
+    "profile": "Connection Profile",
+    "profileNotImplemented": "Connection Profiles are not yet implemented.",
+    "api": "API",
+    "chatCompletion": "Chat Completion",
+    "textCompletion": "Text Completion (TODO)",
+    "novel": "NovelAI (TODO)",
+    "horde": "AI Horde (TODO)",
+    "kobold": "KoboldAI Classic (TODO)",
+    "source": "Chat Completion Source",
+    "openaiKey": "OpenAI API key",
+    "openaiKeyPlaceholder": "Enter your OpenAI API key",
+    "claudeKey": "Claude API Key",
+    "claudeKeyPlaceholder": "Enter your Claude API key",
+    "manageKeys": "Manage API keys",
+    "keyPrivacy": "For privacy reasons, your API key will be hidden after you click 'Connect'.",
+    "openaiModel": "OpenAI Model",
+    "claudeModel": "Claude Model",
+    "connect": "Connect",
+    "connecting": "Connecting"
+  },
+  "settings": {
+    "power_user": {
+      "spoiler_free_mode": {
+        "label": "Spoiler Free Mode",
+        "description": "Hide character definitions from the editor panel behind a spoiler button."
+      },
+      "never_resize_avatars": {
+        "label": "Never resize avatars",
+        "description": "Avoid cropping and resizing imported character images. Disables the upload cropping popup."
+      },
+      "send_on_enter": {
+        "label": "Enter to Send",
+        "description": "Determines if the Enter key sends a message.",
+        "options": {
+          "disabled": "Disabled",
+          "auto": "Automatic (PC)",
+          "enabled": "Enabled"
+        }
+      },
+      "auto_fix_generated_markdown": {
+        "label": "Auto-fix Markdown",
+        "description": "Automatically attempt to fix malformed markdown in AI-generated messages."
+      },
+      "world_import_dialog": {
+        "label": "Lorebook Import Dialog",
+        "description": "Ask to import World Info for new characters. If unchecked, a brief message will be shown instead."
+      }
+    }
+  }
+}

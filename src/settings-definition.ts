@@ -5,8 +5,8 @@ export const settingsDefinition: SettingDefinition[] = [
   // --- Character Handling ---
   {
     id: 'power_user.spoiler_free_mode',
-    label: 'Spoiler Free Mode',
-    description: 'Hide character definitions from the editor panel behind a spoiler button.',
+    label: 'settings.power_user.spoiler_free_mode.label',
+    description: 'settings.power_user.spoiler_free_mode.description',
     category: 'Character Handling',
     type: 'boolean',
     widget: 'checkbox',
@@ -14,8 +14,8 @@ export const settingsDefinition: SettingDefinition[] = [
   },
   {
     id: 'power_user.never_resize_avatars',
-    label: 'Never resize avatars',
-    description: 'Avoid cropping and resizing imported character images. Disables the upload cropping popup.',
+    label: 'settings.power_user.never_resize_avatars.label',
+    description: 'settings.power_user.never_resize_avatars.description',
     category: 'Character Handling',
     type: 'boolean',
     widget: 'checkbox',
@@ -25,22 +25,22 @@ export const settingsDefinition: SettingDefinition[] = [
   // --- Chat/Message Handling ---
   {
     id: 'power_user.send_on_enter',
-    label: 'Enter to Send',
-    description: 'Determines if the Enter key sends a message.',
+    label: 'settings.power_user.send_on_enter.label',
+    description: 'settings.power_user.send_on_enter.description',
     category: 'Chat/Message Handling',
     type: 'enum',
     widget: 'select',
     defaultValue: SendOnEnterOptions.AUTO,
     options: [
-      { value: SendOnEnterOptions.DISABLED, label: 'Disabled' },
-      { value: SendOnEnterOptions.AUTO, label: 'Automatic (PC)' },
-      { value: SendOnEnterOptions.ENABLED, label: 'Enabled' },
+      { value: SendOnEnterOptions.DISABLED, label: 'settings.power_user.send_on_enter.options.disabled' },
+      { value: SendOnEnterOptions.AUTO, label: 'settings.power_user.send_on_enter.options.auto' },
+      { value: SendOnEnterOptions.ENABLED, label: 'settings.power_user.send_on_enter.options.enabled' },
     ],
   },
   {
     id: 'power_user.auto_fix_generated_markdown',
-    label: 'Auto-fix Markdown',
-    description: 'Automatically attempt to fix malformed markdown in AI-generated messages.',
+    label: 'settings.power_user.auto_fix_generated_markdown.label',
+    description: 'settings.power_user.auto_fix_generated_markdown.description',
     category: 'Chat/Message Handling',
     type: 'boolean',
     widget: 'checkbox',
@@ -48,8 +48,8 @@ export const settingsDefinition: SettingDefinition[] = [
   },
   {
     id: 'power_user.world_import_dialog',
-    label: 'Lorebook Import Dialog',
-    description: 'Ask to import World Info for new characters. If unchecked, a brief message will be shown instead.',
+    label: 'settings.power_user.world_import_dialog.label',
+    description: 'settings.power_user.world_import_dialog.description',
     category: 'Chat/Message Handling',
     type: 'boolean',
     widget: 'checkbox',

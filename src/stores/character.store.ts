@@ -17,6 +17,7 @@ import { debounce } from '../utils/common';
 import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT, DebounceTimeout } from '../constants';
 import { useSettingsStore } from './settings.store';
 import { onlyUnique } from '../utils/array';
+import i18n from '../i18n';
 
 // TODO: Replace with a real API call to the backend for accurate tokenization
 async function getTokenCount(text: string): Promise<number> {
@@ -29,6 +30,7 @@ const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
 
 export const useCharacterStore = defineStore('character', () => {
+  const { t } = i18n.global;
   const characters = ref<Array<Character>>([]);
   const activeCharacterIndex = ref<number | null>(null);
   const favoriteCharacterChecked = ref<boolean>(false);
@@ -138,7 +140,7 @@ export const useCharacterStore = defineStore('character', () => {
             await selectCharacterById(newIndex, { switchMenu: false });
           }
         } else {
-          toast.error('The active character is no longer available. The page will be refreshed to prevent data loss.');
+          toast.error(t('character.fetch.error'));
           setTimeout(() => location.reload(), 3000);
         }
       }
@@ -158,7 +160,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     const uiStore = useUiStore();
     if (uiStore.isChatSaving) {
-      toast.info('Please wait until the chat is saved before switching characters.');
+      toast.info(t('character.switch.wait'));
       return;
     }
 
@@ -206,14 +208,14 @@ export const useCharacterStore = defineStore('character', () => {
       }
     } catch (error) {
       console.error('Failed to save character:', error);
-      toast.error('Failed to save character.');
+      toast.error(t('character.save.error'));
     }
   }
 
   async function saveActiveCharacter(characterData: Partial<Character>) {
     const avatar = activeCharacter.value?.avatar;
     if (!avatar || !activeCharacter.value) {
-      toast.error('Cannot save character: No active character or avatar found.');
+      toast.error(t('character.save.noActive'));
       console.error('Attempted to save character without an active character reference.');
       return;
     }
@@ -289,13 +291,13 @@ export const useCharacterStore = defineStore('character', () => {
     const uiStore = useUiStore();
     const groupStore = useGroupStore();
     if (groupStore.isGroupGenerating || uiStore.isSendPress) {
-      toast.error('Cannot import characters while generating. Stop the request and try again.', 'Import aborted');
+      toast.error(t('character.import.abortedMessage'), t('character.import.aborted'));
       throw new Error('Cannot import character while generating');
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!ext || !['json', 'png'].includes(ext)) {
-      toast.warning(`Unsupported file type: .${ext}`);
+      toast.warning(t('character.import.unsupportedType', { ext }));
       return;
     }
 
@@ -303,12 +305,12 @@ export const useCharacterStore = defineStore('character', () => {
       const data = await apiImportCharacter(file);
       if (data.file_name) {
         const avatarFileName = `${data.file_name}.png`;
-        toast.success(`Character Imported: ${data.file_name}`);
+        toast.success(t('character.import.success', { fileName: data.file_name }));
         return avatarFileName;
       }
     } catch (error) {
       console.error('Error importing character', error);
-      toast.error('The file is likely invalid or corrupted.', 'Could not import character');
+      toast.error(t('character.import.errorMessage'), t('character.import.error'));
       throw error;
     }
   }
@@ -363,9 +365,13 @@ export const useCharacterStore = defineStore('character', () => {
     if (tagsToImport.length > 0) {
       const newTags = [...alreadyAssignedTags, ...tagsToImport].filter(onlyUnique);
       await updateAndSaveCharacter(character.avatar, { tags: newTags });
-      toast.success(`Imported tags for ${character.name}:<br>${tagsToImport.join(', ')}`, 'Tags Imported', {
-        timeout: 6000,
-      });
+      toast.success(
+        t('character.import.tagsImportedMessage', { characterName: character.name, tags: tagsToImport.join(', ') }),
+        t('character.import.tagsImported'),
+        {
+          timeout: 6000,
+        },
+      );
     }
   }
 

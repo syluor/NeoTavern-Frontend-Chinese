@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { depth_prompt_depth_default, depth_prompt_role_default, talkativeness_default } from '../../constants';
 import type { Character, PopupOptions } from '../../types';
 import { POPUP_TYPE } from '../../types';
@@ -12,6 +13,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['close', 'update:modelValue']);
 
+const { t } = useI18n();
 const characterStore = useCharacterStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 
@@ -137,7 +139,7 @@ const joinedTags = computed({
 
 function openMaximizeEditor(fieldName: EditableField, title: string) {
   editingFieldName.value = fieldName;
-  editorPopupTitle.value = `Editing: ${title}`;
+  editorPopupTitle.value = t('advancedDefinitions.editingTitle', { title });
   editorPopupValue.value = getValue(fieldName) ?? '';
   editorPopupOptions.value = { wide: true, large: true, okButton: 'OK', cancelButton: false };
   isEditorPopupVisible.value = true;
@@ -158,7 +160,7 @@ function close() {
   <div class="advanced-definitions-popup__wrapper" @click.self="close">
     <div v-if="modelValue.data" class="advanced-definitions-popup">
       <header class="advanced-definitions-popup__header">
-        <h3>{{ characterName }} - <span>Advanced Definitions</span></h3>
+        <h3>{{ t('advancedDefinitions.title', { characterName }) }}</h3>
         <div class="advanced-definitions-popup__close-button fa-solid fa-circle-xmark" @click="close"></div>
       </header>
       <hr />
@@ -168,7 +170,8 @@ function close() {
         <div class="inline-drawer">
           <div class="inline-drawer-header" @click="isPromptOverridesOpen = !isPromptOverridesOpen">
             <h4 class="inline-drawer-header__title">
-              Prompt Overrides <small>(For Chat Completion and Instruct Mode)</small>
+              {{ t('advancedDefinitions.promptOverrides') }}
+              <small>{{ t('advancedDefinitions.promptOverridesHint') }}</small>
             </h4>
             <i
               class="fa-solid fa-circle-chevron-down inline-drawer-header__icon"
@@ -186,14 +189,14 @@ function close() {
           >
             <div v-show="isPromptOverridesOpen">
               <div class="inline-drawer-content u-flex-col">
-                <small v-pre>Insert {{ original }} into either box to include the respective default prompt.</small>
+                <small>{{ t('advancedDefinitions.promptHint') }}</small>
                 <div>
                   <label>
-                    <span>Main Prompt</span>
+                    <span>{{ t('advancedDefinitions.mainPrompt') }}</span>
                     <i
                       class="editor-maximize-icon fa-solid fa-maximize"
-                      title="Expand the editor"
-                      @click="openMaximizeEditor('data.system_prompt', 'Main Prompt')"
+                      :title="$t('characterEditor.expandEditor')"
+                      @click="openMaximizeEditor('data.system_prompt', t('advancedDefinitions.mainPrompt'))"
                     ></i>
                   </label>
                   <textarea
@@ -201,19 +204,24 @@ function close() {
                     @input="updateValue('data.system_prompt', ($event.target as HTMLTextAreaElement).value)"
                     class="text-pole"
                     rows="3"
-                    placeholder="Any contents here will replace the default Main Prompt."
+                    :placeholder="t('advancedDefinitions.mainPromptPlaceholder')"
                   ></textarea>
                   <div class="token-counter">
-                    Tokens: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
+                    {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
                   </div>
                 </div>
                 <div>
                   <label>
-                    <span>Post-History Instructions</span>
+                    <span>{{ t('advancedDefinitions.postHistoryInstructions') }}</span>
                     <i
                       class="editor-maximize-icon fa-solid fa-maximize"
-                      title="Expand the editor"
-                      @click="openMaximizeEditor('data.post_history_instructions', 'Post-History Instructions')"
+                      :title="$t('characterEditor.expandEditor')"
+                      @click="
+                        openMaximizeEditor(
+                          'data.post_history_instructions',
+                          t('advancedDefinitions.postHistoryInstructions'),
+                        )
+                      "
                     ></i>
                   </label>
                   <textarea
@@ -221,10 +229,10 @@ function close() {
                     @input="updateValue('data.post_history_instructions', ($event.target as HTMLTextAreaElement).value)"
                     class="text-pole"
                     rows="3"
-                    placeholder="Any contents here will replace the default Post-History Instructions."
+                    :placeholder="t('advancedDefinitions.postHistoryInstructionsPlaceholder')"
                   ></textarea>
                   <div class="token-counter">
-                    Tokens: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
+                    {{ t('common.tokens') }}: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
                   </div>
                 </div>
               </div>
@@ -237,7 +245,9 @@ function close() {
         <!-- Creator's Metadata Drawer -->
         <div class="inline-drawer">
           <div class="inline-drawer-header" @click="isMetadataOpen = !isMetadataOpen">
-            <h4 class="inline-drawer-header__title">Creator's Metadata <small>(Not sent with the AI Prompt)</small></h4>
+            <h4 class="inline-drawer-header__title">
+              {{ t('advancedDefinitions.metadata') }} <small>{{ t('advancedDefinitions.metadataHint') }}</small>
+            </h4>
             <i
               class="fa-solid fa-circle-chevron-down inline-drawer-header__icon"
               :class="{ 'is-open': isMetadataOpen }"
@@ -254,37 +264,37 @@ function close() {
           >
             <div v-show="isMetadataOpen">
               <div class="inline-drawer-content u-flex-col">
-                <small>Everything here is optional</small>
+                <small>{{ t('advancedDefinitions.metadataOptional') }}</small>
                 <div class="u-flex u-flex-nowrap">
                   <div class="u-w-full">
-                    <label>Created by</label>
+                    <label>{{ t('advancedDefinitions.createdBy') }}</label>
                     <textarea
                       :value="modelValue.data.creator"
                       @input="updateValue('data.creator', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="2"
-                      placeholder="(Botmaker's name / Contact info)"
+                      :placeholder="t('advancedDefinitions.createdByPlaceholder')"
                     ></textarea>
                   </div>
                   <div class="u-w-full">
-                    <label>Character Version</label>
+                    <label>{{ t('advancedDefinitions.characterVersion') }}</label>
                     <textarea
                       :value="modelValue.data.character_version"
                       @input="updateValue('data.character_version', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="2"
-                      placeholder="(If you want to track character versions)"
+                      :placeholder="t('advancedDefinitions.characterVersionPlaceholder')"
                     ></textarea>
                   </div>
                 </div>
                 <div class="u-flex u-flex-nowrap">
                   <div class="u-w-full">
                     <label>
-                      <span>Creator's Notes</span>
+                      <span>{{ t('advancedDefinitions.creatorNotes') }}</span>
                       <i
                         class="editor-maximize-icon fa-solid fa-maximize"
-                        title="Expand the editor"
-                        @click="openMaximizeEditor('data.creator_notes', 'Creator\'s Notes')"
+                        :title="$t('characterEditor.expandEditor')"
+                        @click="openMaximizeEditor('data.creator_notes', t('advancedDefinitions.creatorNotes'))"
                       ></i>
                     </label>
                     <textarea
@@ -292,16 +302,16 @@ function close() {
                       @input="updateValue('data.creator_notes', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="4"
-                      placeholder="(Describe the bot, give use tips, etc.)"
+                      :placeholder="t('advancedDefinitions.creatorNotesPlaceholder')"
                     ></textarea>
                   </div>
                   <div class="u-w-full">
-                    <label>Tags to Embed</label>
+                    <label>{{ t('advancedDefinitions.tagsToEmbed') }}</label>
                     <textarea
                       v-model="joinedTags"
                       class="text-pole"
                       rows="4"
-                      placeholder="(Write a comma-separated list of tags)"
+                      :placeholder="t('advancedDefinitions.tagsToEmbedPlaceholder')"
                     ></textarea>
                   </div>
                 </div>
@@ -315,11 +325,11 @@ function close() {
         <!-- Other fields -->
         <div class="advanced-definitions-popup__section">
           <label
-            ><span>Personality summary</span>
+            ><span>{{ t('advancedDefinitions.personality') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              title="Expand the editor"
-              @click="openMaximizeEditor('personality', 'Personality Summary')"
+              :title="$t('characterEditor.expandEditor')"
+              @click="openMaximizeEditor('personality', t('advancedDefinitions.personality'))"
             ></i>
           </label>
           <textarea
@@ -327,19 +337,19 @@ function close() {
             @input="updateValue('personality', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="4"
-            placeholder="(A brief description of the personality)"
+            :placeholder="t('advancedDefinitions.personalityPlaceholder')"
           ></textarea>
           <div class="token-counter">
-            Tokens: <span>{{ tokenCounts['personality'] || 0 }}</span>
+            {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
           </div>
         </div>
         <div class="advanced-definitions-popup__section">
           <label>
-            <span>Scenario</span>
+            <span>{{ t('advancedDefinitions.scenario') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              title="Expand the editor"
-              @click="openMaximizeEditor('scenario', 'Scenario')"
+              :title="$t('characterEditor.expandEditor')"
+              @click="openMaximizeEditor('scenario', t('advancedDefinitions.scenario'))"
             ></i>
           </label>
           <textarea
@@ -347,20 +357,20 @@ function close() {
             @input="updateValue('scenario', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="4"
-            placeholder="(Circumstances and context of the interaction)"
+            :placeholder="t('advancedDefinitions.scenarioPlaceholder')"
           ></textarea>
           <div class="token-counter">
-            Tokens: <span>{{ tokenCounts['scenario'] || 0 }}</span>
+            {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
           </div>
         </div>
         <div class="advanced-definitions-popup__section character-note">
           <div class="u-w-full">
             <label>
-              <span>Character's Note</span>
+              <span>{{ t('advancedDefinitions.characterNote') }}</span>
               <i
                 class="editor-maximize-icon fa-solid fa-maximize"
-                title="Expand the editor"
-                @click="openMaximizeEditor('data.depth_prompt.prompt', 'Character\'s Note')"
+                :title="$t('characterEditor.expandEditor')"
+                @click="openMaximizeEditor('data.depth_prompt.prompt', t('advancedDefinitions.characterNote'))"
               ></i>
             </label>
             <textarea
@@ -368,11 +378,11 @@ function close() {
               @input="updateValue('data.depth_prompt.prompt', ($event.target as HTMLTextAreaElement).value)"
               class="text-pole"
               rows="5"
-              placeholder="(Text to be inserted in-chat)"
+              :placeholder="t('advancedDefinitions.characterNotePlaceholder')"
             ></textarea>
           </div>
           <div>
-            <label>@ Depth</label>
+            <label>{{ t('advancedDefinitions.depth') }}</label>
             <input
               :value="modelValue.data.depth_prompt!.depth"
               @input="updateValue('data.depth_prompt.depth', ($event.target as HTMLInputElement).valueAsNumber)"
@@ -381,7 +391,7 @@ function close() {
               max="9999"
               class="text-pole"
             />
-            <label>Role</label>
+            <label>{{ t('advancedDefinitions.role') }}</label>
             <select
               :value="modelValue.data.depth_prompt!.role"
               @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value)"
@@ -394,8 +404,8 @@ function close() {
           </div>
         </div>
         <div class="advanced-definitions-popup__section">
-          <label>Talkativeness</label>
-          <small>How often the character speaks in group chats!</small>
+          <label>{{ t('advancedDefinitions.talkativeness') }}</label>
+          <small>{{ t('advancedDefinitions.talkativenessHint') }}</small>
           <input
             :value="modelValue.talkativeness"
             @input="updateValue('talkativeness', ($event.target as HTMLInputElement).valueAsNumber)"
@@ -405,31 +415,31 @@ function close() {
             step="0.05"
           />
           <div class="slider-hint">
-            <span>Shy</span>
-            <span>Normal</span>
-            <span>Chatty</span>
+            <span>{{ t('advancedDefinitions.talkativenessShy') }}</span>
+            <span>{{ t('advancedDefinitions.talkativenessNormal') }}</span>
+            <span>{{ t('advancedDefinitions.talkativenessChatty') }}</span>
           </div>
         </div>
         <hr />
         <div class="advanced-definitions-popup__section">
           <label>
-            <span>Examples of dialogue</span>
+            <span>{{ t('advancedDefinitions.dialogueExamples') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              title="Expand the editor"
-              @click="openMaximizeEditor('mes_example', 'Examples of Dialogue')"
+              :title="$t('characterEditor.expandEditor')"
+              @click="openMaximizeEditor('mes_example', t('advancedDefinitions.dialogueExamples'))"
             ></i>
           </label>
-          <small>Important to set the character's writing style.</small>
+          <small>{{ t('advancedDefinitions.dialogueExamplesHint') }}</small>
           <textarea
             :value="modelValue.mes_example"
             @input="updateValue('mes_example', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="6"
-            placeholder="(Examples of chat dialog. Begin each example with <START> on a new line.)"
+            :placeholder="t('advancedDefinitions.dialogueExamplesPlaceholder')"
           ></textarea>
           <div class="token-counter">
-            Tokens: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
+            {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
           </div>
         </div>
       </div>

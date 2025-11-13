@@ -8,7 +8,9 @@ import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
 import AdvancedDefinitions from './AdvancedDefinitions.vue';
 import { getThumbnailUrl } from '../../utils/image';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const characterStore = useCharacterStore();
 const uiStore = useUiStore();
 const settingsStore = useSettingsStore();
@@ -145,7 +147,7 @@ function peekSpoilerMode() {
 
 function openMaximizeEditor(fieldName: EditableField, title: string) {
   editingFieldName.value = fieldName;
-  editorPopupTitle.value = `Editing: ${title}`;
+  editorPopupTitle.value = t('advancedDefinitions.editingTitle', { title });
   // A simple way to handle nested properties for v-model
   if (fieldName === 'data.creator_notes') {
     editorPopupValue.value = formData.value.data?.creator_notes ?? '';
@@ -177,7 +179,7 @@ function handleEditorSubmit({ value }: { value: string }) {
           <label
             for="add_avatar_button"
             class="character-edit-form__avatar-label"
-            title="Click to select a new avatar for this character"
+            :title="$t('characterEditor.avatar')"
           >
             <img
               :src="getThumbnailUrl('avatar', formData.avatar)"
@@ -189,28 +191,28 @@ function handleEditorSubmit({ value }: { value: string }) {
         </div>
         <div class="character-edit-form__controls">
           <div class="character-edit-form__buttons">
-            <div @click="goBack" class="menu-button fa-solid fa-left-long" title="Back to Character List"></div>
+            <div @click="goBack" class="menu-button fa-solid fa-left-long" :title="$t('characterEditor.back')"></div>
             <div
               @click="toggleFavorite"
               class="menu-button fa-solid fa-star"
               :class="{ fav_on: formData.fav }"
-              title="Add to Favorites"
+              :title="$t('characterEditor.favorite')"
             ></div>
             <div
               @click="isAdvancedDefinitionsVisible = true"
               class="menu-button fa-solid fa-book"
-              title="Advanced Definitions"
+              :title="$t('characterEditor.advancedDefinitions')"
             ></div>
-            <div class="menu-button fa-solid fa-globe" title="Character Lore"></div>
-            <div class="menu-button fa-solid fa-passport" title="Chat Lore"></div>
-            <div class="menu-button fa-solid fa-face-smile" title="Connected Personas"></div>
-            <div class="menu-button fa-solid fa-file-export" title="Export and Download"></div>
-            <div class="menu-button fa-solid fa-clone" title="Duplicate Character"></div>
-            <div class="menu-button fa-solid fa-skull red_button" title="Delete Character"></div>
+            <div class="menu-button fa-solid fa-globe" :title="$t('characterEditor.lore')"></div>
+            <div class="menu-button fa-solid fa-passport" :title="$t('characterEditor.chatLore')"></div>
+            <div class="menu-button fa-solid fa-face-smile" :title="$t('characterEditor.personas')"></div>
+            <div class="menu-button fa-solid fa-file-export" :title="$t('characterEditor.export')"></div>
+            <div class="menu-button fa-solid fa-clone" :title="$t('characterEditor.duplicate')"></div>
+            <div class="menu-button fa-solid fa-skull red_button" :title="$t('characterEditor.delete')"></div>
           </div>
           <label class="u-w-full">
             <select class="text-pole u-w-full">
-              <option value="default" disabled selected>More...</option>
+              <option value="default" disabled selected>{{ $t('characterEditor.more') }}</option>
               <option>Link to World Info</option>
               <option>Import Card Lore</option>
               <option>Character Settings Overrides</option>
@@ -227,8 +229,8 @@ function handleEditorSubmit({ value }: { value: string }) {
 
       <div class="character-edit-form__tags-block">
         <div class="tag-controls">
-          <input class="text-pole u-w-full" placeholder="Search / Create tags" />
-          <div class="menu-button fa-solid fa-tags" title="View all tags"></div>
+          <input class="text-pole u-w-full" :placeholder="$t('characterEditor.searchTags')" />
+          <div class="menu-button fa-solid fa-tags" :title="$t('characterEditor.viewAllTags')"></div>
         </div>
         <div class="tags">
           <span v-for="tag in formData.tags" :key="tag" class="tag">{{ tag }}</span>
@@ -238,15 +240,15 @@ function handleEditorSubmit({ value }: { value: string }) {
       <!-- Creator's Notes Inline Drawer -->
       <div class="inline-drawer">
         <div class="inline-drawer-header" @click="isCreatorNotesOpen = !isCreatorNotesOpen">
-          <span class="inline-drawer-header__title">Creator's Notes</span>
+          <span class="inline-drawer-header__title">{{ $t('characterEditor.creatorNotes') }}</span>
           <div
             class="menu-button fa-solid fa-palette fa-fw"
-            title="Allow / Forbid global styles"
+            :title="$t('characterEditor.toggleStyles')"
             @click.stop="() => {}"
           ></div>
           <div
             class="menu-button fa-solid fa-eye fa-fw"
-            title="Show / Hide Description and First Message"
+            :title="$t('characterEditor.toggleSpoiler')"
             @click.stop="peekSpoilerMode"
           ></div>
           <i
@@ -266,45 +268,45 @@ function handleEditorSubmit({ value }: { value: string }) {
           <div v-show="isCreatorNotesOpen">
             <div class="inline-drawer-content">
               <div v-if="formData.data.creator_notes" v-html="formData.data.creator_notes"></div>
-              <div v-else>No Creator's Notes provided.</div>
+              <div v-else>{{ $t('characterEditor.noCreatorNotes') }}</div>
             </div>
           </div>
         </Transition>
       </div>
 
-      <small v-show="areDetailsHidden">Character details are hidden.</small>
+      <small v-show="areDetailsHidden">{{ $t('characterEditor.detailsHidden') }}</small>
 
       <div v-show="!areDetailsHidden" class="form-section">
         <label for="description_textarea">
-          <span>Description</span>
+          <span>{{ $t('characterEditor.description') }}</span>
           <i
             class="editor-maximize-icon fa-solid fa-maximize"
-            title="Expand the editor"
-            @click="openMaximizeEditor('description', 'Description')"
+            :title="$t('characterEditor.expandEditor')"
+            @click="openMaximizeEditor('description', $t('characterEditor.description'))"
           ></i>
         </label>
         <textarea
           id="description_textarea"
           class="text-pole"
           v-model="formData.description"
-          placeholder="Describe your character's physical and mental traits here."
+          :placeholder="$t('characterEditor.descriptionPlaceholder')"
         ></textarea>
       </div>
 
       <div v-show="!areDetailsHidden" class="form-section">
         <label for="firstmessage_textarea">
-          <span>First message</span>
+          <span>{{ $t('characterEditor.firstMessage') }}</span>
           <i
             class="editor-maximize-icon fa-solid fa-maximize"
-            title="Expand the editor"
-            @click="openMaximizeEditor('first_mes', 'First Message')"
+            :title="$t('characterEditor.expandEditor')"
+            @click="openMaximizeEditor('first_mes', $t('characterEditor.firstMessage'))"
           ></i>
         </label>
         <textarea
           id="firstmessage_textarea"
           class="text-pole"
           v-model="formData.first_mes"
-          placeholder="This will be the first message from the character that starts every chat."
+          :placeholder="$t('characterEditor.firstMessagePlaceholder')"
         ></textarea>
       </div>
     </form>

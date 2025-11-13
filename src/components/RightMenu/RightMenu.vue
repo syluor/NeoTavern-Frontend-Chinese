@@ -73,18 +73,18 @@ onMounted(() => {
 <template>
   <div class="u-flex u-flex-nowrap">
     <div class="u-flex-col u-flex u-items-start">
-      <div title="Locked = Character Management panel will stay open">
+      <div :title="$t('rightMenu.pinToggle')">
         <input id="right-menu-pin-toggle" type="checkbox" v-model="isPanelPinned" />
         <label for="right-menu-pin-toggle">
           <div class="menu-button-icon" :class="isPanelPinned ? 'fa-lock' : 'fa-unlock'"></div>
         </label>
       </div>
-      <div class="menu-button-icon fa-solid fa-list-ul" title="Select/Create Characters"></div>
+      <div class="menu-button-icon fa-solid fa-list-ul" :title="$t('rightMenu.selectCharacter')"></div>
     </div>
     <div class="u-items-center u-flex u-mx-auto u-w-full u-justify-evenly">
-      <div title="Favorite characters to add them to HotSwaps">
+      <div :title="$t('rightMenu.hotSwaps')">
         <small>
-          <span> <i class="fa-solid fa-star"></i>&nbsp;Favorite characters to add them to HotSwaps</span>
+          <span> <i class="fa-solid fa-star"></i>&nbsp;{{ $t('rightMenu.hotSwaps') }}</span>
         </small>
       </div>
     </div>
@@ -97,13 +97,17 @@ onMounted(() => {
         <h2 :title="activeCharacterName">{{ activeCharacterName }}</h2>
       </div>
       <div class="name-block__info">
-        <div class="name-block__token-text" title="Token counts may be inaccurate and provided just for reference.">
+        <div class="name-block__token-text" :title="$t('rightMenu.tokenInfo')">
           <div>
-            <strong :class="{ 'neutral-warning': showTokenWarning }" title="Total tokens">{{ totalTokens }}</strong>
-            <span>&nbsp;Tokens</span>
+            <strong :class="{ 'neutral-warning': showTokenWarning }" :title="$t('rightMenu.totalTokens')">{{
+              totalTokens
+            }}</strong>
+            <span>&nbsp;{{ $t('common.tokens') }}</span>
           </div>
           <div>
-            <small title="Permanent tokens"> ({{ permanentTokens }}&nbsp;Permanent) </small>
+            <small :title="$t('rightMenu.permanentTokens')">
+              ({{ permanentTokens }}&nbsp;{{ $t('common.permanent') }})
+            </small>
           </div>
         </div>
         <a
@@ -111,12 +115,12 @@ onMounted(() => {
           class="menu-button fa-solid fa-triangle-exclamation"
           href="https://docs.sillytavern.app/usage/core-concepts/characterdesign/#character-tokens"
           target="_blank"
-          title="About Token 'Limits'"
+          :title="$t('rightMenu.aboutTokens')"
         ></a>
         <!-- TODO: Implement stats popup -->
-        <i class="menu-button fa-solid fa-ranking-star" title="Click for stats!"></i>
+        <i class="menu-button fa-solid fa-ranking-star" :title="$t('rightMenu.stats')"></i>
         <!-- TODO: Implement hide panel logic -->
-        <i class="menu-button fa-solid fa-eye" title="Toggle character info panel"></i>
+        <i class="menu-button fa-solid fa-eye" :title="$t('rightMenu.togglePanel')"></i>
       </div>
     </div>
   </div>
@@ -125,15 +129,15 @@ onMounted(() => {
     <div v-show="showCharacterList" class="u-flex-col u-w-full" style="height: 100%">
       <div class="right-menu-panel__header">
         <div class="right-menu-panel__actions">
-          <div title="Create New Character" class="menu-button fa-solid fa-user-plus"></div>
+          <div :title="$t('rightMenu.createNew')" class="menu-button fa-solid fa-user-plus"></div>
           <div
             @click="triggerImport"
-            title="Import Character from File"
+            :title="$t('rightMenu.importFile')"
             class="menu-button fa-solid fa-file-import"
           ></div>
           <input ref="fileInput" type="file" @change="handleFileImport" accept=".json,.png" multiple hidden />
-          <div title="Import content from external URL" class="menu-button fa-solid fa-cloud-arrow-down"></div>
-          <div title="Create New Chat Group" class="menu-button fa-solid fa-users-gear"></div>
+          <div :title="$t('rightMenu.importUrl')" class="menu-button fa-solid fa-cloud-arrow-down"></div>
+          <div :title="$t('rightMenu.createGroup')" class="menu-button fa-solid fa-users-gear"></div>
           <div id="extension-buttons-container">
             <!-- Container for additional buttons added by extensions -->
           </div>
@@ -154,12 +158,12 @@ onMounted(() => {
           <div
             id="character-search-toggle"
             class="menu-button-icon fa-fw fa-solid fa-search"
-            title="Toggle search bar"
+            :title="$t('rightMenu.searchToggle')"
             @click="isSearchActive = !isSearchActive"
           ></div>
         </div>
         <div id="character-search-form" :class="{ active: isSearchActive }">
-          <input class="text-pole u-w-full" type="search" placeholder="Search..." />
+          <input class="text-pole u-w-full" type="search" :placeholder="$t('rightMenu.searchPlaceholder')" />
         </div>
         <div class="tag-controls">
           <div></div>
@@ -168,17 +172,18 @@ onMounted(() => {
       </div>
 
       <div class="right-menu-panel__pagination">
-        <i class="fa-solid fa-table-cells-large menu-button" title="Toggle character grid view"></i>
-        <i
-          class="fa-solid fa-edit menu-button"
-          title="Bulk edit characters&#13;&#13;Click to toggle characters&#13;Shift + Click to select/deselect a range of characters&#13;Right-click for actions"
-        ></i>
+        <i class="fa-solid fa-table-cells-large menu-button" :title="$t('rightMenu.gridView')"></i>
+        <i class="fa-solid fa-edit menu-button" :title="$t('rightMenu.bulkEdit')"></i>
         <div></div>
-        <i class="fa-solid fa-check-double menu-button" title="Bulk select all characters" style="display: none"></i>
-        <i class="fa-solid fa-trash menu-button" title="Bulk delete characters" style="display: none"></i>
+        <i
+          class="fa-solid fa-check-double menu-button"
+          :title="$t('rightMenu.bulkSelectAll')"
+          style="display: none"
+        ></i>
+        <i class="fa-solid fa-trash menu-button" :title="$t('rightMenu.bulkDelete')" style="display: none"></i>
       </div>
       <div id="character-list" class="u-flex-col">
-        <div v-if="characterStore.displayableEntities.length === 0">Loading...</div>
+        <div v-if="characterStore.displayableEntities.length === 0">{{ $t('common.loading') }}</div>
         <template v-for="entity in characterStore.displayableEntities" :key="entity.id">
           <!-- Character Block -->
           <div

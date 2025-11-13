@@ -9,8 +9,10 @@ import { humanizedDateTime } from '../utils/date';
 import { uuidv4 } from '../utils/common';
 import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
+import i18n from '../i18n';
 
 export const useChatStore = defineStore('chat', () => {
+  const { t } = i18n.global;
   const chat = ref<Array<ChatMessage>>([]);
   const chatMetadata = ref<Record<string, any>>({});
   const chatCreateDate = ref<string | null>(null);
@@ -34,7 +36,7 @@ export const useChatStore = defineStore('chat', () => {
     const characterStore = useCharacterStore();
     const activeCharacter = characterStore.activeCharacter;
     if (!activeCharacter) {
-      toast.error('Cannot save: No active character selected.');
+      toast.error(t('chat.saveError'));
       return;
     }
 
@@ -153,7 +155,7 @@ export const useChatStore = defineStore('chat', () => {
       await promptStore.loadItemizedPrompts(getCurrentChatId());
     } catch (error) {
       console.error('Failed to refresh chat:', error);
-      toast.error('Failed to load chat.');
+      toast.error(t('chat.loadError'));
     }
   }
 

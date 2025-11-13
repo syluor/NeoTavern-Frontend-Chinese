@@ -12,6 +12,13 @@ export enum DebounceTimeout {
   EXTENDED = 5000,
 }
 
+export enum TagImportSetting {
+  NONE = 'none',
+  ALL = 'all',
+  ONLY_EXISTING = 'only_existing',
+  ASK = 'ask',
+}
+
 export const DEFAULT_SAVE_EDIT_TIMEOUT = DebounceTimeout.RELAXED;
 export const DEFAULT_PRINT_TIMEOUT = DebounceTimeout.QUICK;
 export const default_avatar = 'img/ai4.png';

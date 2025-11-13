@@ -1,4 +1,4 @@
-import type { SendOnEnterOptions } from '../constants';
+import type { SendOnEnterOptions, TagImportSetting } from '../constants';
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -186,11 +186,27 @@ export interface PopupOptions {
   defaultResult?: number;
 }
 
-export enum TagImportSetting {
-  NONE = 'none',
-  ALL = 'all',
-  ONLY_EXISTING = 'only_existing',
-  ASK = 'ask',
+// --- Settings Types ---
+export type SettingType = 'boolean' | 'number' | 'string' | 'enum';
+export type SettingWidget = 'checkbox' | 'slider' | 'select' | 'text' | 'textarea';
+
+export interface SettingOption {
+  value: string | number;
+  label: string;
+}
+
+export interface SettingDefinition {
+  id: string; // dot notation path, e.g., 'ui.avatar_style'
+  label: string;
+  description?: string;
+  category: string;
+  type: SettingType;
+  widget: SettingWidget;
+  defaultValue: any;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: SettingOption[];
 }
 
 export type Settings = {

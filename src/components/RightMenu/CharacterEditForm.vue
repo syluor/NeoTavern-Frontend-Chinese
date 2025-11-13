@@ -18,7 +18,10 @@ const formData = ref<Partial<Character> & { data?: any }>({});
 const isUpdatingFromStore = ref(false);
 
 // --- State for new features ---
-const areDetailsHidden = ref(settingsStore.powerUser.spoiler_free_mode);
+const isPeeking = ref(false);
+const isSpoilerModeActive = computed(() => settingsStore.powerUser.spoiler_free_mode);
+const areDetailsHidden = computed(() => isSpoilerModeActive.value && !isPeeking.value);
+
 const isCreatorNotesOpen = ref(false);
 const isAdvancedDefinitionsVisible = ref(false);
 
@@ -84,7 +87,7 @@ watch(
         }
         formData.value = charCopy;
         characterStore.calculateAllTokens(charCopy);
-        areDetailsHidden.value = settingsStore.powerUser.spoiler_free_mode;
+        isPeeking.value = false;
 
         nextTick(() => {
           isUpdatingFromStore.value = false;
@@ -137,7 +140,7 @@ function toggleFavorite() {
 }
 
 function peekSpoilerMode() {
-  areDetailsHidden.value = !areDetailsHidden.value;
+  isPeeking.value = !isPeeking.value;
 }
 
 function openMaximizeEditor(fieldName: EditableField, title: string) {

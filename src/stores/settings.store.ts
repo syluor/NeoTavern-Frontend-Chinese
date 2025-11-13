@@ -1,31 +1,32 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { SendOnEnterOptions, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
 import { isMobile } from '../utils/browser';
 import { debounce } from '../utils/common';
-import type { Settings } from '../types';
+import type { Settings, SettingDefinition } from '../types';
 import { fetchUserSettings, saveUserSettings } from '../api/settings';
-import { TagImportSetting } from '../types';
-import { useUiStore } from './ui.store';
+import { settingsDefinition } from '../settings-definition';
+import { toast } from '../composables/useToast';
+import { set, get, defaultsDeep } from 'lodash-es';
+
+function createDefaultSettings(): Settings {
+  const defaultSettings: Record<string, any> = {};
+  for (const def of settingsDefinition) {
+    set(defaultSettings, def.id, def.defaultValue);
+  }
+  return defaultSettings as Settings;
+}
 
 export const useSettingsStore = defineStore('settings', () => {
-  const settings = ref<Settings | undefined>(undefined);
-  const settingsInitializing = ref(false);
+  // Initialize the store with a default state to prevent race conditions.
+  const settings = ref<Settings>(createDefaultSettings());
+  const settingsInitializing = ref(true); // Start in an initializing state.
+  const definitions = ref<SettingDefinition[]>(settingsDefinition);
 
-  const powerUser = ref<Settings['power_user']>({
-    world_import_dialog: true,
-    send_on_enter: SendOnEnterOptions.AUTO,
-    never_resize_avatars: false,
-    external_media_forbidden_overrides: [],
-    external_media_allowed_overrides: [],
-    forbid_external_media: false,
-    spoiler_free_mode: false,
-    auto_fix_generated_markdown: false,
-    tag_import_setting: TagImportSetting.ASK,
-  });
+  const powerUser = computed(() => settings.value.power_user);
 
   const shouldSendOnEnter = computed(() => {
-    switch (powerUser.value.send_on_enter) {
+    switch (settings.value.power_user.send_on_enter) {
       case SendOnEnterOptions.DISABLED:
         return false;
       case SendOnEnterOptions.AUTO:
@@ -37,40 +38,48 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   });
 
+  function getSetting(id: string): any {
+    if (!settings.value) return undefined;
+    const definition = definitions.value.find((def) => def.id === id);
+    return get(settings.value, id, definition?.defaultValue);
+  }
+
+  function setSetting(id: string, value: any) {
+    if (!settings.value) return;
+    set(settings.value, id, value);
+    saveSettingsDebounced();
+  }
+
   async function initializeSettings() {
+    if (!settingsInitializing.value) return;
+
     try {
-      if (settings.value !== undefined || settingsInitializing.value) return;
-      settingsInitializing.value = true;
-      settings.value = await fetchUserSettings();
-      powerUser.value = { ...powerUser.value, ...settings.value.power_user };
-      const uiStore = useUiStore();
-      uiStore.activePlayerName = settings.value.username || null;
+      const userSettings = await fetchUserSettings();
+      const defaultSettings = createDefaultSettings();
+
+      settings.value = defaultsDeep(userSettings, defaultSettings);
+    } catch (error) {
+      console.error('Failed to initialize settings:', error);
+      toast.error('Could not load user settings. Using defaults.');
+      // The store already has defaults, so we can just continue safely.
     } finally {
-      Promise.resolve().then(() => {
-        settingsInitializing.value = false;
-      });
+      settingsInitializing.value = false;
     }
   }
 
   const saveSettingsDebounced = debounce(() => {
-    if (settings.value === undefined) return;
-    const uiStore = useUiStore();
-    saveUserSettings({
-      ...settings.value,
-      power_user: powerUser.value,
-      username: uiStore.activePlayerName || undefined,
-    });
+    if (settingsInitializing.value) return;
+    saveUserSettings(settings.value);
   }, DEFAULT_SAVE_EDIT_TIMEOUT);
 
-  // Watch for changes in settings and trigger debounced save
-  watch(
+  return {
+    settings,
+    definitions,
     powerUser,
-    () => {
-      if (settings.value === undefined || settingsInitializing.value) return;
-      saveSettingsDebounced();
-    },
-    { deep: true },
-  );
-
-  return { powerUser, shouldSendOnEnter, saveSettingsDebounced, initializeSettings };
+    shouldSendOnEnter,
+    saveSettingsDebounced,
+    initializeSettings,
+    getSetting,
+    setSetting,
+  };
 });

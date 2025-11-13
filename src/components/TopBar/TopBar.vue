@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import RightMenu from '../RightMenu/RightMenu.vue';
 import ExtensionsDrawer from './ExtensionsDrawer.vue';
+import UserSettingsDrawer from './UserSettingsDrawer.vue';
 
 // Reactive state to control which drawer is open
 const activeDrawer = ref<string | null>(null);
@@ -76,7 +77,7 @@ function toggleDrawer(drawerName: string) {
           ></div>
         </button>
         <div class="nav-item__content" :class="{ active: activeDrawer === 'user-settings' }">
-          <!-- User Settings Content -->
+          <UserSettingsDrawer />
         </div>
       </div>
       <div class="nav-item">

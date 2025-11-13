@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
@@ -7,6 +7,7 @@ import ChatMessage from './ChatMessage.vue';
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
 const userInput = ref('');
+const messagesContainer = ref<HTMLElement | null>(null);
 
 function submitMessage() {
   chatStore.sendMessage(userInput.value);
@@ -19,11 +20,32 @@ function handleKeydown(event: KeyboardEvent) {
     submitMessage();
   }
 }
+
+// Watch for changes in the chat history to handle auto-scrolling.
+watch(
+  () => chatStore.chat,
+  () => {
+    const el = messagesContainer.value;
+    if (!el) return;
+
+    // Check if the user is near the bottom before the DOM updates.
+    // A tolerance of 100px allows for some leeway.
+    const isScrolledToBottom = el.scrollHeight - el.clientHeight <= el.scrollTop + 100;
+
+    // If the user is at the bottom, scroll down after the next DOM update.
+    if (isScrolledToBottom) {
+      nextTick(() => {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      });
+    }
+  },
+  { deep: true }, // Deep watch is necessary to detect streaming updates inside a message.
+);
 </script>
 
 <template>
   <div class="chat-interface">
-    <div class="chat-interface__messages">
+    <div class="chat-interface__messages" ref="messagesContainer">
       <ChatMessage v-for="(message, index) in chatStore.chat" :key="index" :message="message" :index="index" />
       <!-- TODO: Add typing indicator when chatStore.isGenerating is true -->
     </div>

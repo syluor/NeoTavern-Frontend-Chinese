@@ -12,7 +12,7 @@ import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
 import i18n from '../i18n';
 import { PromptBuilder } from '../utils/prompt-builder';
-import { ChatCompletionService } from '../api/generation';
+import { ChatCompletionService, type GenerationResponse, type StreamedChunk } from '../api/generation';
 import { getThumbnailUrl } from '../utils/image';
 import { default_user_avatar } from '../constants';
 
@@ -168,29 +168,60 @@ export const useChatStore = defineStore('chat', () => {
         chat_completion_source: apiStore.oaiSettings.chat_completion_source,
         max_tokens: apiStore.oaiSettings.openai_max_tokens,
         temperature: apiStore.oaiSettings.temp_openai,
-        stream: apiStore.oaiSettings.stream_openai, //TODO: Support streaming
+        stream: apiStore.oaiSettings.stream_openai ?? true,
       };
 
-      const response = await ChatCompletionService.generate(payload);
-      const genFinished = new Date().toISOString();
+      if (!payload.stream) {
+        const response = (await ChatCompletionService.generate(payload)) as GenerationResponse;
+        const genFinished = new Date().toISOString();
+        const token_count = await getTokenCount(response.content);
 
-      const token_count = await getTokenCount(response.content);
+        const botMessage: ChatMessage = {
+          name: activeCharacter.name,
+          is_user: false,
+          mes: response.content,
+          send_date: getMessageTimeStamp(),
+          gen_started: genStarted,
+          gen_finished: genFinished,
+          extra: {
+            reasoning: response.reasoning,
+            token_count: token_count,
+          },
+        };
 
-      const botMessage: ChatMessage = {
-        name: activeCharacter.name,
-        is_user: false,
-        mes: response.content,
-        send_date: getMessageTimeStamp(),
-        gen_started: genStarted,
-        gen_finished: genFinished,
-        extra: {
-          reasoning: response.reasoning,
-          token_count: token_count,
-        },
-      };
+        chat.value.push(botMessage);
+        await saveChat();
+      } else {
+        // Streaming logic
+        const streamGenerator = (await ChatCompletionService.generate(
+          payload as any,
+        )) as unknown as () => AsyncGenerator<StreamedChunk>;
 
-      chat.value.push(botMessage);
-      await saveChat();
+        const botMessage: ChatMessage = {
+          name: activeCharacter.name,
+          is_user: false,
+          mes: '',
+          send_date: getMessageTimeStamp(),
+          gen_started: genStarted,
+          extra: { reasoning: '' },
+        };
+        chat.value.push(botMessage);
+        const messageIndex = chat.value.length - 1;
+
+        try {
+          for await (const chunk of streamGenerator()) {
+            chat.value[messageIndex].mes += chunk.delta;
+            if (chunk.reasoning) {
+              chat.value[messageIndex].extra!.reasoning = chunk.reasoning;
+            }
+          }
+        } finally {
+          const finalMessage = chat.value[messageIndex];
+          finalMessage.gen_finished = new Date().toISOString();
+          finalMessage.extra!.token_count = await getTokenCount(finalMessage.mes);
+          await saveChat();
+        }
+      }
     } catch (error: any) {
       console.error('Failed to generate response:', error);
       toast.error(error.message || t('chat.generate.errorFallback'));
@@ -218,7 +249,7 @@ export const useChatStore = defineStore('chat', () => {
     chat.value.push(userMessage);
     await saveChat();
 
-    generateResponse();
+    await generateResponse();
   }
 
   function startEditing(index: number) {

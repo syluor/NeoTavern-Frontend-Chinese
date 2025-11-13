@@ -1,8 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useApiStore } from '../../stores/api.store';
 import { chat_completion_sources } from '../../types';
 
 const apiStore = useApiStore();
+
+const staticOpenAIModels = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'];
+const dynamicOpenAIModels = computed(() => {
+  return apiStore.modelList.filter((model) => !staticOpenAIModels.includes(model.id));
+});
+
+const hasOpenRouterGroupedModels = computed(() => {
+  return apiStore.groupedOpenRouterModels && Object.keys(apiStore.groupedOpenRouterModels).length > 0;
+});
 </script>
 
 <template>
@@ -61,7 +71,6 @@ const apiStore = useApiStore();
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ $t('apiConnections.openaiModel') }}</h4>
-            <!-- This list is a static example. A real implementation would fetch it. -->
             <select class="text-pole" v-model="apiStore.oaiSettings.openai_model">
               <optgroup :label="$t('apiConnections.modelGroups.gpt4o')">
                 <option value="gpt-4o">gpt-4o</option>
@@ -69,6 +78,11 @@ const apiStore = useApiStore();
               </optgroup>
               <optgroup :label="$t('apiConnections.modelGroups.gpt4turbo')">
                 <option value="gpt-4-turbo">gpt-4-turbo</option>
+              </optgroup>
+              <optgroup v-if="dynamicOpenAIModels.length > 0" label="Other Models">
+                <option v-for="model in dynamicOpenAIModels" :key="model.id" :value="model.id">
+                  {{ model.id }}
+                </option>
               </optgroup>
             </select>
           </div>
@@ -124,7 +138,14 @@ const apiStore = useApiStore();
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ $t('apiConnections.openrouterModel') }}</h4>
+            <select v-if="hasOpenRouterGroupedModels" class="text-pole" v-model="apiStore.oaiSettings.openrouter_model">
+              <option value="OR_Website">{{ $t('apiConnections.openrouterWebsite') }}</option>
+              <optgroup v-for="(models, vendor) in apiStore.groupedOpenRouterModels" :key="vendor" :label="vendor">
+                <option v-for="model in models" :key="model.id" :value="model.id">{{ model.name }}</option>
+              </optgroup>
+            </select>
             <input
+              v-else
               type="text"
               class="text-pole u-w-full"
               placeholder="google/gemini-pro-1.5"

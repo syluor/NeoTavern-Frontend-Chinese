@@ -118,7 +118,6 @@ function afterLeave(el: Element) {
         :placeholder="$t('userSettings.searchPlaceholder')"
         v-model="searchTerm"
       />
-      <!-- TODO: Implement Account/Admin/Logout buttons -->
     </div>
 
     <div class="user-settings-drawer__content">

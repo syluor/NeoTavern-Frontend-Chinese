@@ -22,6 +22,11 @@ export interface GenerationResponse {
   reasoning?: string;
 }
 
+export interface StreamedChunk {
+  delta: string;
+  reasoning?: string; // Full reasoning
+}
+
 function handleApiError(data: any): void {
   if (data?.error) {
     const errorMessage = data.error.message || data.error.type || 'An unknown API error occurred.';
@@ -68,30 +73,125 @@ function extractReasoning(data: any, source: ChatCompletionSource): string | und
   }
 }
 
+function getStreamingReply(data: any, source: ChatCompletionSource): { delta: string; reasoning?: string } {
+  switch (source) {
+    case chat_completion_sources.CLAUDE:
+      return {
+        delta: data?.delta?.text || '',
+        reasoning: data?.delta?.thinking || '',
+      };
+    case chat_completion_sources.OPENROUTER:
+      return {
+        delta:
+          data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
+        reasoning: data.choices?.[0]?.delta?.reasoning || '',
+      };
+    case chat_completion_sources.DEEPSEEK:
+    case chat_completion_sources.XAI:
+      return {
+        delta: data.choices?.[0]?.delta?.content || '',
+        reasoning: data.choices?.filter((x: any) => x?.delta?.reasoning_content)?.[0]?.delta?.reasoning_content || '',
+      };
+    // Fallback for OpenAI and compatible APIs
+    case chat_completion_sources.OPENAI:
+    default:
+      return {
+        delta:
+          data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
+      };
+  }
+}
+
 export class ChatCompletionService {
-  static async generate(payload: ChatCompletionPayload): Promise<GenerationResponse> {
-    const response = await fetch('/api/backends/chat-completions/generate', {
+  static async generate(
+    payload: ChatCompletionPayload,
+  ): Promise<GenerationResponse | (() => AsyncGenerator<StreamedChunk>)> {
+    const commonOptions = {
       method: 'POST',
       headers: getRequestHeaders(),
       body: JSON.stringify(payload),
       cache: 'no-cache',
-    });
+    } satisfies RequestInit;
 
-    const responseData = await response.json().catch(() => ({ error: 'Failed to parse JSON response' }));
+    if (!payload.stream) {
+      const response = await fetch('/api/backends/chat-completions/generate', commonOptions);
+      const responseData = await response.json().catch(() => ({ error: 'Failed to parse JSON response' }));
 
-    if (!response.ok) {
+      if (!response.ok) {
+        handleApiError(responseData);
+        throw new Error(`Request failed with status ${response.status}`);
+      }
       handleApiError(responseData);
-      throw new Error(`Request failed with status ${response.status}`);
+
+      const source = payload.chat_completion_source as ChatCompletionSource;
+      const messageContent = extractMessage(responseData, source);
+      const reasoning = extractReasoning(responseData, source);
+
+      return {
+        content: messageContent,
+        reasoning: reasoning,
+      };
     }
-    handleApiError(responseData);
 
-    const source = payload.chat_completion_source as ChatCompletionSource;
-    const messageContent = extractMessage(responseData, source);
-    const reasoning = extractReasoning(responseData, source);
+    const response = await fetch('/api/backends/chat-completions/generate', commonOptions);
 
-    return {
-      content: messageContent,
-      reasoning: reasoning,
+    if (!response.ok || !response.body) {
+      let errorMessage = `Request failed with status ${response.status}`;
+      try {
+        const errorText = await response.text();
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
+      } catch (e) {
+        // Not a JSON error, use the status text
+      }
+      throw new Error(errorMessage);
+    }
+
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+
+    return async function* streamData(): AsyncGenerator<StreamedChunk> {
+      let reasoning = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        buffer += value;
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last, possibly incomplete, line
+
+        for (const line of lines) {
+          if (line.trim().startsWith('data: ')) {
+            const data = line.trim().substring(6);
+            if (data === '[DONE]') {
+              return;
+            }
+            try {
+              const parsed = JSON.parse(data);
+
+              if (parsed.error) {
+                throw new Error(parsed.error.message || 'Unknown stream error');
+              }
+
+              const source = payload.chat_completion_source as ChatCompletionSource;
+              const chunk = getStreamingReply(parsed, source);
+
+              if (chunk.reasoning) {
+                reasoning += chunk.reasoning;
+              }
+
+              if (chunk.delta) {
+                yield { delta: chunk.delta, reasoning: reasoning };
+              }
+            } catch (e) {
+              console.error('Error parsing stream chunk:', data, e);
+            }
+          }
+        }
+      }
     };
   }
 }

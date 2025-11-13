@@ -234,7 +234,8 @@
       "gpt4o": "GPT-4o",
       "gpt4turbo": "GPT-4 Turbo"
     },
-    "openrouterModel": "OpenRouter Model"
+    "openrouterModel": "OpenRouter Model",
+    "openrouterWebsite": "Use OpenRouter website setting"
   },
   "settings": {
     "power_user": {

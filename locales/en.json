@@ -39,7 +39,10 @@
     "back": "Back",
     "loading": "Loading...",
     "tokens": "Tokens",
-    "permanent": "Permanent"
+    "permanent": "Permanent",
+    "confirm": "Confirm",
+    "copy": "Copy",
+    "delete": "Delete"
   },
   "chat": {
     "inputPlaceholder": "Type a message, or /? for help",
@@ -52,6 +55,27 @@
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI."
+    },
+    "buttons": {
+      "confirmEdit": "Confirm edit",
+      "copyMessage": "Copy this message",
+      "addReasoning": "Add a reasoning block",
+      "deleteMessage": "Delete this message",
+      "moveUp": "Move message up",
+      "moveDown": "Move message down"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Deletion",
+      "confirmMessage": "Are you sure you want to delete this message?",
+      "confirmSwipeMessage": "This is the last message. Do you want to delete just this swipe, or the entire message?",
+      "deleteSwipe": "Delete Swipe",
+      "deleteMessage": "Delete Message",
+      "lastSwipeError": "Can't delete the last swipe.",
+      "noSwipesError": "Message has no swipes to delete."
+    },
+    "copy": {
+      "success": "Message copied to clipboard.",
+      "error": "Failed to copy message."
     }
   },
   "character": {
@@ -263,6 +287,10 @@
       "world_import_dialog": {
         "label": "Lorebook Import Dialog",
         "description": "Ask to import World Info for new characters. If unchecked, a brief message will be shown instead."
+      },
+      "confirm_message_delete": {
+        "label": "Confirm Message Deletion",
+        "description": "Show a confirmation dialog before deleting a chat message."
       }
     }
   }

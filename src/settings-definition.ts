@@ -55,4 +55,13 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: true,
   },
+  {
+    id: 'power_user.confirm_message_delete',
+    label: 'settings.power_user.confirm_message_delete.label',
+    description: 'settings.power_user.confirm_message_delete.description',
+    category: 'Chat/Message Handling',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: true,
+  },
 ];

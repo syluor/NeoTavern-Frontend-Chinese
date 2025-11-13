@@ -62,17 +62,25 @@
     opacity: 0.7;
   }
 
-  &__buttons {
+  &__buttons,
+  &__edit-actions {
     display: flex;
     gap: 5px;
+    align-items: center;
+  }
 
+  &__buttons {
     .message__button {
       opacity: 0.5;
       cursor: pointer;
-      transition: opacity var(--animation-duration-2x);
+      transition: all var(--animation-duration-2x);
 
       &:hover {
         opacity: 1;
+      }
+
+      &.delete:hover {
+        color: var(--color-warning);
       }
     }
   }
@@ -137,9 +145,18 @@
   }
 
   &__edit-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 5px;
+    .menu-button {
+      opacity: 0.7;
+      padding: 3px 5px;
+      margin: 0;
+
+      &.confirm {
+        background-color: var(--color-accent-green-70a);
+      }
+      &.cancel {
+        background-color: var(--color-accent-crimson-70a);
+      }
+    }
   }
 
   // TODO: Styles for reasoning block, once implemented

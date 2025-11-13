@@ -6,6 +6,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type PopupOptions } from '../../types';
 
 const props = defineProps({
+  id: { type: String, required: true },
   visible: { type: Boolean, default: false },
   title: { type: String, default: '' },
   content: { type: String, default: '' },
@@ -56,7 +57,9 @@ watch(
     if (isVisible) {
       internalInputValue.value = props.inputValue;
       resolveOptions();
-      dialog.value?.showModal();
+      if (!dialog.value?.open) {
+        dialog.value?.showModal();
+      }
       // Auto-focus logic
       setTimeout(() => {
         if (props.type === POPUP_TYPE.INPUT && mainInput.value) {
@@ -87,11 +90,9 @@ function handleResult(result: number) {
     }
   }
   emit('submit', payload);
-  emit('close');
 }
 
 function onCancel() {
-  emit('submit', { result: POPUP_RESULT.CANCELLED, value: null });
   emit('close');
 }
 

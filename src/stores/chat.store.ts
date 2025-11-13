@@ -272,6 +272,81 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  function syncSwipeToMes(messageIndex: number, swipeIndex: number) {
+    if (messageIndex < 0 || messageIndex >= chat.value.length) return;
+
+    const message = chat.value[messageIndex];
+    if (!message || !Array.isArray(message.swipes) || swipeIndex < 0 || swipeIndex >= message.swipes.length) {
+      return;
+    }
+
+    message.swipe_id = swipeIndex;
+    message.mes = message.swipes[swipeIndex];
+
+    const swipeInfo = message.swipe_info?.[swipeIndex];
+    if (swipeInfo) {
+      message.send_date = swipeInfo.send_date;
+      message.gen_started = swipeInfo.gen_started;
+      message.gen_finished = swipeInfo.gen_finished;
+      message.extra = { ...swipeInfo.extra };
+    }
+  }
+
+  async function deleteMessage(index: number) {
+    if (index < 0 || index >= chat.value.length) return;
+    chat.value.splice(index, 1);
+    if (activeMessageEditIndex.value === index) {
+      cancelEditing();
+    }
+    await saveChat();
+  }
+
+  async function deleteSwipe(messageIndex: number, swipeIndex: number) {
+    const message = chat.value[messageIndex];
+    if (
+      !message ||
+      !Array.isArray(message.swipes) ||
+      message.swipes.length <= 1 ||
+      swipeIndex < 0 ||
+      swipeIndex >= message.swipes.length
+    ) {
+      toast.error(t('chat.delete.lastSwipeError'));
+      return;
+    }
+
+    message.swipes.splice(swipeIndex, 1);
+    if (Array.isArray(message.swipe_info)) {
+      message.swipe_info.splice(swipeIndex, 1);
+    }
+
+    // Select the next swipe, or the one before if it was the last one
+    const newSwipeId = Math.min(swipeIndex, message.swipes.length - 1);
+    syncSwipeToMes(messageIndex, newSwipeId);
+
+    // After syncing, the component will re-render with the new swipe content.
+    // The message object itself persists, only its content changes.
+    await saveChat();
+  }
+
+  async function moveMessage(index: number, direction: 'up' | 'down') {
+    if (index < 0 || index >= chat.value.length) return;
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= chat.value.length) return;
+
+    // Swap elements
+    [chat.value[index], chat.value[newIndex]] = [chat.value[newIndex], chat.value[index]];
+
+    // If we moved the message that was being edited, update its index
+    if (activeMessageEditIndex.value === index) {
+      activeMessageEditIndex.value = newIndex;
+    } else if (activeMessageEditIndex.value === newIndex) {
+      activeMessageEditIndex.value = index;
+    }
+
+    await saveChat();
+  }
+
   return {
     chat,
     chatMetadata,
@@ -286,5 +361,8 @@ export const useChatStore = defineStore('chat', () => {
     startEditing,
     cancelEditing,
     saveMessageEdit,
+    deleteMessage,
+    deleteSwipe,
+    moveMessage,
   };
 });

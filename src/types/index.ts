@@ -286,6 +286,7 @@ export type Settings = {
     never_resize_avatars: boolean;
     spoiler_free_mode: boolean;
     auto_fix_generated_markdown: boolean;
+    confirm_message_delete: boolean;
     tag_import_setting: TagImportSetting;
   };
   oai_settings: OaiSettings;

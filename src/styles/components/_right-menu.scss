@@ -17,6 +17,63 @@
   display: none;
 }
 
+.name-block {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 5px;
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  &__name {
+    flex: 1;
+    overflow: hidden;
+    opacity: 0.5;
+    padding: 1px;
+    white-space: nowrap;
+
+    h2 {
+      margin: 0;
+      font-size: 1.2em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+  }
+
+  &__info {
+    font-size: calc(var(--font-size-main) * 0.9);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 3px;
+    flex-shrink: 0;
+
+    .menu-button {
+      padding: 4px; // Override for smaller buttons
+    }
+  }
+
+  &__token-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 0.9;
+    text-align: right;
+    cursor: default;
+
+    .neutral-warning {
+      color: var(--color-warning);
+    }
+  }
+}
+
 .right-menu-panel {
   display: flex;
   overflow-y: hidden;

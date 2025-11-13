@@ -9,12 +9,24 @@ import { useChatStore } from './chat.store';
 import { useGroupStore } from './group.store';
 import { useUiStore } from './ui.store';
 import { debounce } from '../utils/common';
-import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
+import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT, DebounceTimeout } from '../constants';
+
+// TODO: Replace with a real API call to the backend for accurate tokenization
+async function getTokenCount(text: string): Promise<number> {
+  if (!text || typeof text !== 'string') return 0;
+  // This is a very rough approximation. The backend will have a proper tokenizer.
+  return Math.round(text.length / 4);
+}
 
 export const useCharacterStore = defineStore('character', () => {
   const characters = ref<Array<Character>>([]);
   const activeCharacterIndex = ref<number | null>(null);
   const favoriteCharacterChecked = ref<boolean>(false);
+  const tokenCounts = ref<{ total: number; permanent: number; fields: Record<string, number> }>({
+    total: 0,
+    permanent: 0,
+    fields: {},
+  });
 
   const activeCharacter = computed<Character | null>(() => {
     if (activeCharacterIndex.value !== null && characters.value[activeCharacterIndex.value]) {
@@ -24,6 +36,8 @@ export const useCharacterStore = defineStore('character', () => {
   });
 
   const activeCharacterName = computed<string | null>(() => activeCharacter.value?.name ?? null);
+  const totalTokens = computed(() => tokenCounts.value.total);
+  const permanentTokens = computed(() => tokenCounts.value.permanent);
 
   const displayableEntities = computed<Entity[]>(() => {
     // This is the reactive equivalent of the old `getEntitiesList` function
@@ -48,6 +62,49 @@ export const useCharacterStore = defineStore('character', () => {
   const refreshCharactersDebounced = debounce(() => {
     refreshCharacters();
   }, DEFAULT_PRINT_TIMEOUT);
+
+  // Helper to safely get a nested property
+  function getNestedValue(obj: any, path: string): string {
+    if (!obj) return '';
+    const value = path.split('.').reduce((o, p) => (o ? o[p] : undefined), obj);
+    return typeof value === 'string' ? value : '';
+  }
+
+  const calculateAllTokens = debounce(async (characterData: Partial<Character>) => {
+    if (!characterData) {
+      tokenCounts.value = { total: 0, permanent: 0, fields: {} };
+      return;
+    }
+
+    const fieldPaths = [
+      'description',
+      'first_mes',
+      'personality',
+      'scenario',
+      'mes_example',
+      'data.system_prompt',
+      'data.post_history_instructions',
+      'data.depth_prompt.prompt',
+    ];
+
+    const newFieldCounts: Record<string, number> = {};
+    const promises = fieldPaths.map((path) =>
+      getTokenCount(getNestedValue(characterData, path)).then((count) => {
+        newFieldCounts[path] = count;
+      }),
+    );
+
+    await Promise.all(promises);
+
+    const total = Object.values(newFieldCounts).reduce((sum, count) => sum + count, 0);
+
+    // In the context of the character editor, all definition tokens are considered permanent.
+    tokenCounts.value = {
+      total: total,
+      permanent: total,
+      fields: newFieldCounts,
+    };
+  }, DebounceTimeout.RELAXED);
 
   async function refreshCharacters() {
     try {
@@ -222,5 +279,9 @@ export const useCharacterStore = defineStore('character', () => {
     saveActiveCharacter,
     refreshCharactersDebounced,
     saveCharacterDebounced,
+    tokenCounts,
+    totalTokens,
+    permanentTokens,
+    calculateAllTokens,
   };
 });

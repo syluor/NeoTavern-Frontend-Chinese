@@ -15,6 +15,17 @@ const showCharacterList = computed(() => {
   return uiStore.menuType !== 'character_edit' && uiStore.menuType !== 'create';
 });
 
+const totalTokens = computed(() => characterStore.totalTokens);
+const permanentTokens = computed(() => characterStore.permanentTokens);
+const activeCharacterName = computed(() => characterStore.activeCharacter?.name);
+
+// TODO: Get max_context from a settings store
+const maxContext = ref(12000);
+const showTokenWarning = computed(() => {
+  const tokenLimit = Math.max(maxContext.value / 2, 1024);
+  return totalTokens.value > tokenLimit;
+});
+
 onMounted(() => {
   characterStore.refreshCharacters();
   uiStore.menuType = 'characters';
@@ -41,6 +52,38 @@ onMounted(() => {
       </div>
     </div>
   </div>
+
+  <!-- Name Block -->
+  <div v-if="characterStore.activeCharacter && !showCharacterList" class="name-block">
+    <div class="name-block__inner">
+      <div class="name-block__name">
+        <h2 :title="activeCharacterName">{{ activeCharacterName }}</h2>
+      </div>
+      <div class="name-block__info">
+        <div class="name-block__token-text" title="Token counts may be inaccurate and provided just for reference.">
+          <div>
+            <strong :class="{ 'neutral-warning': showTokenWarning }" title="Total tokens">{{ totalTokens }}</strong>
+            <span>&nbsp;Tokens</span>
+          </div>
+          <div>
+            <small title="Permanent tokens"> ({{ permanentTokens }}&nbsp;Permanent) </small>
+          </div>
+        </div>
+        <a
+          v-show="showTokenWarning"
+          class="menu-button fa-solid fa-triangle-exclamation"
+          href="https://docs.sillytavern.app/usage/core-concepts/characterdesign/#character-tokens"
+          target="_blank"
+          title="About Token 'Limits'"
+        ></a>
+        <!-- TODO: Implement stats popup -->
+        <i class="menu-button fa-solid fa-ranking-star" title="Click for stats!"></i>
+        <!-- TODO: Implement hide panel logic -->
+        <i class="menu-button fa-solid fa-eye" title="Toggle character info panel"></i>
+      </div>
+    </div>
+  </div>
+
   <div id="right-menu-panel" class="right-menu-panel">
     <div v-show="showCharacterList" class="u-flex-col u-w-full" style="height: 100%">
       <div class="right-menu-panel__header">

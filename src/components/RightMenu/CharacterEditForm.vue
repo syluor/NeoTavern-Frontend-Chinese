@@ -83,6 +83,7 @@ watch(
           charCopy.data.creator_notes = charCopy.creatorcomment || '';
         }
         formData.value = charCopy;
+        characterStore.calculateAllTokens(charCopy);
         areDetailsHidden.value = settingsStore.powerUser.spoiler_free_mode;
 
         nextTick(() => {
@@ -118,6 +119,7 @@ watch(
     // Don't save on initial load when populating from activeCharacter
     if (oldData && Object.keys(oldData).length > 1 && newData.avatar === oldData.avatar) {
       characterStore.saveCharacterDebounced(newData);
+      characterStore.calculateAllTokens(newData);
     }
   },
   { deep: true },

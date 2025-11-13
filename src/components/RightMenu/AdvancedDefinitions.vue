@@ -5,11 +5,15 @@ import { depth_prompt_depth_default, depth_prompt_role_default, talkativeness_de
 import type { Character, PopupOptions } from '../../types';
 import { POPUP_TYPE } from '../../types';
 import Popup from '../Popup/Popup.vue';
+import { useCharacterStore } from '../../stores/character.store';
 
 const props = defineProps({
   modelValue: { type: Object as PropType<Partial<Character>>, required: true },
 });
 const emit = defineEmits(['close', 'update:modelValue']);
+
+const characterStore = useCharacterStore();
+const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 
 // Helper function to update nested properties without mutating props directly
 function updateValue(path: string, value: any) {
@@ -199,7 +203,9 @@ function close() {
                     rows="3"
                     placeholder="Any contents here will replace the default Main Prompt."
                   ></textarea>
-                  <div class="token-counter">Tokens: <span>counting...</span></div>
+                  <div class="token-counter">
+                    Tokens: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
+                  </div>
                 </div>
                 <div>
                   <label>
@@ -217,7 +223,9 @@ function close() {
                     rows="3"
                     placeholder="Any contents here will replace the default Post-History Instructions."
                   ></textarea>
-                  <div class="token-counter">Tokens: <span>counting...</span></div>
+                  <div class="token-counter">
+                    Tokens: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,7 +329,9 @@ function close() {
             rows="4"
             placeholder="(A brief description of the personality)"
           ></textarea>
-          <div class="token-counter">Tokens: <span>counting...</span></div>
+          <div class="token-counter">
+            Tokens: <span>{{ tokenCounts['personality'] || 0 }}</span>
+          </div>
         </div>
         <div class="advanced-definitions-popup__section">
           <label>
@@ -339,7 +349,9 @@ function close() {
             rows="4"
             placeholder="(Circumstances and context of the interaction)"
           ></textarea>
-          <div class="token-counter">Tokens: <span>counting...</span></div>
+          <div class="token-counter">
+            Tokens: <span>{{ tokenCounts['scenario'] || 0 }}</span>
+          </div>
         </div>
         <div class="advanced-definitions-popup__section character-note">
           <div class="u-w-full">
@@ -416,7 +428,9 @@ function close() {
             rows="6"
             placeholder="(Examples of chat dialog. Begin each example with <START> on a new line.)"
           ></textarea>
-          <div class="token-counter">Tokens: <span>counting...</span></div>
+          <div class="token-counter">
+            Tokens: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
+          </div>
         </div>
       </div>
     </div>

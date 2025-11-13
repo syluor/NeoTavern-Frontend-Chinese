@@ -3,11 +3,11 @@ import { ref, watch, computed } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import { useUiStore } from '../../stores/ui.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import { default_avatar } from '../../constants';
 import type { Character } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
 import AdvancedDefinitions from './AdvancedDefinitions.vue';
+import { getThumbnailUrl } from '../../utils/image';
 
 const characterStore = useCharacterStore();
 const uiStore = useUiStore();
@@ -87,10 +87,6 @@ watch(
   { immediate: true },
 );
 
-function getAvatarUrl(avatar: string | undefined) {
-  return avatar && avatar !== 'none' ? `/thumbnail?type=avatar&file=${encodeURIComponent(avatar)}` : default_avatar;
-}
-
 function goBack() {
   uiStore.menuType = 'characters';
 }
@@ -145,7 +141,7 @@ function handleAdvancedUpdate(updatedData: Character) {
             title="Click to select a new avatar for this character"
           >
             <img
-              :src="getAvatarUrl(formData.avatar)"
+              :src="getThumbnailUrl('avatar', formData.avatar)"
               :alt="`${formData.name} Avatar`"
               class="character-edit-form__avatar-img"
             />

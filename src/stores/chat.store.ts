@@ -51,13 +51,44 @@ export const useChatStore = defineStore('chat', () => {
 
     try {
       const response = await fetchChat(activeCharacter, chatMetadata.value);
+      // console.log('Using mocked chat data');
+      // const mockResponse = [
+      //   {
+      //     create_date: 'November 13, 2025 3:16 AM',
+      //     chat_metadata: { integrity: 'mock-integrity-uuid' },
+      //   },
+      //   {
+      //     name: activeCharacter?.name ?? 'Character',
+      //     mes: `*Oh, uh- ahem Hi there, I am ${activeCharacter?.name ?? 'Character'}.*`,
+      //     send_date: 'November 13, 2025 3:16 AM',
+      //     is_user: false,
+      //     swipes: ['swipe1', 'swipe2', 'swipe3'],
+      //     swipe_id: 0,
+      //   },
+      //   {
+      //     name: 'User',
+      //     mes: '"Hey"',
+      //     send_date: 'November 13, 2025 3:16 AM',
+      //     is_user: true,
+      //     extra: { token_count: 5 },
+      //   },
+      //   {
+      //     name: activeCharacter?.name ?? 'Character',
+      //     mes: `He swallowed hard. Should’ve brought headphones—the clatter of plates and murmur of strangers itched under his skin. A bassline from the diner’s speakers throbbed in time with his pulse, some throwback track he’d heard his dad play years ago. His thumb tapped a silent rhythm against his thigh, counting beats. <q>"Just, uh. Waiting."</q> The lie tasted bitter. He wasn’t early; they were late. Again.`,
+      //     send_date: 'November 13, 2025 3:16 AM',
+      //     is_user: false,
+      //     swipes: ['swipeA', 'swipeB'],
+      //     swipe_id: 1,
+      //     extra: { token_count: 188 },
+      //   },
+      // ];
 
       if (response.length > 0) {
         // Assuming the first element contains metadata
         const metadataItem = response.shift();
         chatCreateDate.value = metadataItem?.create_date ?? null;
         chatMetadata.value = metadataItem?.chat_metadata ?? {};
-        chat.value = response;
+        chat.value = response as ChatMessage[];
       } else {
         chatCreateDate.value = humanizedDateTime();
         chatMetadata.value = {};

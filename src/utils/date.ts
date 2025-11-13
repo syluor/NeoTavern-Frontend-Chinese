@@ -47,3 +47,40 @@ export function getMessageTimeStamp() {
   const formattedDate = month + ' ' + day + ', ' + year + ' ' + hours + ':' + minutes + meridiem;
   return formattedDate;
 }
+
+export function formatTimeStamp(dateString?: string): string {
+  if (!dateString) return '';
+  try {
+    const d = new Date(dateString);
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const month = months[d.getMonth()];
+    const day = d.getDate();
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = ('0' + d.getMinutes()).slice(-2);
+    let meridiem = 'am';
+    if (hours >= 12) {
+      meridiem = 'pm';
+      hours -= 12;
+    }
+    if (hours === 0) {
+      hours = 12;
+    }
+    return `${month} ${day}, ${year} ${hours}:${minutes}${meridiem}`;
+  } catch (e) {
+    return dateString; // Return original string if parsing fails
+  }
+}

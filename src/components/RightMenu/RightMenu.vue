@@ -2,9 +2,9 @@
 import { onMounted, ref, computed } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import { useUiStore } from '../../stores/ui.store';
-import { default_avatar } from '../../constants';
 import type { Character, Group } from '../../types';
 import CharacterEditForm from './CharacterEditForm.vue';
+import { getThumbnailUrl } from '../../utils/image';
 
 const characterStore = useCharacterStore();
 const uiStore = useUiStore();
@@ -14,10 +14,6 @@ const isPanelPinned = ref(false);
 const showCharacterList = computed(() => {
   return uiStore.menuType !== 'character_edit' && uiStore.menuType !== 'create';
 });
-
-function getAvatarUrl(avatar: string) {
-  return avatar && avatar !== 'none' ? `/thumbnail?type=avatar&file=${encodeURIComponent(avatar)}` : default_avatar;
-}
 
 onMounted(() => {
   characterStore.refreshCharacters();
@@ -109,7 +105,7 @@ onMounted(() => {
           >
             <div class="character-item__avatar">
               <img
-                :src="getAvatarUrl((entity.item as Character).avatar)"
+                :src="getThumbnailUrl('avatar', (entity.item as Character).avatar)"
                 :alt="`${(entity.item as Character).name} Avatar`"
               />
             </div>

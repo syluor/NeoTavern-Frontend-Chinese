@@ -1,10 +1,15 @@
 <script setup lang="ts">
-// Chat logic will be added here
+import { useChatStore } from '../../stores/chat.store';
+import ChatMessage from './ChatMessage.vue';
+
+const chatStore = useChatStore();
 </script>
 
 <template>
   <div class="chat-interface">
-    <div class="chat-interface__messages"><!-- Chat messages will be rendered here --></div>
+    <div class="chat-interface__messages">
+      <ChatMessage v-for="(message, index) in chatStore.chat" :key="index" :message="message" :index="index" />
+    </div>
     <div class="chat-interface__form-container">
       <form class="chat-form">
         <div class="chat-form__inner">

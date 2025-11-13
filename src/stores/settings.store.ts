@@ -51,7 +51,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const saveSettingsDebounced = debounce(() => {
     if (!settingsInitialized.value) return;
-    saveUserSettings({ ...settings.value, power_user: { ...settings.value.power_user, ...powerUser.value } });
+    saveUserSettings({
+      ...settings.value,
+      power_user: powerUser.value,
+    });
   }, DEFAULT_SAVE_EDIT_TIMEOUT);
 
   // Watch for changes in settings and trigger debounced save

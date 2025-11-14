@@ -2,10 +2,10 @@
 import { ref, computed } from 'vue';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition } from '../../types';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { slideTransitionHooks } from '../../utils/dom';
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();
 const searchTerm = ref('');
 const collapsedCategories = ref<string[]>([]);
@@ -17,8 +17,13 @@ const filteredDefinitions = computed(() => {
   const lowerCaseSearch = searchTerm.value.toLowerCase();
   return settingsStore.definitions.filter(
     (def) =>
-      t(def.label).toLowerCase().includes(lowerCaseSearch) ||
-      (def.description && t(def.description).toLowerCase().includes(lowerCaseSearch)) ||
+      t(def.label as any)
+        .toLowerCase()
+        .includes(lowerCaseSearch) ||
+      (def.description &&
+        t(def.description as any)
+          .toLowerCase()
+          .includes(lowerCaseSearch)) ||
       def.category.toLowerCase().includes(lowerCaseSearch),
   );
 });
@@ -78,18 +83,18 @@ const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slide
 <template>
   <div class="user-settings-drawer">
     <div class="user-settings-drawer__header">
-      <h3>{{ $t('userSettings.title') }}</h3>
+      <h3>{{ t('userSettings.title') }}</h3>
       <input
         type="search"
         class="text-pole user-settings-drawer__search"
-        :placeholder="$t('userSettings.searchPlaceholder')"
+        :placeholder="t('userSettings.searchPlaceholder')"
         v-model="searchTerm"
       />
     </div>
 
     <div class="user-settings-drawer__content">
       <div v-if="Object.keys(groupedSettings).length === 0" class="user-settings-drawer__no-results">
-        {{ $t('userSettings.noResults') }}
+        {{ t('userSettings.noResults') }}
       </div>
       <div v-for="(settings, category) in groupedSettings" :key="category" class="user-settings-drawer__category">
         <div class="user-settings-drawer__category-header" @click="toggleCategoryCollapse(category)">
@@ -113,8 +118,8 @@ const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slide
             <div class="user-settings-drawer__category-content">
               <div v-for="setting in settings" :key="setting.id" class="user-settings-drawer__setting">
                 <div class="setting-details">
-                  <label :for="setting.id">{{ $t(setting.label) }}</label>
-                  <small v-if="setting.description">{{ $t(setting.description) }}</small>
+                  <label :for="setting.id">{{ t(setting.label) }}</label>
+                  <small v-if="setting.description">{{ t(setting.description) }}</small>
                 </div>
                 <div class="setting-control">
                   <!-- Checkbox -->
@@ -137,7 +142,7 @@ const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slide
                     @change="updateSetting(setting.id, $event)"
                   >
                     <option v-for="option in setting.options" :key="option.value" :value="option.value">
-                      {{ $t(option.label) }}
+                      {{ t(option.label) }}
                     </option>
                   </select>
 

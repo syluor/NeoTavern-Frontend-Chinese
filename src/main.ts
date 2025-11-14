@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/auth.store';
 import { toast } from './composables/useToast';
 import i18n from './i18n';
 import * as Vue from 'vue';
+import type { StrictT } from './composables/useStrictI18n';
 
 import './styles/main.scss';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -17,13 +18,15 @@ async function initializeApp() {
   const pinia = createPinia();
   app.use(pinia);
   app.use(i18n);
+  // @ts-ignore
+  const t = i18n.global.t as StrictT;
 
   // Fetch CSRF token before mounting
   try {
     const authStore = useAuthStore();
     await authStore.fetchToken();
   } catch (error) {
-    toast.error(i18n.global.t('errors.csrfToken'), 'Error', {
+    toast.error(t('errors.csrfToken'), 'Error', {
       timeout: 0,
     });
     console.error('Initialization failed:', error);

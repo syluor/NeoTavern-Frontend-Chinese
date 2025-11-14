@@ -10,7 +10,7 @@ import { getMessageTimeStamp, humanizedDateTime } from '../utils/date';
 import { uuidv4 } from '../utils/common';
 import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
-import i18n from '../i18n';
+import { useStrictI18n } from '../composables/useStrictI18n';
 import { PromptBuilder } from '../utils/prompt-builder';
 import { ChatCompletionService, type GenerationResponse, type StreamedChunk } from '../api/generation';
 import { getThumbnailUrl } from '../utils/image';
@@ -24,7 +24,7 @@ async function getTokenCount(text: string): Promise<number> {
 }
 
 export const useChatStore = defineStore('chat', () => {
-  const { t } = i18n.global;
+  const { t } = useStrictI18n();
   const chat = ref<Array<ChatMessage>>([]);
   const chatMetadata = ref<Record<string, any>>({});
   const chatCreateDate = ref<string | null>(null);

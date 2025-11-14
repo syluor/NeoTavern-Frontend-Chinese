@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type PopupOptions } from '../../types';
 
@@ -17,7 +17,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit']);
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const settings = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
 const mainInput = ref<HTMLTextAreaElement | null>(null);

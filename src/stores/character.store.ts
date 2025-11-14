@@ -17,7 +17,7 @@ import { debounce } from '../utils/common';
 import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT, DebounceTimeout } from '../constants';
 import { useSettingsStore } from './settings.store';
 import { onlyUnique } from '../utils/array';
-import i18n from '../i18n';
+import { useStrictI18n } from '../composables/useStrictI18n';
 import { getFirstMessage } from '../utils/chat';
 import { get } from 'lodash-es';
 
@@ -32,7 +32,7 @@ const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
 
 export const useCharacterStore = defineStore('character', () => {
-  const { t } = i18n.global;
+  const { t } = useStrictI18n();
   const characters = ref<Array<Character>>([]);
   const activeCharacterIndex = ref<number | null>(null);
   const favoriteCharacterChecked = ref<boolean>(false);

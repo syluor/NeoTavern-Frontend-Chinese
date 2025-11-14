@@ -3,16 +3,15 @@ import { ref, computed } from 'vue';
 import { SendOnEnterOptions, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
 import { isMobile } from '../utils/browser';
 import { debounce } from '../utils/common';
-import type { Settings, SettingDefinition } from '../types';
+import type { Settings, SettingDefinition, SettingsPath } from '../types';
 import { fetchUserSettings, saveUserSettings } from '../api/settings';
 import { settingsDefinition } from '../settings-definition';
 import { toast } from '../composables/useToast';
 import { set, get, defaultsDeep } from 'lodash-es';
 import { useUiStore } from './ui.store';
-import type { Path, ValueForPath } from '../types/utils';
+import type { ValueForPath } from '../types/utils';
 
 // --- Create type aliases for convenience ---
-type SettingsPath = Path<Settings>;
 type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
 // -----------------------------------------
 

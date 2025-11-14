@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { depth_prompt_depth_default, depth_prompt_role_default, talkativeness_default } from '../../constants';
 import type { Character, PopupOptions } from '../../types';
 import { POPUP_TYPE } from '../../types';
@@ -15,7 +15,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['close', 'update:modelValue']);
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 
@@ -148,7 +148,7 @@ function close() {
                     <span>{{ t('advancedDefinitions.mainPrompt') }}</span>
                     <i
                       class="editor-maximize-icon fa-solid fa-maximize"
-                      :title="$t('characterEditor.expandEditor')"
+                      :title="t('characterEditor.expandEditor')"
                       @click="openMaximizeEditor('data.system_prompt', t('advancedDefinitions.mainPrompt'))"
                     ></i>
                   </label>
@@ -168,7 +168,7 @@ function close() {
                     <span>{{ t('advancedDefinitions.postHistoryInstructions') }}</span>
                     <i
                       class="editor-maximize-icon fa-solid fa-maximize"
-                      :title="$t('characterEditor.expandEditor')"
+                      :title="t('characterEditor.expandEditor')"
                       @click="
                         openMaximizeEditor(
                           'data.post_history_instructions',
@@ -246,7 +246,7 @@ function close() {
                       <span>{{ t('advancedDefinitions.creatorNotes') }}</span>
                       <i
                         class="editor-maximize-icon fa-solid fa-maximize"
-                        :title="$t('characterEditor.expandEditor')"
+                        :title="t('characterEditor.expandEditor')"
                         @click="openMaximizeEditor('data.creator_notes', t('advancedDefinitions.creatorNotes'))"
                       ></i>
                     </label>
@@ -281,7 +281,7 @@ function close() {
             ><span>{{ t('advancedDefinitions.personality') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              :title="$t('characterEditor.expandEditor')"
+              :title="t('characterEditor.expandEditor')"
               @click="openMaximizeEditor('personality', t('advancedDefinitions.personality'))"
             ></i>
           </label>
@@ -301,7 +301,7 @@ function close() {
             <span>{{ t('advancedDefinitions.scenario') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              :title="$t('characterEditor.expandEditor')"
+              :title="t('characterEditor.expandEditor')"
               @click="openMaximizeEditor('scenario', t('advancedDefinitions.scenario'))"
             ></i>
           </label>
@@ -322,7 +322,7 @@ function close() {
               <span>{{ t('advancedDefinitions.characterNote') }}</span>
               <i
                 class="editor-maximize-icon fa-solid fa-maximize"
-                :title="$t('characterEditor.expandEditor')"
+                :title="t('characterEditor.expandEditor')"
                 @click="openMaximizeEditor('data.depth_prompt.prompt', t('advancedDefinitions.characterNote'))"
               ></i>
             </label>
@@ -350,9 +350,9 @@ function close() {
               @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value)"
               class="text-pole"
             >
-              <option value="system">{{ $t('advancedDefinitions.roles.system') }}</option>
-              <option value="user">{{ $t('advancedDefinitions.roles.user') }}</option>
-              <option value="assistant">{{ $t('advancedDefinitions.roles.assistant') }}</option>
+              <option value="system">{{ t('advancedDefinitions.roles.system') }}</option>
+              <option value="user">{{ t('advancedDefinitions.roles.user') }}</option>
+              <option value="assistant">{{ t('advancedDefinitions.roles.assistant') }}</option>
             </select>
           </div>
         </div>
@@ -379,7 +379,7 @@ function close() {
             <span>{{ t('advancedDefinitions.dialogueExamples') }}</span>
             <i
               class="editor-maximize-icon fa-solid fa-maximize"
-              :title="$t('characterEditor.expandEditor')"
+              :title="t('characterEditor.expandEditor')"
               @click="openMaximizeEditor('mes_example', t('advancedDefinitions.dialogueExamples'))"
             ></i>
           </label>

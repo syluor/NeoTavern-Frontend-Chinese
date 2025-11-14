@@ -1,5 +1,6 @@
 import { createI18n } from 'vue-i18n';
 import messages from '@intlify/unplugin-vue-i18n/messages';
+import type { MessageSchema } from './types/i18n';
 
 function getInitialLocale() {
   const savedLocale = localStorage.getItem('user-locale');
@@ -13,10 +14,11 @@ function getInitialLocale() {
   return Object.keys(messages).includes(browserLang) ? browserLang : 'en';
 }
 
-const i18n = createI18n({
+const i18n = createI18n<[MessageSchema], 'en'>({
   legacy: false,
   locale: getInitialLocale(),
   fallbackLocale: 'en',
+  // @ts-ignore
   messages,
 });
 

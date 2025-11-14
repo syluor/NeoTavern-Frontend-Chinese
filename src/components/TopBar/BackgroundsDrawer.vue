@@ -5,9 +5,9 @@ import { useChatStore } from '../../stores/chat.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { getThumbnailUrl } from '../../utils/image';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const backgroundStore = useBackgroundStore();
 const chatStore = useChatStore();
 const popupStore = usePopupStore();

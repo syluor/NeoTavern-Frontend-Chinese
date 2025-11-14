@@ -3,9 +3,11 @@ import { ref, watch, nextTick } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
+const { t } = useStrictI18n();
 const userInput = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 
@@ -53,16 +55,16 @@ watch(
       <form class="chat-form" @submit.prevent="submitMessage">
         <div class="chat-form__inner">
           <div class="chat-form__actions-left">
-            <button type="button" class="chat-form__button fa-solid fa-bars" :title="$t('chat.options')"></button>
+            <button type="button" class="chat-form__button fa-solid fa-bars" :title="t('chat.options')"></button>
             <button
               type="button"
               class="chat-form__button fa-solid fa-magic-wand-sparkles"
-              :title="$t('chat.extensions')"
+              :title="t('chat.extensions')"
             ></button>
           </div>
           <textarea
             id="chat-input"
-            :placeholder="$t('chat.inputPlaceholder')"
+            :placeholder="t('chat.inputPlaceholder')"
             autocomplete="off"
             v-model="userInput"
             @keydown="handleKeydown"
@@ -72,13 +74,13 @@ watch(
             <button
               type="button"
               class="chat-form__button fa-fw fa-solid fa-arrow-right"
-              :title="$t('chat.continue')"
+              :title="t('chat.continue')"
               :disabled="chatStore.isGenerating"
             ></button>
             <button
               type="submit"
               class="chat-form__button fa-solid fa-paper-plane"
-              :title="$t('chat.send')"
+              :title="t('chat.send')"
               :disabled="chatStore.isGenerating"
             ></button>
           </div>

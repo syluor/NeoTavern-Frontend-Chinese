@@ -1,4 +1,11 @@
 import type { SendOnEnterOptions, TagImportSetting } from '../constants';
+import type { I18nKey } from './i18n';
+import type { Path } from './utils';
+
+// --- Helper types for safe config IDs ---
+export type SettingsPath = Path<Settings>;
+export type OaiSettingsPath = Path<OaiSettings>;
+// -----------------------------------------
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -235,7 +242,7 @@ export interface AiConfigCondition {
 
 // TODO: Some values might change based on model/source, e.g., max tokens
 export interface AiConfigItem {
-  id?: string; // Corresponds to a key in oaiSettings, e.g., 'temp_openai'
+  id?: OaiSettingsPath;
   widget:
     | 'preset-manager'
     | 'slider'
@@ -248,9 +255,9 @@ export interface AiConfigItem {
     | 'hr'
     | 'header';
   apiId?: string; // For preset manager to know which API it controls
-  label?: string; // i18n key for the label
-  description?: string; // i18n key for text below the control
-  infoTooltip?: string; // i18n key for the (i) icon
+  label?: I18nKey; // i18n key for the label
+  description?: I18nKey; // i18n key for text below the control
+  infoTooltip?: I18nKey; // i18n key for the (i) icon
   infoLink?: string; // URL for docs link
   conditions?: AiConfigCondition;
 
@@ -258,12 +265,12 @@ export interface AiConfigItem {
   min?: number;
   max?: number;
   step?: number;
-  maxUnlockedId?: string;
-  unlockLabel?: string;
-  unlockTooltip?: string;
+  maxUnlockedId?: OaiSettingsPath;
+  unlockLabel?: I18nKey;
+  unlockTooltip?: I18nKey;
 
   // for select
-  options?: { value: string | number; label: string }[]; // TODO: Implement
+  options?: { value: string | number; label: I18nKey }[]; // TODO: Implement
 
   // for custom components
   component?: any; // TODO: Implement
@@ -313,13 +320,13 @@ export type SettingWidget = 'checkbox' | 'slider' | 'select' | 'text' | 'textare
 
 export interface SettingOption {
   value: string | number;
-  label: string;
+  label: I18nKey;
 }
 
 export interface SettingDefinition {
-  id: string; // dot notation path, e.g., 'ui.avatar_style'
-  label: string;
-  description?: string;
+  id: SettingsPath;
+  label: I18nKey;
+  description?: I18nKey;
   category: string;
   type: SettingType;
   widget: SettingWidget;

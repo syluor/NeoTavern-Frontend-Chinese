@@ -5,8 +5,9 @@
   "description": "An experimental frontend for SillyTavern",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "i18n:types": "node generate-i18n-types.js",
+    "dev": "pnpm i18n:types && vite",
+    "build": "pnpm i18n:types && vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.ts",
     "lint:fix": "eslint . --ext .vue,.js,.ts --fix",

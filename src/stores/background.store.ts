@@ -5,13 +5,13 @@ import { useChatStore } from './chat.store';
 import { fetchAllBackgrounds, uploadBackground, deleteBackground, renameBackground } from '../api/backgrounds';
 import { toast } from '../composables/useToast';
 import type { BackgroundFitting } from '../types';
-import i18n from '../i18n';
+import { useStrictI18n } from '../composables/useStrictI18n';
 
 const BG_METADATA_KEY = 'custom_background';
 const LIST_METADATA_KEY = 'chat_backgrounds';
 
 export const useBackgroundStore = defineStore('background', () => {
-  const { t } = i18n.global;
+  const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
   const chatStore = useChatStore();
 

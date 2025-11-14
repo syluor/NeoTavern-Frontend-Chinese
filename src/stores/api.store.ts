@@ -6,12 +6,14 @@ import { fetchChatCompletionStatus } from '../api/connection';
 import { toast } from '../composables/useToast';
 import { useSettingsStore } from './settings.store';
 import { defaultsDeep, isEqual } from 'lodash-es';
-import i18n from '../i18n';
+import { useStrictI18n } from '../composables/useStrictI18n';
 import { fetchAllPresets, savePreset, deletePreset as apiDeletePreset, type Preset } from '../api/presets';
 import { usePopupStore } from './popup.store';
 import { downloadFile, readFileAsText } from '../utils/file';
 
 export const useApiStore = defineStore('api', () => {
+  const { t } = useStrictI18n();
+
   const settingsStore = useSettingsStore();
 
   const mainApi = ref('openai');
@@ -172,12 +174,12 @@ export const useApiStore = defineStore('api', () => {
     modelList.value = [];
 
     if (mainApi.value !== 'openai') {
-      onlineStatus.value = `${i18n.global.t('api.status.notConnected')} ${i18n.global.t('api.status.notImplemented')}`;
+      onlineStatus.value = `${t('api.status.notConnected')} ${t('api.status.notImplemented')}`;
       return;
     }
 
     isConnecting.value = true;
-    onlineStatus.value = i18n.global.t('api.status.connecting');
+    onlineStatus.value = t('api.status.connecting');
 
     try {
       // TODO: Implement secret management. For now, we pass the key directly.
@@ -209,11 +211,11 @@ export const useApiStore = defineStore('api', () => {
         }
       }
 
-      onlineStatus.value = response.bypass ? i18n.global.t('api.status.bypassed') : i18n.global.t('api.status.valid');
-      toast.success(i18n.global.t('api.connectSuccess'));
+      onlineStatus.value = response.bypass ? t('api.status.bypassed') : t('api.status.valid');
+      toast.success(t('api.connectSuccess'));
     } catch (error: any) {
-      onlineStatus.value = i18n.global.t('api.status.noConnection');
-      toast.error(error.message || i18n.global.t('api.connectFailed'));
+      onlineStatus.value = t('api.status.noConnection');
+      toast.error(error.message || t('api.connectFailed'));
       console.error(error);
     } finally {
       isConnecting.value = false;

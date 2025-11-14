@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useExtensionStore } from '../../stores/extension.store';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const extensionStore = useExtensionStore();
 const notifyOnUpdates = ref(false); // TODO: connect to settings store
 
@@ -29,18 +29,18 @@ onMounted(() => {
   <div class="extensions-drawer">
     <div class="extensions-drawer__wrapper">
       <div class="extensions-drawer__header">
-        <h3>{{ $t('extensions.title') }}</h3>
+        <h3>{{ t('extensions.title') }}</h3>
         <label class="extensions-drawer__checkbox-label">
           <input type="checkbox" v-model="notifyOnUpdates" />
-          <span>{{ $t('extensions.notifyUpdates') }}</span>
+          <span>{{ t('extensions.notifyUpdates') }}</span>
         </label>
         <div @click="manageExtensions" class="menu-button">
           <i class="fa-solid fa-cubes"></i>
-          <span>&nbsp;{{ $t('extensions.manage') }}</span>
+          <span>&nbsp;{{ t('extensions.manage') }}</span>
         </div>
         <div @click="installExtension" class="menu-button">
           <i class="fa-solid fa-cloud-arrow-down"></i>
-          <span>&nbsp;{{ $t('extensions.install') }}</span>
+          <span>&nbsp;{{ t('extensions.install') }}</span>
         </div>
       </div>
       <div class="extensions-drawer__content">

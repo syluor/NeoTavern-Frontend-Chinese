@@ -11,7 +11,7 @@ import { usePopupStore } from '../../stores/popup.store';
 import { getThumbnailUrl } from '../../utils/image';
 import { formatTimeStamp } from '../../utils/date';
 import { formatMessage } from '../../utils/markdown';
-import { useI18n } from 'vue-i18n';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 
 const props = defineProps({
@@ -25,7 +25,7 @@ const props = defineProps({
   },
 });
 
-const { t } = useI18n();
+const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
 const uiStore = useUiStore();
 const chatStore = useChatStore();
@@ -227,7 +227,7 @@ function moveDown() {
           <i
             @click="handleDeleteClick"
             class="message__button fa-solid fa-trash-can delete"
-            :title="$t('chat.buttons.deleteMessage')"
+            :title="t('chat.buttons.deleteMessage')"
           ></i>
         </div>
 
@@ -236,29 +236,21 @@ function moveDown() {
           <button
             @click="saveEdit"
             class="menu-button confirm fa-solid fa-check"
-            :title="$t('chat.buttons.confirmEdit')"
+            :title="t('chat.buttons.confirmEdit')"
           ></button>
           <button
             @click="copyMessage"
             class="menu-button fa-solid fa-copy"
-            :title="$t('chat.buttons.copyMessage')"
+            :title="t('chat.buttons.copyMessage')"
           ></button>
-          <button class="menu-button fa-solid fa-lightbulb" :title="$t('chat.buttons.addReasoning')"></button>
-          <button
-            @click="moveUp"
-            class="menu-button fa-solid fa-chevron-up"
-            :title="$t('chat.buttons.moveUp')"
-          ></button>
+          <button class="menu-button fa-solid fa-lightbulb" :title="t('chat.buttons.addReasoning')"></button>
+          <button @click="moveUp" class="menu-button fa-solid fa-chevron-up" :title="t('chat.buttons.moveUp')"></button>
           <button
             @click="moveDown"
             class="menu-button fa-solid fa-chevron-down"
-            :title="$t('chat.buttons.moveDown')"
+            :title="t('chat.buttons.moveDown')"
           ></button>
-          <button
-            @click="cancelEdit"
-            class="menu-button cancel fa-solid fa-xmark"
-            :title="$t('common.cancel')"
-          ></button>
+          <button @click="cancelEdit" class="menu-button cancel fa-solid fa-xmark" :title="t('common.cancel')"></button>
         </div>
       </div>
 

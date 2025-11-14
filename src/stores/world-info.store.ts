@@ -1,11 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { useSettingsStore } from './settings.store';
-import { type WorldInfoBook, type WorldInfoSettings, WorldInfoInsertionStrategy } from '../types';
+import {
+  type WorldInfoBook,
+  type WorldInfoSettings,
+  WorldInfoInsertionStrategy,
+  POPUP_TYPE,
+  POPUP_RESULT,
+} from '../types';
 import * as api from '../api/world-info';
 import { toast } from '../composables/useToast';
 import { debounce } from '../utils/common';
 import { defaultsDeep } from 'lodash-es';
+import { usePopupStore } from './popup.store';
+import { downloadFile } from '../utils/file';
 
 export const defaultWorldInfoSettings: WorldInfoSettings = {
   world_info: {},
@@ -26,10 +34,11 @@ export const defaultWorldInfoSettings: WorldInfoSettings = {
 
 export const useWorldInfoStore = defineStore('world-info', () => {
   const settingsStore = useSettingsStore();
+  const popupStore = usePopupStore();
 
   const isPanelPinned = ref(false);
   const bookNames = ref<string[]>([]);
-  const activeBookNames = ref<string[]>([]); // Globally active books
+  const activeBookNames = ref<string[]>([]);
   const isSettingsExpanded = ref(false);
 
   const editingBookName = ref<string | null>(null);
@@ -41,17 +50,14 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const settings = computed({
     get: () => settingsStore.settings.world_info_settings,
     set: (value) => {
-      // Create a new object to ensure reactivity
       settingsStore.setSetting('world_info_settings', { ...value });
     },
   });
 
-  // Sync settings with the main settings store
   watch(
     () => settingsStore.settings.world_info_settings,
     (newSettings) => {
       if (newSettings) {
-        // Use a temporary variable to avoid triggering the setter's watcher
         const newValues = defaultsDeep({}, newSettings, defaultWorldInfoSettings);
         if (JSON.stringify(settings.value) !== JSON.stringify(newValues)) {
           settings.value = newValues;
@@ -62,7 +68,6 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     { deep: true, immediate: true },
   );
 
-  // When active books change, update the settings store
   watch(
     activeBookNames,
     (newActive) => {
@@ -70,11 +75,11 @@ export const useWorldInfoStore = defineStore('world-info', () => {
         settings.value.world_info = {};
       }
       settings.value.world_info.globalSelect = newActive;
-      // The settings store watcher will handle debounced saving.
     },
     { deep: true },
   );
 
+  // TODO: We shouldn't call this for every WI action because `/settings/get` is expensive
   async function initialize() {
     try {
       bookNames.value = await api.fetchAllWorldInfoNames();
@@ -101,7 +106,6 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     }
   }
 
-  // TODO: Add other actions: create, import, export, rename, delete, etc.
   const saveEditingBookDebounced = debounce(async () => {
     if (editingBook.value) {
       try {
@@ -114,10 +118,101 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     }
   }, 1000);
 
-  // TODO: Implement pagination and filtering for entries
+  async function createNewBook() {
+    const { result, value: newName } = await popupStore.show({
+      title: 'New Lorebook',
+      content: 'Enter the name for the new lorebook:',
+      type: POPUP_TYPE.INPUT,
+      inputValue: 'New Lorebook',
+    });
+
+    if (result === POPUP_RESULT.AFFIRMATIVE && newName) {
+      const newBook: WorldInfoBook = { name: newName, entries: [] };
+      try {
+        await api.saveWorldInfoBook(newName, newBook);
+        await initialize();
+        await selectBookForEditing(newName);
+        toast.success(`Created lorebook: ${newName}`);
+      } catch (error) {
+        toast.error(`Failed to create lorebook.`);
+      }
+    }
+  }
+
+  async function deleteEditingBook() {
+    if (!editingBookName.value) return;
+    const name = editingBookName.value;
+    const { result } = await popupStore.show({
+      title: 'Confirm Deletion',
+      content: `Are you sure you want to delete the lorebook "<b>${name}</b>"?`,
+      type: POPUP_TYPE.CONFIRM,
+    });
+    if (result === POPUP_RESULT.AFFIRMATIVE) {
+      try {
+        await api.deleteWorldInfoBook(name);
+        await initialize();
+        if (editingBookName.value === name) {
+          selectBookForEditing(null);
+        }
+        toast.success(`Deleted lorebook: ${name}`);
+      } catch (error) {
+        toast.error('Failed to delete lorebook.');
+      }
+    }
+  }
+
+  async function renameEditingBook() {
+    if (!editingBookName.value) return;
+    const oldName = editingBookName.value;
+    const { result, value: newName } = await popupStore.show({
+      title: 'Rename Lorebook',
+      content: 'Enter the new name:',
+      type: POPUP_TYPE.INPUT,
+      inputValue: oldName,
+    });
+
+    if (result === POPUP_RESULT.AFFIRMATIVE && newName && newName !== oldName) {
+      try {
+        await api.renameWorldInfoBook(oldName, newName); // This needs a backend endpoint
+        await initialize();
+        await selectBookForEditing(newName);
+        toast.success(`Renamed to ${newName}`);
+      } catch (error) {
+        toast.error(`Failed to rename lorebook.`);
+      }
+    }
+  }
+
+  async function duplicateEditingBook() {
+    // TODO
+    toast.info('Duplicate feature not yet implemented.');
+  }
+
+  async function importBook(file: File) {
+    try {
+      const { name } = await api.importWorldInfoBook(file);
+      await initialize();
+      await selectBookForEditing(name);
+      toast.success(`Imported lorebook: ${name}`);
+    } catch (error) {
+      toast.error('Failed to import lorebook.');
+    }
+  }
+
+  async function exportEditingBook() {
+    if (!editingBookName.value) return;
+    try {
+      const book = await api.exportWorldInfoBook(editingBookName.value);
+      const content = JSON.stringify(book, null, 2);
+      downloadFile(content, `${book.name}.json`, 'application/json');
+    } catch (error) {
+      toast.error('Failed to export lorebook.');
+    }
+  }
+
   const filteredEntries = computed(() => {
     if (!editingBook.value?.entries) return [];
-    // Add filtering and sorting logic here later
+    // TODO: Add filtering and sorting logic here
     return editingBook.value.entries;
   });
 
@@ -135,5 +230,11 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     selectBookForEditing,
     saveEditingBookDebounced,
     filteredEntries,
+    createNewBook,
+    deleteEditingBook,
+    renameEditingBook,
+    duplicateEditingBook,
+    importBook,
+    exportEditingBook,
   };
 });

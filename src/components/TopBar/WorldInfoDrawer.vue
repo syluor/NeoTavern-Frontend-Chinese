@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useWorldInfoStore } from '../../stores/world-info.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { slideTransitionHooks } from '../../utils/dom';
@@ -11,6 +11,8 @@ const worldInfoStore = useWorldInfoStore();
 
 const { beforeEnter, enter, afterEnter, beforeLeave, leave } = slideTransitionHooks;
 
+const isBookSelected = computed(() => !!worldInfoStore.editingBookName);
+
 onMounted(() => {
   worldInfoStore.initialize();
 });
@@ -19,8 +21,7 @@ function handleFileImport(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
-    // TODO: Call store action to import
-    console.log('Importing file:', file.name);
+    worldInfoStore.importBook(file);
   }
   if (target) {
     target.value = '';
@@ -140,7 +141,92 @@ function updateEntry(index: number, newEntry: WorldInfoEntryType) {
                         />
                       </div>
                     </div>
-                    <!-- ... TODO: There should be more ... -->
+                    <div class="range-block">
+                      <div class="range-block-title" :title="t('worldInfo.budgetCapHint')">
+                        {{ t('worldInfo.budgetCap') }}
+                      </div>
+                      <div class="range-block-range-and-counter">
+                        <input
+                          type="range"
+                          class="neo-range-slider"
+                          min="0"
+                          max="65536"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_budget_cap"
+                        />
+                        <input
+                          type="number"
+                          class="neo-range-input"
+                          min="0"
+                          max="65536"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_budget_cap"
+                        />
+                      </div>
+                    </div>
+                    <div class="range-block" :title="t('worldInfo.minActivationsHint')">
+                      <div class="range-block-title">{{ t('worldInfo.minActivations') }}</div>
+                      <div class="range-block-range-and-counter">
+                        <input
+                          type="range"
+                          class="neo-range-slider"
+                          min="0"
+                          max="100"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_min_activations"
+                        />
+                        <input
+                          type="number"
+                          class="neo-range-input"
+                          min="0"
+                          max="100"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_min_activations"
+                        />
+                      </div>
+                    </div>
+                    <div class="range-block" :title="t('worldInfo.maxDepthHint')">
+                      <div class="range-block-title">{{ t('worldInfo.maxDepth') }}</div>
+                      <div class="range-block-range-and-counter">
+                        <input
+                          type="range"
+                          class="neo-range-slider"
+                          min="0"
+                          max="100"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_min_activations_depth_max"
+                        />
+                        <input
+                          type="number"
+                          class="neo-range-input"
+                          min="0"
+                          max="100"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_min_activations_depth_max"
+                        />
+                      </div>
+                    </div>
+                    <div class="range-block" :title="t('worldInfo.maxRecursionStepsHint')">
+                      <div class="range-block-title">{{ t('worldInfo.maxRecursionSteps') }}</div>
+                      <div class="range-block-range-and-counter">
+                        <input
+                          type="range"
+                          class="neo-range-slider"
+                          min="0"
+                          max="10"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_max_recursion_steps"
+                        />
+                        <input
+                          type="number"
+                          class="neo-range-input"
+                          min="0"
+                          max="10"
+                          step="1"
+                          v-model.number="worldInfoStore.settings.world_info_max_recursion_steps"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div class="wi-settings-grid__checkboxes">
                     <!-- Checkboxes -->
@@ -181,7 +267,7 @@ function updateEntry(index: number, newEntry: WorldInfoEntryType) {
       <!-- World Editor Section -->
       <div class="world-editor">
         <div class="world-editor__controls">
-          <div class="menu-button">
+          <div class="menu-button" @click="worldInfoStore.createNewBook">
             <i class="fa-solid fa-globe"></i>
             <span>{{ t('worldInfo.newWorld') }}</span>
           </div>
@@ -197,10 +283,30 @@ function updateEntry(index: number, newEntry: WorldInfoEntryType) {
           <label class="menu-button fa-solid fa-file-import" :title="t('worldInfo.import')">
             <input type="file" @change="handleFileImport" accept=".json,.lorebook,.png" hidden />
           </label>
-          <div class="menu-button fa-solid fa-file-export" :title="t('worldInfo.export')"></div>
-          <div class="menu-button fa-solid fa-pencil" :title="t('worldInfo.rename')"></div>
-          <div class="menu-button fa-solid fa-paste" :title="t('worldInfo.duplicate')"></div>
-          <div class="menu-button fa-solid fa-trash-can redWarningBG" :title="t('worldInfo.delete')"></div>
+          <div
+            class="menu-button fa-solid fa-file-export"
+            :title="t('worldInfo.export')"
+            :class="{ disabled: !isBookSelected }"
+            @click="worldInfoStore.exportEditingBook"
+          ></div>
+          <div
+            class="menu-button fa-solid fa-pencil"
+            :title="t('worldInfo.rename')"
+            :class="{ disabled: !isBookSelected }"
+            @click="worldInfoStore.renameEditingBook"
+          ></div>
+          <div
+            class="menu-button fa-solid fa-paste"
+            :title="t('worldInfo.duplicate')"
+            :class="{ disabled: !isBookSelected }"
+            @click="worldInfoStore.duplicateEditingBook"
+          ></div>
+          <div
+            class="menu-button fa-solid fa-trash-can redWarningBG"
+            :title="t('worldInfo.delete')"
+            :class="{ disabled: !isBookSelected }"
+            @click="worldInfoStore.deleteEditingBook"
+          ></div>
         </div>
 
         <!-- Entry Editor (if a book is selected) -->

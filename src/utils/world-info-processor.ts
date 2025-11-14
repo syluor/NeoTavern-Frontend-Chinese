@@ -1,4 +1,12 @@
-import type { ChatMessage, Character, WorldInfoBook, WorldInfoEntry, WorldInfoSettings } from '../types';
+import {
+  type ChatMessage,
+  type Character,
+  type WorldInfoBook,
+  type WorldInfoEntry,
+  type WorldInfoSettings,
+  WorldInfoLogic,
+  WorldInfoPosition,
+} from '../types';
 
 // TODO: These should be sourced from a central place or settings
 const MAX_SCAN_DEPTH = 1000;
@@ -98,8 +106,6 @@ export class WorldInfoProcessor {
     this.playerName = playerName;
   }
 
-  // TODO: What about before/after author notes?
-  // TODO: What about chat positioning?
   public process(): { worldInfoBefore: string; worldInfoAfter: string } {
     const buffer = new WorldInfoBuffer(this.chat, this.settings, this.character);
     let allActivatedEntries = new Set<WorldInfoEntry>();
@@ -133,20 +139,54 @@ export class WorldInfoProcessor {
         const textToScan = buffer.get(entry);
         if (!textToScan) continue;
 
-        const primaryKeyMatch = entry.key.some((key) => {
+        const hasPrimaryKeyMatch = entry.key.some((key) => {
           const subbedKey = substituteParams(key, this.character, this.playerName);
           return subbedKey && buffer.matchKeys(textToScan, subbedKey, entry);
         });
 
-        if (primaryKeyMatch) {
-          // TODO: Implement secondary key logic (AND, NOT, etc.)
-          activatedInThisLoop.add(entry);
+        if (hasPrimaryKeyMatch) {
+          const hasSecondary = entry.keysecondary && entry.keysecondary.length > 0;
+          if (!hasSecondary) {
+            activatedInThisLoop.add(entry);
+            continue;
+          }
+
+          // Handle secondary key logic
+          let hasAnySecondaryMatch = false;
+          let hasAllSecondaryMatch = true;
+          for (const key of entry.keysecondary) {
+            const subbedKey = substituteParams(key, this.character, this.playerName);
+            if (subbedKey && buffer.matchKeys(textToScan, subbedKey, entry)) {
+              hasAnySecondaryMatch = true;
+            } else {
+              hasAllSecondaryMatch = false;
+            }
+          }
+
+          let secondaryLogicPassed = false;
+          switch (entry.selectiveLogic as WorldInfoLogic) {
+            case WorldInfoLogic.AND_ANY:
+              secondaryLogicPassed = hasAnySecondaryMatch;
+              break;
+            case WorldInfoLogic.AND_ALL:
+              secondaryLogicPassed = hasAllSecondaryMatch;
+              break;
+            case WorldInfoLogic.NOT_ALL:
+              secondaryLogicPassed = !hasAllSecondaryMatch;
+              break;
+            case WorldInfoLogic.NOT_ANY:
+              secondaryLogicPassed = !hasAnySecondaryMatch;
+              break;
+          }
+
+          if (secondaryLogicPassed) {
+            activatedInThisLoop.add(entry);
+          }
         }
       }
 
       // TODO: Filter by inclusion groups
 
-      // Process entries activated in this loop
       if (activatedInThisLoop.size > 0) {
         for (const entry of activatedInThisLoop) {
           // TODO: Probability checks and budget checks
@@ -158,12 +198,12 @@ export class WorldInfoProcessor {
 
         if (newContentForRecursion) {
           buffer.addRecurse(newContentForRecursion);
-          continueScanning = true; // Continue loop for recursion
+          continueScanning = true;
         } else {
           continueScanning = false;
         }
       } else {
-        continueScanning = false; // No new entries found, stop.
+        continueScanning = false;
       }
     }
 
@@ -175,13 +215,12 @@ export class WorldInfoProcessor {
 
     for (const entry of finalEntries) {
       const content = substituteParams(entry.content, this.character, this.playerName);
-      if (entry.position === 0) {
-        // before
+      if (entry.position === WorldInfoPosition.BEFORE_CHAR) {
         worldInfoBefore += `${content}\n`;
       } else {
-        // after
         worldInfoAfter += `${content}\n`;
       }
+      // TODO: Handle other positions (AN, EM, at Depth, Outlet)
     }
 
     return {

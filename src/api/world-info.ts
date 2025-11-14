@@ -45,6 +45,22 @@ export async function deleteWorldInfoBook(name: string): Promise<void> {
   });
 }
 
+export async function renameWorldInfoBook(oldName: string, newName: string): Promise<void> {
+  // TODO: Implement backend endpoint for this
+  console.warn(`renameWorldInfoBook API call not implemented. Simulating for now.`);
+  return Promise.resolve();
+}
+
+export async function duplicateWorldInfoBook(sourceName: string, newName: string): Promise<void> {
+  // TODO: Implement backend endpoint for this
+  console.warn(`duplicateWorldInfoBook API call not implemented. Simulating for now.`);
+  return Promise.resolve();
+}
+
+export async function exportWorldInfoBook(name: string): Promise<WorldInfoBook> {
+  return fetchWorldInfoBook(name);
+}
+
 export async function importWorldInfoBook(file: File): Promise<{ name: string }> {
   const formData = new FormData();
   formData.append('avatar', file); // 'avatar' is the key used in the original backend

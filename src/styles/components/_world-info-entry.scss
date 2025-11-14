@@ -24,7 +24,7 @@
     padding: 0; // Override default padding
   }
 
-  &__main-controls {
+  &__header-controls {
     flex-grow: 1;
     display: flex;
     align-items: center;
@@ -47,6 +47,16 @@
       margin: 0;
       flex-grow: 1;
     }
+
+    .header-fields {
+      display: flex;
+      gap: 5px;
+
+      .text-pole {
+        width: 5em;
+        text-align: center;
+      }
+    }
   }
 
   &__actions {
@@ -57,11 +67,13 @@
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
   }
 
   &__section {
+    display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 
     .flex-1 {
       flex: 1;
@@ -71,6 +83,55 @@
       text-align: center;
       opacity: 0.8;
       font-weight: bold;
+      width: 100%;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 120px;
+      gap: 2px;
+    }
+  }
+
+  &__checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
+    .checkbox-label {
+      font-size: 0.9em;
+    }
+  }
+
+  .additional-sources {
+    width: 100%;
+    .inline-drawer-header {
+      padding: 5px;
+    }
+    .inline-drawer-content {
+      padding: 5px 10px;
+    }
+  }
+
+  .fa-circle-info {
+    opacity: 0.5;
+    cursor: help;
+  }
+
+  .unit {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.6;
+    pointer-events: none;
+    font-size: 0.9em;
+  }
+  .input-with-unit {
+    position: relative;
+    input {
+      padding-right: 2.5em;
     }
   }
 }

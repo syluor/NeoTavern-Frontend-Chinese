@@ -6,6 +6,7 @@ import UserSettingsDrawer from './UserSettingsDrawer.vue';
 import ApiConnectionsDrawer from './ApiConnectionsDrawer.vue';
 import AiConfigDrawer from './AiConfigDrawer.vue';
 import BackgroundsDrawer from './BackgroundsDrawer.vue';
+import WorldInfoDrawer from './WorldInfoDrawer.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 
 const { t } = useStrictI18n();
@@ -71,7 +72,7 @@ function toggleDrawer(drawerName: string) {
           ></div>
         </button>
         <div class="nav-item__content" :class="{ active: activeDrawer === 'world-info' }">
-          <!-- World Info Content -->
+          <WorldInfoDrawer />
         </div>
       </div>
       <div class="nav-item">

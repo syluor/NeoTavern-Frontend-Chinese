@@ -2,6 +2,8 @@ import type { Character, ChatMessage } from '../types';
 import type { ApiChatMessage } from '../api/generation';
 import { useUiStore } from '../stores/ui.store';
 import { useApiStore } from '../stores/api.store';
+import { useWorldInfoStore } from '../stores/world-info.store';
+import { WorldInfoProcessor } from './world-info-processor';
 
 // TODO: Add proper templating engine
 function substitute(text: string, char: Character, user: string): string {
@@ -29,6 +31,20 @@ export class PromptBuilder {
 
   public build(): ApiChatMessage[] {
     const messages: ApiChatMessage[] = [];
+    const worldInfoStore = useWorldInfoStore();
+
+    // Process World Info first
+    const activeBooks = worldInfoStore.bookNames
+      .filter((name) => worldInfoStore.activeBookNames.includes(name))
+      .map((name) => worldInfoStore.editingBook); // TODO: Get from loaded cache
+    const processor = new WorldInfoProcessor(
+      this.chatHistory,
+      this.character,
+      worldInfoStore.settings,
+      activeBooks.filter((book): book is NonNullable<typeof book> => book !== null),
+      this.playerName,
+    );
+    const { worldInfoBefore, worldInfoAfter } = processor.process();
 
     const promptOrderConfig = this.settings.prompt_order?.[0]; // Not using character_id
     if (!promptOrderConfig) {
@@ -49,17 +65,17 @@ export class PromptBuilder {
             break;
           case 'charDescription':
             if (this.character.description) {
-              messages.push({ role: 'system', content: this.character.description });
+              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.description });
             }
             break;
           case 'charPersonality':
             if (this.character.personality) {
-              messages.push({ role: 'system', content: this.character.personality });
+              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.personality });
             }
             break;
           case 'scenario':
             if (this.character.scenario) {
-              messages.push({ role: 'system', content: this.character.scenario });
+              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.scenario });
             }
             break;
           case 'dialogueExamples':
@@ -68,8 +84,18 @@ export class PromptBuilder {
               const examples = example.split('<START>');
               for (const ex of examples) {
                 // FIXME: I'm not sure this is correct.
-                if (ex.trim()) messages.push({ role: 'system', content: ex.trim() });
+                if (ex.trim()) messages.push({ role: promptDefinition.role ?? 'system', content: ex.trim() });
               }
+            }
+            break;
+          case 'worldInfoBefore':
+            if (worldInfoBefore) {
+              messages.push({ role: promptDefinition.role ?? 'system', content: worldInfoBefore });
+            }
+            break;
+          case 'worldInfoAfter':
+            if (worldInfoAfter) {
+              messages.push({ role: promptDefinition.role ?? 'system', content: worldInfoAfter });
             }
             break;
         }

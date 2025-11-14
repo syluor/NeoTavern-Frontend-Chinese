@@ -1,5 +1,3 @@
-// This file imports all component-specific styles.
-
 @use 'top-bar';
 @use 'chat-interface';
 @use 'chat-message';
@@ -13,3 +11,5 @@
 @use 'ai-config-drawer';
 @use 'zoomed-avatar';
 @use 'backgrounds-drawer';
+@use 'world-info-drawer';
+@use 'world-info-entry';

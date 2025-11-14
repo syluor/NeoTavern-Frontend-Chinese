@@ -3,13 +3,14 @@ import { ref, computed } from 'vue';
 import { SendOnEnterOptions, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
 import { isMobile } from '../utils/browser';
 import { debounce } from '../utils/common';
-import type { Settings, SettingDefinition, SettingsPath } from '../types';
+import { type Settings, type SettingDefinition, type SettingsPath } from '../types';
 import { fetchUserSettings, saveUserSettings } from '../api/settings';
 import { settingsDefinition } from '../settings-definition';
 import { toast } from '../composables/useToast';
 import { set, get, defaultsDeep } from 'lodash-es';
 import { useUiStore } from './ui.store';
 import type { ValueForPath } from '../types/utils';
+import { defaultWorldInfoSettings } from './world-info.store';
 
 // --- Create type aliases for convenience ---
 type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
@@ -20,6 +21,7 @@ function createDefaultSettings(): Settings {
   for (const def of settingsDefinition) {
     set(defaultSettings, def.id, def.defaultValue);
   }
+  defaultSettings.world_info_settings = defaultWorldInfoSettings;
   return defaultSettings as Settings;
 }
 

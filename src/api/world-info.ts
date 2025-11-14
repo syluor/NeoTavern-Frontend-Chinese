@@ -1,0 +1,63 @@
+import { getRequestHeaders } from '../utils/api';
+import type { WorldInfoBook } from '../types';
+
+export async function fetchAllWorldInfoNames(): Promise<string[]> {
+  const response = await fetch('/api/settings/get', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch world info list');
+  }
+  const data = await response.json();
+  return data.world_names ?? [];
+}
+
+export async function fetchWorldInfoBook(name: string): Promise<WorldInfoBook> {
+  const response = await fetch('/api/worldinfo/get', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({ name }),
+    cache: 'no-cache',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch world info book: ${name}`);
+  }
+  const bookData = await response.json();
+  // The backend might return just the entries, so we wrap it.
+  return { name, entries: bookData.entries || [] };
+}
+
+export async function saveWorldInfoBook(name: string, data: WorldInfoBook): Promise<void> {
+  await fetch('/api/worldinfo/edit', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({ name, data }),
+  });
+}
+
+export async function deleteWorldInfoBook(name: string): Promise<void> {
+  await fetch('/api/worldinfo/delete', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function importWorldInfoBook(file: File): Promise<{ name: string }> {
+  const formData = new FormData();
+  formData.append('avatar', file); // 'avatar' is the key used in the original backend
+
+  const response = await fetch('/api/worldinfo/import', {
+    method: 'POST',
+    headers: getRequestHeaders({ omitContentType: true }),
+    body: formData,
+    cache: 'no-cache',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to import world info: ${response.statusText}`);
+  }
+  return await response.json();
+}

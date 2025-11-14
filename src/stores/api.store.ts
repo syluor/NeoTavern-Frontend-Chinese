@@ -53,6 +53,8 @@ export const useApiStore = defineStore('api', () => {
       { identifier: 'charPersonality', name: 'Char Personality', system_prompt: true, marker: true },
       { identifier: 'scenario', name: 'Scenario', system_prompt: true, marker: true },
       { identifier: 'dialogueExamples', name: 'Chat Examples', system_prompt: true, marker: true },
+      { identifier: 'worldInfoAfter', name: 'World Info (after)', system_prompt: true, marker: true },
+      { identifier: 'worldInfoBefore', name: 'World Info (before)', system_prompt: true, marker: true },
     ] as OaiPrompt[],
     prompt_order: [
       {
@@ -63,7 +65,9 @@ export const useApiStore = defineStore('api', () => {
           { identifier: 'charPersonality', enabled: true },
           { identifier: 'scenario', enabled: true },
           { identifier: 'dialogueExamples', enabled: true },
+          { identifier: 'worldInfoBefore', enabled: true },
           { identifier: 'chatHistory', enabled: true },
+          { identifier: 'worldInfoAfter', enabled: true },
           { identifier: 'jailbreak', enabled: true },
         ],
       },

@@ -28,10 +28,10 @@ onMounted(() => {
 
 function hide() {
   isVisible.value = false;
-  // Wait for animation to finish before removing from store
+  const transitionDuration = 250;
   setTimeout(() => {
     toast.remove(props.toast.id);
-  }, 300); // Corresponds to transition duration
+  }, transitionDuration + 10); // Add a small buffer
 }
 </script>
 

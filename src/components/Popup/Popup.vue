@@ -5,6 +5,7 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type PopupOptions } from '../../types';
 import 'cropperjs';
+import type { I18nKey } from '../../types/i18n';
 
 interface CropperSelectionElement extends HTMLElement {
   x: number;
@@ -39,23 +40,28 @@ const showCancel = ref(false);
 
 function resolveOptions() {
   const { okButton, cancelButton } = props.options;
+
+  const getButtonText = (buttonOption: I18nKey | boolean | undefined, defaultKey: I18nKey): string => {
+    return typeof buttonOption === 'string' ? t(buttonOption) : t(defaultKey);
+  };
+
   switch (props.type) {
     case POPUP_TYPE.CONFIRM:
-      okText.value = typeof okButton === 'string' ? okButton : t('common.yes');
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.no');
+      okText.value = getButtonText(okButton, 'common.yes');
+      cancelText.value = getButtonText(cancelButton, 'common.no');
       showOk.value = okButton !== false;
       showCancel.value = cancelButton !== false;
       break;
     case POPUP_TYPE.INPUT:
     case POPUP_TYPE.CROP:
-      okText.value = typeof okButton === 'string' ? okButton : t('common.save');
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.cancel');
+      okText.value = getButtonText(okButton, 'common.save');
+      cancelText.value = getButtonText(cancelButton, 'common.cancel');
       showOk.value = okButton !== false;
       showCancel.value = cancelButton !== false;
       break;
     default: // TEXT
-      okText.value = typeof okButton === 'string' ? okButton : t('common.ok');
-      cancelText.value = typeof cancelButton === 'string' ? cancelButton : t('common.cancel');
+      okText.value = getButtonText(okButton, 'common.ok');
+      cancelText.value = getButtonText(cancelButton, 'common.cancel');
       showOk.value = okButton !== false;
       showCancel.value = !!cancelButton;
   }

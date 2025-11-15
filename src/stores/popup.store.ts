@@ -18,11 +18,13 @@ interface PopupPromise {
   reject: (reason?: any) => void;
 }
 
+export type PopupShowOptions = Partial<Omit<PopupState, 'id' | 'visible'>>;
+
 export const usePopupStore = defineStore('popup', () => {
   const popups = ref<PopupState[]>([]);
   const promises = ref<Record<string, PopupPromise>>({});
 
-  function show(options: Partial<Omit<PopupState, 'id' | 'visible'>>): Promise<{ result: number; value: any }> {
+  function show(options: PopupShowOptions): Promise<{ result: number; value: any }> {
     const id = uuidv4();
     const newPopup: PopupState = {
       id,

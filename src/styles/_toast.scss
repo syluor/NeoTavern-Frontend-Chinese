@@ -1,3 +1,7 @@
+:root {
+  --toast-transition-duration: 250ms;
+}
+
 #toast-container {
   position: fixed;
   z-index: 999999;
@@ -25,8 +29,8 @@
   opacity: 0;
   transform: translateY(-20px);
   transition:
-    opacity 250ms ease-in-out,
-    transform 250ms ease-in-out;
+    opacity var(--toast-transition-duration) ease-in-out,
+    transform var(--toast-transition-duration) ease-in-out;
   text-shadow: none;
   font-size: calc(var(--font-size-main) * 0.95);
 

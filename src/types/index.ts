@@ -179,8 +179,8 @@ export interface CustomPopupInput {
 }
 
 export interface PopupOptions {
-  okButton?: string | boolean;
-  cancelButton?: string | boolean;
+  okButton?: I18nKey | boolean;
+  cancelButton?: I18nKey | boolean;
   rows?: number;
   wide?: boolean;
   large?: boolean;

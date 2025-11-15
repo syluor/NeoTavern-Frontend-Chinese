@@ -57,7 +57,7 @@
     border-right: 1px solid var(--theme-border-color);
     box-shadow: 2px 0 20px 0 var(--black-70a);
     min-width: 450px;
-    width: var(--layout-panel-width);
+    width: var(--panel-width);
     left: var(--side-bar-width);
     right: 0;
     margin: 0 auto;
@@ -72,7 +72,7 @@
     }
 
     &.wide {
-      width: var(--layout-panel-width-wide);
+      width: var(--panel-width-wide);
     }
 
     &--from-left {

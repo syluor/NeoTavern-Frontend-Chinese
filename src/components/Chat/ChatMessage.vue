@@ -7,8 +7,8 @@ import { useCharacterStore } from '../../stores/character.store';
 import { useUiStore } from '../../stores/ui.store';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import { usePopupStore } from '../../stores/popup.store';
-import { getThumbnailUrl } from '../../utils/image';
+import { usePopupStore, type PopupShowOptions } from '../../stores/popup.store';
+import { resolveAvatarUrls } from '../../utils/image';
 import { formatTimeStamp } from '../../utils/date';
 import { formatMessage } from '../../utils/markdown';
 import { useStrictI18n } from '../../composables/useStrictI18n';
@@ -42,57 +42,28 @@ watch(isEditing, (editing) => {
   }
 });
 
-const avatarUrl = computed(() => {
-  if (props.message.is_user && !props.message.force_avatar) {
-    return getThumbnailUrl('persona', uiStore.activePlayerAvatar ?? undefined);
-  }
-  if (props.message.force_avatar) {
-    return props.message.force_avatar;
-  }
-  // For bot message
+const avatarUrls = computed(() => {
   const character = characterStore.characters.find((c) => c.name === props.message.name);
-  return getThumbnailUrl('avatar', character?.avatar);
-});
-
-const fullAvatarUrl = computed(() => {
-  const url = new URL(avatarUrl.value, window.location.origin);
-  const file = url.searchParams.get('file');
-  const type = url.searchParams.get('type');
-
-  if (file && type) {
-    // It's a thumbnail URL, construct full path
-    switch (type) {
-      case 'avatar':
-        return `/characters/${file}`;
-      case 'persona':
-        return getThumbnailUrl('persona', file);
-      case 'bg':
-        return `/backgrounds/${file}`;
-    }
-  }
-  // It's likely a direct URL (e.g., default avatar `img/ai4.png` or data URL)
-  return avatarUrl.value;
+  return resolveAvatarUrls({
+    type: 'avatar',
+    file: character?.avatar,
+    isUser: props.message.is_user || false,
+    forceAvatar: props.message.force_avatar,
+    activePlayerAvatar: uiStore.activePlayerAvatar,
+  });
 });
 
 const charNameForAvatar = computed(() => {
-  const url = new URL(avatarUrl.value, window.location.origin);
-  const file = url.searchParams.get('file');
-
-  if (file) {
-    return file.substring(0, file.lastIndexOf('.')) || file;
-  }
-  // Fallback for user messages or defaults
   if (props.message.is_user) {
-    return props.message.name;
+    return uiStore.activePlayerName;
   }
-  // Fallback for character messages if file param is missing
   return props.message.name;
 });
 
 function handleAvatarClick() {
   uiStore.toggleZoomedAvatar({
-    src: fullAvatarUrl.value,
-    charName: charNameForAvatar.value,
+    src: avatarUrls.value.full,
+    charName: charNameForAvatar.value || 'Avatar',
   });
 }
 
@@ -148,28 +119,28 @@ async function handleDeleteClick() {
   };
 
   if (!settingsStore.powerUser.confirm_message_delete) {
-    // Default to deleting the whole message if confirmation is off.
-    // Swipe deletion is only offered via confirmation popup.
-    performDelete(false);
+    // If confirmation is off, default to deleting the swipe if possible,
+    // otherwise delete the whole message. This is a less destructive default.
+    performDelete(canDeleteSwipe);
     return;
   }
 
-  let popupConfig = {};
+  let popupConfig: PopupShowOptions = {};
   if (canDeleteSwipe) {
     popupConfig = {
       title: t('chat.delete.confirmTitle'),
       content: t('chat.delete.confirmSwipeMessage'),
       type: POPUP_TYPE.CONFIRM,
-      okButton: t('chat.delete.deleteSwipe'),
-      cancelButton: t('chat.delete.deleteMessage'),
+      okButton: 'chat.delete.deleteSwipe',
+      cancelButton: 'chat.delete.deleteMessage',
     };
   } else {
     popupConfig = {
       title: t('chat.delete.confirmTitle'),
       content: t('chat.delete.confirmMessage'),
       type: POPUP_TYPE.CONFIRM,
-      okButton: t('common.delete'),
-      cancelButton: t('common.cancel'),
+      okButton: 'common.delete',
+      cancelButton: 'common.cancel',
     };
   }
 
@@ -201,7 +172,7 @@ function moveDown() {
   <div class="message" :class="{ 'is-user': message.is_user, 'is-bot': !message.is_user }">
     <div class="message__avatar-wrapper">
       <div class="message__avatar" @click="handleAvatarClick" style="cursor: pointer">
-        <img :src="avatarUrl" :alt="`${displayName} Avatar`" />
+        <img :src="avatarUrls.thumbnail" :alt="`${displayName} Avatar`" />
       </div>
       <div class="message__id">#{{ index }}</div>
       <div v-if="message.extra?.reasoning_duration" class="message__timer">

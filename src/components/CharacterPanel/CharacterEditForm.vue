@@ -157,7 +157,7 @@ function openMaximizeEditor(fieldName: EditableField, title: string) {
   editingFieldName.value = fieldName;
   editorPopupTitle.value = t('characterEditor.advanced.editingTitle', { title });
   editorPopupValue.value = get(formData.value, fieldName) ?? '';
-  editorPopupOptions.value = { wide: true, large: true, okButton: 'OK', cancelButton: false };
+  editorPopupOptions.value = { wide: true, large: true, okButton: 'common.ok', cancelButton: false };
   isEditorPopupVisible.value = true;
 }
 

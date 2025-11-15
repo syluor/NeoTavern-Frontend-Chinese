@@ -82,7 +82,7 @@ const hasOpenRouterGroupedModels = computed(() => {
               <optgroup :label="t('apiConnections.modelGroups.gpt4turbo')">
                 <option value="gpt-4-turbo">gpt-4-turbo</option>
               </optgroup>
-              <optgroup v-if="dynamicOpenAIModels.length > 0" label="Other Models">
+              <optgroup v-if="dynamicOpenAIModels.length > 0" :label="t('apiConnections.modelGroups.other')">
                 <option v-for="model in dynamicOpenAIModels" :key="model.id" :value="model.id">
                   {{ model.id }}
                 </option>

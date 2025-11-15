@@ -1,8 +1,7 @@
 .zoomed-avatar {
   // Using calc variables as in the original for dynamic sizing
   --max-width: calc(90vh * 0.666);
-  --shell-width: var(--layout-panel-width);
-  --left-gap-width: calc((100vw - var(--shell-width)) / 2);
+  --left-gap-width: calc((100vw - var(--panel-width)) / 2);
   --left-position: max(0px, calc((var(--left-gap-width) - var(--max-width)) / 2));
 
   padding: 0;

@@ -120,7 +120,9 @@ export const useCharacterStore = defineStore('character', () => {
 
     const total = Object.values(newFieldCounts).reduce((sum, count) => sum + count, 0);
 
-    // In the context of the character editor, all definition tokens are considered permanent.
+    // TODO: Refine the definition of "permanent" tokens.
+    // Currently, this assumes all definition fields are permanent, which is true for the editor view.
+    // However, for prompt construction, this might differ based on settings.
     tokenCounts.value = {
       total: total,
       permanent: total,

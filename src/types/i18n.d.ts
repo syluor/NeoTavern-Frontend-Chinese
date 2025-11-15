@@ -401,7 +401,6 @@ export interface MessageSchema {
     totalTokens: string;
     permanentTokens: string;
     aboutTokens: string;
-    stats: string;
     togglePanel: string;
     createNew: string;
     importFile: string;
@@ -552,6 +551,7 @@ export interface MessageSchema {
     modelGroups: {
       gpt4o: string;
       gpt4turbo: string;
+      other: string;
     };
     openrouterModel: string;
     openrouterWebsite: string;

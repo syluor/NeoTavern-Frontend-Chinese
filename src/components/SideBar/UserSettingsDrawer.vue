@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useSettingsStore } from '../../stores/settings.store';
-import type { SettingDefinition } from '../../types';
+import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { slideTransitionHooks } from '../../utils/dom';
+import type { ValueForPath } from '../../types/utils';
 
 const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();
@@ -52,15 +53,15 @@ function getSettingValue(id: string) {
   return settingsStore.getSetting(id);
 }
 
-function updateSetting(id: string, event: Event) {
+function updateSetting<P extends SettingsPath>(id: P, event: Event) {
   const target = event.target as HTMLInputElement | HTMLSelectElement;
-  let value: string | number | boolean = target.value;
+  let value: ValueForPath<Settings, P> = target.value as ValueForPath<Settings, P>;
   const definition = settingsStore.definitions.find((d) => d.id === id);
 
   if (definition?.type === 'boolean') {
-    value = (target as HTMLInputElement).checked;
+    value = (target as HTMLInputElement).checked as ValueForPath<Settings, P>;
   } else if (definition?.type === 'number') {
-    value = parseFloat(value);
+    value = parseFloat(value as unknown as string) as ValueForPath<Settings, P>;
   }
 
   // @ts-ignore

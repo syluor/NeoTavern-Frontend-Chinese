@@ -2,7 +2,7 @@
 import { ref, watch, computed, nextTick } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import type { Character } from '../../types';
+import type { Character, MessageRole } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
 import { getThumbnailUrl } from '../../utils/image';
@@ -10,8 +10,19 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { slideTransitionHooks } from '../../utils/dom';
 import { get, set } from 'lodash-es';
 import { depth_prompt_depth_default, depth_prompt_role_default, talkativeness_default } from '../../constants';
+import type { Path, ValueForPath } from '../../types/utils';
 
-// TODO: Add token count for description and first message
+type CharacterFormData = Omit<Character, 'data'> & {
+  data: Omit<NonNullable<Character['data']>, 'depth_prompt'> & {
+    depth_prompt: {
+      prompt: string;
+      depth: number;
+      role: MessageRole;
+    };
+  };
+};
+
+type CharacterFormDataPath = Path<CharacterFormData>;
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -19,7 +30,7 @@ const settingsStore = useSettingsStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 const activeCharacter = computed(() => characterStore.activeCharacter);
 
-const formData = ref<Partial<Character> & { data?: any }>({});
+const formData = ref<CharacterFormData>({} as CharacterFormData);
 const isUpdatingFromStore = ref(false);
 
 // --- State for new features ---
@@ -94,7 +105,7 @@ watch(
         });
       }
     } else {
-      formData.value = { data: {} };
+      formData.value = { data: {} } as CharacterFormData;
     }
   },
   { immediate: true, deep: true },
@@ -127,7 +138,10 @@ watch(
 );
 
 // --- Methods ---
-function updateValue(path: string, value: any) {
+type ValueFor<P extends CharacterFormDataPath> =
+  P extends Path<CharacterFormData> ? ValueForPath<CharacterFormData, P> : never;
+
+function updateValue<P extends CharacterFormDataPath>(path: P, value: ValueFor<P>) {
   set(formData.value, path, value);
 }
 
@@ -365,7 +379,7 @@ function handleEditorSubmit({ value }: { value: string }) {
             <label>{{ t('characterEditor.advanced.role') }}</label>
             <select
               :value="formData.data.depth_prompt.role"
-              @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value)"
+              @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
               class="text-pole"
             >
               <option value="system">{{ t('characterEditor.advanced.roles.system') }}</option>

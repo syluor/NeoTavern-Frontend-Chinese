@@ -44,7 +44,7 @@ function getVisibleItems(section: AiConfigSection) {
   return section.items.filter((item) => checkConditions(item.conditions));
 }
 
-async function handleNewPreset(apiId: string) {
+async function handleNewPreset() {
   const { result, value } = await popupStore.show({
     title: t('aiConfig.presets.newName'),
     type: POPUP_TYPE.INPUT,
@@ -52,13 +52,12 @@ async function handleNewPreset(apiId: string) {
   });
 
   if (result === 1 && value) {
-    apiStore.saveCurrentPresetAs(apiId, value);
+    apiStore.saveCurrentPresetAs(value);
   }
 }
 
 onMounted(() => {
   apiStore.loadPresetsForApi();
-  // TODO: Load presets for other APIs based on selection
 });
 </script>
 
@@ -84,24 +83,24 @@ onMounted(() => {
       <template v-for="section in visibleSections" :key="section.id">
         <div v-for="item in getVisibleItems(section)" :key="item.id || item.widget" class="ai-config-drawer__item">
           <!-- Preset Manager -->
-          <div v-if="item.widget === 'preset-manager' && item.id && item.apiId" class="preset-manager">
+          <div v-if="item.widget === 'preset-manager' && item.id" class="preset-manager">
             <div class="standout-header">
               <strong>{{ item.label ? t(item.label) : '' }}</strong>
               <div class="preset-manager__actions">
                 <div
                   class="menu-button-icon fa-solid fa-file-import"
                   :title="t('aiConfig.presets.import')"
-                  @click="item.apiId ? apiStore.importPreset(item.apiId) : undefined"
+                  @click="apiStore.importPreset()"
                 ></div>
                 <div
                   class="menu-button-icon fa-solid fa-file-export"
                   :title="t('aiConfig.presets.export')"
-                  @click="item.apiId ? apiStore.exportPreset(item.apiId, settingsStore.getSetting(item.id)) : undefined"
+                  @click="apiStore.exportPreset(settingsStore.getSetting(item.id))"
                 ></div>
                 <div
                   class="menu-button-icon fa-solid fa-trash-can"
                   :title="t('aiConfig.presets.delete')"
-                  @click="item.apiId ? apiStore.deletePreset(item.apiId, settingsStore.getSetting(item.id)) : undefined"
+                  @click="apiStore.deletePreset(settingsStore.getSetting(item.id))"
                 ></div>
               </div>
             </div>
@@ -118,17 +117,17 @@ onMounted(() => {
               <div
                 class="menu-button-icon fa-solid fa-save"
                 :title="t('aiConfig.presets.update')"
-                @click="apiStore.updateCurrentPreset(item.apiId!, settingsStore.getSetting(item.id))"
+                @click="apiStore.updateCurrentPreset(settingsStore.getSetting(item.id))"
               ></div>
               <div
                 class="menu-button-icon fa-solid fa-pencil"
                 :title="t('aiConfig.presets.rename')"
-                @click="apiStore.renamePreset(item.apiId!, settingsStore.getSetting(item.id))"
+                @click="apiStore.renamePreset(settingsStore.getSetting(item.id))"
               ></div>
               <div
                 class="menu-button-icon fa-solid fa-file-circle-plus"
                 :title="t('aiConfig.presets.saveAs')"
-                @click="item.apiId ? handleNewPreset(item.apiId) : undefined"
+                @click="handleNewPreset()"
               ></div>
             </div>
           </div>

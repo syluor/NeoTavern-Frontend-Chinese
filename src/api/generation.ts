@@ -1,6 +1,7 @@
 import { getRequestHeaders } from '../utils/api';
-import type { ChatCompletionSource, MessageRole, SamplerSettings, ExperimentalSettings } from '../types';
+import type { ChatCompletionSource, MessageRole, SamplerSettings, Settings } from '../types';
 import { chat_completion_sources } from '../types';
+import type { OpenrouterMiddleoutType } from '../constants';
 
 export interface ApiChatMessage {
   role: MessageRole;
@@ -36,7 +37,7 @@ export type ChatCompletionPayload = Partial<{
   use_fallback: boolean;
   provider: string[];
   allow_fallbacks: boolean;
-  middleout: boolean;
+  middleout: OpenrouterMiddleoutType;
 
   // Google-specific
   use_makersuite_sysprompt: boolean;
@@ -60,7 +61,7 @@ export type BuildChatCompletionPayloadOptions = {
   messages: ApiChatMessage[];
   model: string;
   source: ChatCompletionSource;
-  apiSettings: ExperimentalSettings['api'];
+  providerSpecific: Settings['api']['provider_specific'];
   playerName: string;
   characterName: string;
 };
@@ -69,7 +70,7 @@ export function buildChatCompletionPayload({
   messages,
   model,
   source,
-  apiSettings,
+  providerSpecific,
 }: BuildChatCompletionPayloadOptions): ChatCompletionPayload {
   const payload: ChatCompletionPayload = {
     messages,
@@ -85,6 +86,7 @@ export function buildChatCompletionPayload({
     top_k: samplerSettings.top_k,
     min_p: samplerSettings.min_p,
     top_a: samplerSettings.top_a,
+    include_reasoning: !!samplerSettings.show_thoughts,
   };
 
   // --- Seed ---
@@ -122,17 +124,17 @@ export function buildChatCompletionPayload({
   }
 
   // --- Provider-Specific Logic ---
-  const providers = apiSettings.providers;
+  const providers = samplerSettings.providers;
   switch (source) {
     case chat_completion_sources.CLAUDE:
       payload.claude_use_sysprompt = providers.claude?.use_sysprompt;
       payload.assistant_prefill = providers.claude?.assistant_prefill;
       break;
     case chat_completion_sources.OPENROUTER:
-      payload.use_fallback = providers.openrouter?.use_fallback;
-      payload.provider = providers.openrouter?.providers;
-      payload.allow_fallbacks = providers.openrouter?.allow_fallbacks;
-      payload.middleout = providers.openrouter?.middleout;
+      payload.use_fallback = providerSpecific.openrouter.use_fallback;
+      payload.provider = providerSpecific.openrouter?.providers;
+      payload.allow_fallbacks = providerSpecific.openrouter.allow_fallbacks;
+      payload.middleout = providerSpecific.openrouter.middleout;
       break;
     case chat_completion_sources.MAKERSUITE:
     case chat_completion_sources.VERTEXAI:

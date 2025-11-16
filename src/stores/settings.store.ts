@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { SendOnEnterOptions, DEFAULT_SAVE_EDIT_TIMEOUT, defaultSamplerSettings } from '../constants';
+import {
+  SendOnEnterOptions,
+  DEFAULT_SAVE_EDIT_TIMEOUT,
+  defaultSamplerSettings,
+  defaultProviderModels,
+  OpenrouterMiddleoutType,
+} from '../constants';
 import { isMobile } from '../utils/browser';
 import { debounce } from '../utils/common';
 import {
@@ -41,26 +47,21 @@ function createDefaultSettings(): Settings {
   defaultSettings.api = {
     main: 'openai',
     chat_completion_source: 'openai',
-    providers: {
-      openai: {
-        model: 'gpt-4o',
-      },
-      claude: {
-        model: 'claude-3-5-sonnet-20240620',
-      },
-      openrouter: {
-        model: 'OR_Website',
-      },
-      google: {
-        model: '',
-      },
-    },
     reverse_proxy: '',
     proxy_password: '',
     selected_sampler: 'Default',
     samplers: defaultSamplerSettings,
     connection_profiles: [],
     selected_connection_profile: undefined,
+    selected_provider_models: { ...defaultProviderModels },
+    provider_specific: {
+      openrouter: {
+        allow_fallbacks: true,
+        middleout: OpenrouterMiddleoutType.ON,
+        use_fallback: false,
+        providers: [],
+      },
+    },
   };
   defaultSettings.worldInfo = defaultWorldInfoSettings;
   defaultSettings.account = {};
@@ -153,30 +154,41 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     api: {
       main: legacy.main_api || 'openai',
       chat_completion_source: oai.chat_completion_source,
-      providers: {
-        openai: {
-          model: oai.openai_model || 'gpt-4o',
-        },
-        claude: {
-          model: oai.claude_model || 'claude-3-5-sonnet-20240620',
-          use_sysprompt: oai.claude_use_sysprompt,
-          assistant_prefill: oai.claude_assistant_prefill,
-        },
-        openrouter: {
-          model: oai.openrouter_model || 'OR_Website',
-          allow_fallbacks: oai.openrouter_allow_fallbacks,
-          middleout: oai.openrouter_middleout,
-          use_fallback: oai.openrouter_use_fallback,
-          providers: oai.openrouter_providers,
-        },
-        google: {
-          model: oai.google_model || '',
-          use_makersuite_sysprompt: oai.use_makersuite_sysprompt,
-        },
-      },
       reverse_proxy: oai.reverse_proxy,
       proxy_password: oai.proxy_password,
       selected_sampler: oai.preset_settings_openai,
+      selected_provider_models: {
+        openai: oai.openai_model || defaultProviderModels.openai,
+        claude: oai.claude_model || defaultProviderModels.claude,
+        openrouter: oai.openrouter_model || defaultProviderModels.openrouter,
+        vertexai: oai.google_model || defaultProviderModels.vertexai,
+        makersuite: oai.google_model || defaultProviderModels.makersuite,
+        mistralai: oai.mistralai_model || defaultProviderModels.mistralai,
+        groq: oai.groq_model || defaultProviderModels.groq,
+        deepseek: oai.deepseek_model || defaultProviderModels.deepseek,
+        ai21: oai.ai21_model || defaultProviderModels.ai21,
+        aimlapi: oai.aimlapi_model || defaultProviderModels.aimlapi,
+        azure_openai: oai.azure_openai_model || defaultProviderModels.azure_openai,
+        cohere: oai.cohere_model || defaultProviderModels.cohere,
+        cometapi: oai.cometapi_model || defaultProviderModels.cometapi,
+        custom: oai.custom_model || defaultProviderModels.custom,
+        electronhub: oai.electronhub_model || defaultProviderModels.electronhub,
+        fireworks: oai.fireworks_model || defaultProviderModels.fireworks,
+        moonshot: oai.moonshot_model || defaultProviderModels.moonshot,
+        nanogpt: oai.nanogpt_model || defaultProviderModels.nanogpt,
+        perplexity: oai.perplexity_model || defaultProviderModels.perplexity,
+        pollinations: oai.pollinations_model || defaultProviderModels.pollinations,
+        xai: oai.xai_model || defaultProviderModels.xai,
+        zai: oai.zai_model || defaultProviderModels.zai,
+      },
+      provider_specific: {
+        openrouter: {
+          allow_fallbacks: oai.openrouter_allow_fallbacks ?? true,
+          middleout: OpenrouterMiddleoutType.ON,
+          use_fallback: oai.openrouter_use_fallback ?? false,
+          providers: oai.openrouter_providers ?? [],
+        },
+      },
       samplers: {
         temperature: oai.temp_openai ?? defaultSamplerSettings.temperature,
         frequency_penalty: oai.freq_pen_openai ?? defaultSamplerSettings.frequency_penalty,
@@ -192,6 +204,19 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
         stream: oai.stream_openai ?? defaultSamplerSettings.stream,
         prompts: oai.prompts ?? defaultSamplerSettings.prompts,
         prompt_order: oai.prompt_order?.[0] ?? defaultSamplerSettings.prompt_order,
+        show_thoughts: oai.show_thoughts ?? defaultSamplerSettings.show_thoughts,
+        seed: oai.seed ?? defaultSamplerSettings.seed,
+        n: oai.n ?? defaultSamplerSettings.n,
+        stop: defaultSamplerSettings.stop, // There is no `stop` in legacy settings
+        providers: {
+          claude: {
+            use_sysprompt: oai.claude_use_sysprompt,
+            assistant_prefill: oai.claude_assistant_prefill,
+          },
+          google: {
+            use_makersuite_sysprompt: oai.use_makersuite_sysprompt,
+          },
+        },
       },
       connection_profiles: migratedConnectionProfiles,
       selected_connection_profile: legacy.extension_settings?.connectionManager?.selected,

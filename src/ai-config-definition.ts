@@ -7,11 +7,8 @@ export const aiConfigDefinition: AiConfigSection[] = [
       {
         widget: 'preset-manager',
         id: 'api.selected_sampler',
-        apiId: 'openai',
         label: 'aiConfig.presets.chatCompletion.label',
-        conditions: { api: 'openai' },
       },
-      // TODO: Add preset managers for other APIs like 'kobold', 'novel', etc.
     ],
   },
   {
@@ -54,10 +51,37 @@ export const aiConfigDefinition: AiConfigSection[] = [
         label: 'aiConfig.streaming.label',
         description: 'aiConfig.streaming.description',
       },
+      {
+        id: 'api.samplers.show_thoughts',
+        widget: 'checkbox',
+        label: 'aiConfig.showThoughts.label',
+        description: 'aiConfig.showThoughts.description',
+        conditions: {
+          source: [
+            'claude',
+            'deepseek',
+            'aimlapi',
+            'openrouter',
+            'custom',
+            'xai',
+            'makersuite',
+            'vertexai',
+            'pollinations',
+            'moonshot',
+            'mistralai',
+            'fireworks',
+            'cometapi',
+            'electronhub',
+            'azure_openai',
+            'nanogpt',
+            'zai',
+          ],
+        },
+      },
     ],
   },
   {
-    id: 'openai-sliders',
+    id: 'sampling-sliders-1',
     conditions: { api: 'openai' },
     items: [
       {
@@ -75,6 +99,27 @@ export const aiConfigDefinition: AiConfigSection[] = [
         min: -2,
         max: 2,
         step: 0.01,
+        conditions: {
+          source: [
+            'openai',
+            'aimlapi',
+            'openrouter',
+            'custom',
+            'cohere',
+            'perplexity',
+            'groq',
+            'mistralai',
+            'electronhub',
+            'nanogpt',
+            'deepseek',
+            'xai',
+            'pollinations',
+            'moonshot',
+            'fireworks',
+            'cometapi',
+            'azure_openai',
+          ],
+        },
       },
       {
         id: 'api.samplers.presence_penalty',
@@ -83,6 +128,27 @@ export const aiConfigDefinition: AiConfigSection[] = [
         min: -2,
         max: 2,
         step: 0.01,
+        conditions: {
+          source: [
+            'openai',
+            'aimlapi',
+            'openrouter',
+            'custom',
+            'cohere',
+            'perplexity',
+            'groq',
+            'mistralai',
+            'electronhub',
+            'nanogpt',
+            'deepseek',
+            'xai',
+            'pollinations',
+            'moonshot',
+            'fireworks',
+            'cometapi',
+            'azure_openai',
+          ],
+        },
       },
       {
         id: 'api.samplers.top_k',
@@ -91,6 +157,9 @@ export const aiConfigDefinition: AiConfigSection[] = [
         min: 0,
         max: 500,
         step: 1,
+        conditions: {
+          source: ['claude', 'aimlapi', 'openrouter', 'makersuite', 'vertexai', 'cohere', 'perplexity', 'electronhub'],
+        },
       },
       {
         id: 'api.samplers.top_p',
@@ -100,8 +169,36 @@ export const aiConfigDefinition: AiConfigSection[] = [
         max: 1,
         step: 0.01,
       },
-      // TODO: Add other sliders like repetition_penalty, min_p, top_a based on source
     ],
   },
-  // TODO: Add Utility Prompts section
+  {
+    id: 'openrouter-sliders',
+    conditions: { source: 'openrouter' },
+    items: [
+      {
+        id: 'api.samplers.repetition_penalty',
+        widget: 'slider',
+        label: 'aiConfig.repPenalty.label',
+        min: 1,
+        max: 2,
+        step: 0.01,
+      },
+      {
+        id: 'api.samplers.min_p',
+        widget: 'slider',
+        label: 'aiConfig.minP.label',
+        min: 0,
+        max: 1,
+        step: 0.001,
+      },
+      {
+        id: 'api.samplers.top_a',
+        widget: 'slider',
+        label: 'aiConfig.topA.label',
+        min: 0,
+        max: 1,
+        step: 0.001,
+      },
+    ],
+  },
 ];

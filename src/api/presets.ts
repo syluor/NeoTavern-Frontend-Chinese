@@ -30,6 +30,16 @@ export function migratePreset(legacyPreset: LegacyOaiPresetSettings): SamplerSet
     seed: legacyPreset.seed ?? defaultSamplerSettings.seed,
     n: legacyPreset.n ?? defaultSamplerSettings.n,
     stop: defaultSamplerSettings.stop, // Legacy don't have it, I'm not sure what to do here
+    providers: {
+      claude: {
+        use_sysprompt: legacyPreset.claude_use_sysprompt,
+        assistant_prefill: legacyPreset.assistant_prefill,
+      },
+      google: {
+        use_makersuite_sysprompt: legacyPreset.use_makersuite_sysprompt,
+      },
+    },
+    show_thoughts: legacyPreset.show_thoughts ?? defaultSamplerSettings.show_thoughts,
   };
 
   return newPreset;

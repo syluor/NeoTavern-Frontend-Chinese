@@ -53,17 +53,12 @@ export async function deleteWorldInfoBook(name: string): Promise<void> {
 }
 
 export async function renameWorldInfoBook(oldName: string, newName: string): Promise<void> {
-  // TODO: Implement a dedicated backend endpoint for this atomic operation.
-  // This simulation is not safe for concurrent operations.
-  console.warn(`renameWorldInfoBook API call not implemented. Simulating for now.`);
   const book = await fetchWorldInfoBook(oldName);
   await saveWorldInfoBook(newName, { ...book, name: newName });
   await deleteWorldInfoBook(oldName);
 }
 
 export async function duplicateWorldInfoBook(sourceName: string, newName: string): Promise<void> {
-  // TODO: Implement a dedicated backend endpoint for this atomic operation.
-  console.warn(`duplicateWorldInfoBook API call not implemented. Simulating for now.`);
   const book = await fetchWorldInfoBook(sourceName);
   await saveWorldInfoBook(newName, { ...book, name: newName });
 }

@@ -1,4 +1,10 @@
-import type { Prompt, PromptOrderConfig, SamplerSettings } from './types';
+import type { ChatCompletionSource, Prompt, PromptOrderConfig, SamplerSettings } from './types';
+
+export enum OpenrouterMiddleoutType {
+  AUTO = 'auto',
+  ON = 'on',
+  OFF = 'off',
+}
 
 export enum SendOnEnterOptions {
   DISABLED = -1,
@@ -77,4 +83,37 @@ export const defaultSamplerSettings: SamplerSettings = {
   stream: true,
   prompts: defaultPrompts,
   prompt_order: defaultPromptOrder,
+  n: 1,
+  seed: -1,
+  show_thoughts: true,
+  stop: [],
+  providers: {
+    claude: {},
+    google: {},
+  },
+};
+
+export const defaultProviderModels: Record<ChatCompletionSource, string> = {
+  openai: 'gpt-4o',
+  claude: 'claude-3-5-sonnet-20240620',
+  openrouter: 'OR_Website',
+  mistralai: 'mistral-large-latest',
+  groq: 'llama3-70b-8192',
+  deepseek: 'deepseek-chat',
+  ai21: 'jamba-1.5-large',
+  aimlapi: 'gpt-4o-mini-2024-07-18',
+  azure_openai: '',
+  cohere: 'command-r-plus',
+  cometapi: 'gpt-4o',
+  custom: '',
+  electronhub: 'gpt-4o-mini',
+  fireworks: 'accounts/fireworks/models/kimi-k2-instruct',
+  makersuite: 'gemini-2.0-flash',
+  vertexai: 'gemini-2.0-flash',
+  moonshot: 'kimi-latest',
+  nanogpt: 'gpt-4o-mini',
+  perplexity: 'llama-3-70b-instruct',
+  pollinations: 'openai',
+  xai: 'grok-3-beta',
+  zai: 'glm-4.6',
 };

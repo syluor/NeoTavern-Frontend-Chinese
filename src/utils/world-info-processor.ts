@@ -7,6 +7,7 @@ import {
   WorldInfoLogic,
   WorldInfoPosition,
   type MessageRole,
+  type Persona,
 } from '../types';
 
 // TODO: Replace with a real API call to the backend for accurate tokenization
@@ -32,11 +33,11 @@ class WorldInfoBuffer {
   #recurseBuffer: string[] = [];
   #settings: WorldInfoSettings;
   #character: Character;
-  // TODO: Add persona, etc.
-
-  constructor(chat: ChatMessage[], settings: WorldInfoSettings, character: Character) {
+  #persona: Persona;
+  constructor(chat: ChatMessage[], settings: WorldInfoSettings, character: Character, persona: Persona) {
     this.#settings = settings;
     this.#character = character;
+    this.#persona = persona;
     this.#initDepthBuffer(chat);
   }
 
@@ -61,7 +62,10 @@ class WorldInfoBuffer {
     // Add other scannable sources
     if (entry.matchCharacterDescription) buffer += `\n${this.#character.description ?? ''}`;
     if (entry.matchCharacterPersonality) buffer += `\n${this.#character.personality ?? ''}`;
-    // TODO: Add persona, scenario, creator notes etc.
+    if (entry.matchCharacterDepthPrompt) buffer += `\n${this.#character.data?.depth_prompt?.prompt ?? ''}`;
+    if (entry.matchCreatorNotes) buffer += `\n${this.#character.data?.creator_notes ?? ''}`;
+    if (entry.matchScenario) buffer += `\n${this.#character.scenario ?? ''}`;
+    if (entry.matchPersonaDescription) buffer += `\n${this.#persona.description ?? ''}`;
 
     if (this.#recurseBuffer.length > 0) {
       buffer += `\n${this.#recurseBuffer.join('\n')}`;
@@ -108,7 +112,7 @@ export type WorldInfoOptions = {
   character: Character;
   settings: WorldInfoSettings;
   books: WorldInfoBook[];
-  playerName: string;
+  persona: Persona;
   maxContext: number;
 };
 
@@ -118,20 +122,20 @@ export class WorldInfoProcessor {
   private character: Character;
   private settings: WorldInfoSettings;
   private books: WorldInfoBook[];
-  private playerName: string;
   private maxContext: number;
+  private persona: Persona;
 
-  constructor({ chat, character, settings, books, playerName, maxContext }: WorldInfoOptions) {
+  constructor({ chat, character, settings, books, maxContext, persona }: WorldInfoOptions) {
     this.chat = chat;
     this.character = character;
     this.settings = settings;
     this.books = books;
-    this.playerName = playerName;
+    this.persona = persona;
     this.maxContext = maxContext;
   }
 
   public async process(): Promise<ProcessedWorldInfo> {
-    const buffer = new WorldInfoBuffer(this.chat, this.settings, this.character);
+    const buffer = new WorldInfoBuffer(this.chat, this.settings, this.character, this.persona);
     let allActivatedEntries = new Set<WorldInfoEntry>();
     let continueScanning = true;
     let loopCount = 0;
@@ -170,7 +174,7 @@ export class WorldInfoProcessor {
         if (!textToScan) continue;
 
         const hasPrimaryKeyMatch = entry.key.some((key) => {
-          const subbedKey = substituteParams(key, this.character, this.playerName);
+          const subbedKey = substituteParams(key, this.character, this.persona.name);
           return subbedKey && buffer.matchKeys(textToScan, subbedKey, entry);
         });
 
@@ -185,7 +189,7 @@ export class WorldInfoProcessor {
           let hasAnySecondaryMatch = false;
           let hasAllSecondaryMatch = true;
           for (const key of entry.keysecondary) {
-            const subbedKey = substituteParams(key, this.character, this.playerName);
+            const subbedKey = substituteParams(key, this.character, this.persona.name);
             if (subbedKey && buffer.matchKeys(textToScan, subbedKey, entry)) {
               hasAnySecondaryMatch = true;
             } else {
@@ -227,7 +231,7 @@ export class WorldInfoProcessor {
             continue;
           }
 
-          const substitutedContent = substituteParams(entry.content, this.character, this.playerName);
+          const substitutedContent = substituteParams(entry.content, this.character, this.persona.name);
           const contentForBudget = `\n${substitutedContent}`;
           const currentTokens = await getTokenCount(currentContentForBudget);
           const entryTokens = await getTokenCount(contentForBudget);
@@ -271,7 +275,7 @@ export class WorldInfoProcessor {
     const finalEntries = Array.from(allActivatedEntries).sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 
     for (const entry of finalEntries) {
-      const content = substituteParams(entry.content, this.character, this.playerName);
+      const content = substituteParams(entry.content, this.character, this.persona.name);
       if (!content) continue;
 
       switch (entry.position) {

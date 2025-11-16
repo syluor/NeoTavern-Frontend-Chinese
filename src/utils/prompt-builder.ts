@@ -1,4 +1,4 @@
-import type { Character, ChatMessage, SamplerSettings } from '../types';
+import type { Character, ChatMessage, Persona, SamplerSettings } from '../types';
 import type { ApiChatMessage } from '../api/generation';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
@@ -21,7 +21,7 @@ export type PromtBuilderOptions = {
   character: Character;
   chatHistory: ChatMessage[];
   samplerSettings: SamplerSettings;
-  playerName: string;
+  persona: Persona;
   forContinue?: boolean;
 };
 
@@ -29,15 +29,15 @@ export class PromptBuilder {
   private character: Character;
   private chatHistory: ChatMessage[];
   private samplerSettings: SamplerSettings;
-  private playerName: string;
+  private persona: Persona;
   private maxContext: number;
   private forContinue: boolean;
 
-  constructor({ character, chatHistory, samplerSettings, playerName, forContinue = false }: PromtBuilderOptions) {
+  constructor({ character, chatHistory, samplerSettings, persona, forContinue = false }: PromtBuilderOptions) {
     this.character = character;
     this.chatHistory = chatHistory;
     this.samplerSettings = samplerSettings;
-    this.playerName = playerName;
+    this.persona = persona;
     this.forContinue = forContinue;
 
     this.maxContext = this.samplerSettings.max_context ?? defaultSamplerSettings.max_context;
@@ -58,7 +58,7 @@ export class PromptBuilder {
       chat: this.chatHistory,
       character: this.character,
       settings: worldInfoStore.settings,
-      playerName: this.playerName,
+      persona: this.persona,
       maxContext: this.maxContext,
     });
     const { worldInfoBefore, worldInfoAfter } = await processor.process();
@@ -99,7 +99,7 @@ export class PromptBuilder {
             break;
           case 'dialogueExamples':
             if (this.character.mes_example) {
-              const example = substitute(this.character.mes_example, this.character, this.playerName);
+              const example = substitute(this.character.mes_example, this.character, this.persona.name);
               fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: example });
             }
             break;
@@ -116,7 +116,7 @@ export class PromptBuilder {
         }
       } else {
         if (promptDefinition.content && promptDefinition.role) {
-          const content = substitute(promptDefinition.content, this.character, this.playerName);
+          const content = substitute(promptDefinition.content, this.character, this.persona.name);
           if (content) {
             fixedPrompts.push({ role: promptDefinition.role, content });
           }

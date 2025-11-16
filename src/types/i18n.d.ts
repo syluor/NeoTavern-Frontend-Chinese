@@ -283,6 +283,10 @@ export interface MessageSchema {
       label: string;
       description: string;
     };
+    showThoughts: {
+      label: string;
+      description: string;
+    };
     temperature: {
       label: string;
     };
@@ -292,10 +296,19 @@ export interface MessageSchema {
     presPenalty: {
       label: string;
     };
+    repPenalty: {
+      label: string;
+    };
     topK: {
       label: string;
     };
     topP: {
+      label: string;
+    };
+    minP: {
+      label: string;
+    };
+    topA: {
       label: string;
     };
   };
@@ -358,6 +371,7 @@ export interface MessageSchema {
       noPrompts: string;
       errorFallback: string;
       noModelError: string;
+      noPersonaError: string;
     };
     buttons: {
       confirmEdit: string;
@@ -566,21 +580,40 @@ export interface MessageSchema {
     kobold: string;
     source: string;
     openaiKey: string;
-    openaiKeyPlaceholder: string;
     claudeKey: string;
-    claudeKeyPlaceholder: string;
     openrouterKey: string;
-    openrouterKeyPlaceholder: string;
+    mistralaiKey: string;
+    groqKey: string;
     manageKeys: string;
     keyPrivacy: string;
     openaiModel: string;
     claudeModel: string;
+    mistralaiModel: string;
+    groqModel: string;
     connect: string;
     connecting: string;
     sources: {
       openai: string;
       claude: string;
       openrouter: string;
+      custom: string;
+      ai21: string;
+      aimlapi: string;
+      azure_openai: string;
+      cohere: string;
+      deepseek: string;
+      electronhub: string;
+      fireworks: string;
+      groq: string;
+      makersuite: string;
+      vertexai: string;
+      mistralai: string;
+      moonshot: string;
+      nanogpt: string;
+      perplexity: string;
+      pollinations: string;
+      xai: string;
+      zai: string;
     };
     modelGroups: {
       gpt4o: string;

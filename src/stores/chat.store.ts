@@ -21,6 +21,7 @@ import {
 import { getThumbnailUrl } from '../utils/image';
 import { default_user_avatar } from '../constants';
 import { useSettingsStore } from './settings.store';
+import { usePersonaStore } from './persona.store';
 
 // TODO: Replace with a real API call to the backend for accurate tokenization
 async function getTokenCount(text: string): Promise<number> {
@@ -43,6 +44,7 @@ export const useChatStore = defineStore('chat', () => {
   const generationController = ref<AbortController | null>(null);
 
   const uiStore = useUiStore();
+  const personaStore = usePersonaStore();
 
   function getCurrentChatId() {
     // TODO: Integrate group store later
@@ -208,10 +210,15 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       const forContinue = mode === GenerationMode.CONTINUE;
+      if (!personaStore.activePersona) {
+        toast.error(t('chat.generate.noPersonaError'));
+        console.error('generateResponse called without an active persona.');
+        return;
+      }
       const promptBuilder = new PromptBuilder({
         character: activeCharacter,
         chatHistory: chatHistoryForPrompt,
-        playerName: uiStore.activePlayerName || 'User',
+        persona: personaStore.activePersona,
         forContinue,
         samplerSettings: settingsStore.settings.api.samplers,
       });
@@ -235,7 +242,7 @@ export const useChatStore = defineStore('chat', () => {
         model: activeModel,
         samplerSettings: settings.api.samplers,
         source: settings.api.chat_completion_source,
-        apiSettings: settings.api,
+        providerSpecific: settings.api.provider_specific,
         playerName: uiStore.activePlayerName || 'User',
         characterName: activeCharacter.name,
       });

@@ -86,9 +86,34 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
           <select class="text-pole" v-model="settingsStore.settings.api.chat_completion_source">
             <optgroup>
               <option :value="chat_completion_sources.OPENAI">{{ t('apiConnections.sources.openai') }}</option>
+              <option :value="chat_completion_sources.CUSTOM">{{ t('apiConnections.sources.custom') }}</option>
+            </optgroup>
+            <optgroup>
+              <option :value="chat_completion_sources.AI21">{{ t('apiConnections.sources.ai21') }}</option>
+              <option :value="chat_completion_sources.AIMLAPI">{{ t('apiConnections.sources.aimlapi') }}</option>
+              <option :value="chat_completion_sources.AZURE_OPENAI">
+                {{ t('apiConnections.sources.azure_openai') }}
+              </option>
               <option :value="chat_completion_sources.CLAUDE">{{ t('apiConnections.sources.claude') }}</option>
+              <option :value="chat_completion_sources.COHERE">{{ t('apiConnections.sources.cohere') }}</option>
+              <option :value="chat_completion_sources.DEEPSEEK">{{ t('apiConnections.sources.deepseek') }}</option>
+              <option :value="chat_completion_sources.ELECTRONHUB">
+                {{ t('apiConnections.sources.electronhub') }}
+              </option>
+              <option :value="chat_completion_sources.FIREWORKS">{{ t('apiConnections.sources.fireworks') }}</option>
+              <option :value="chat_completion_sources.GROQ">{{ t('apiConnections.sources.groq') }}</option>
+              <option :value="chat_completion_sources.MAKERSUITE">{{ t('apiConnections.sources.makersuite') }}</option>
+              <option :value="chat_completion_sources.VERTEXAI">{{ t('apiConnections.sources.vertexai') }}</option>
+              <option :value="chat_completion_sources.MISTRALAI">{{ t('apiConnections.sources.mistralai') }}</option>
+              <option :value="chat_completion_sources.MOONSHOT">{{ t('apiConnections.sources.moonshot') }}</option>
+              <option :value="chat_completion_sources.NANOGPT">{{ t('apiConnections.sources.nanogpt') }}</option>
               <option :value="chat_completion_sources.OPENROUTER">{{ t('apiConnections.sources.openrouter') }}</option>
-              <!-- Add other sources as they are implemented -->
+              <option :value="chat_completion_sources.PERPLEXITY">{{ t('apiConnections.sources.perplexity') }}</option>
+              <option :value="chat_completion_sources.POLLINATIONS">
+                {{ t('apiConnections.sources.pollinations') }}
+              </option>
+              <option :value="chat_completion_sources.XAI">{{ t('apiConnections.sources.xai') }}</option>
+              <option :value="chat_completion_sources.ZAI">{{ t('apiConnections.sources.zai') }}</option>
             </optgroup>
           </select>
         </div>
@@ -99,13 +124,6 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
             <h4>{{ t('apiConnections.openaiKey') }}</h4>
             <div class="api-connections-drawer__input-group">
               <!-- TODO: Add secret management -->
-              <!-- <input
-                type="password"
-                class="text-pole"
-                autocomplete="off"
-                :placeholder="t('apiConnections.openaiKeyPlaceholder')"
-                v-model="apiStore.oaiSettings.api_key_openai"
-              /> -->
               <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
             </div>
             <div class="neutral_warning">
@@ -114,7 +132,7 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openaiModel') }}</h4>
-            <select class="text-pole" v-model="settingsStore.settings.api.providers.openai.model">
+            <select class="text-pole" v-model="settingsStore.settings.api.selected_provider_models.openai">
               <optgroup :label="t('apiConnections.modelGroups.gpt4o')">
                 <option value="gpt-4o">gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
@@ -131,19 +149,12 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
           </div>
         </form>
 
-        <!-- Claude Form (placeholder) -->
+        <!-- Claude Form -->
         <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.CLAUDE">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.claudeKey') }}</h4>
             <div class="api-connections-drawer__input-group">
               <!-- TODO: Add secret management -->
-              <!-- <input
-                type="password"
-                class="text-pole"
-                autocomplete="off"
-                :placeholder="t('apiConnections.claudeKeyPlaceholder')"
-                v-model="apiStore.oaiSettings.api_key_claude"
-              /> -->
               <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
             </div>
             <div class="neutral_warning">
@@ -152,7 +163,7 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.claudeModel') }}</h4>
-            <select class="text-pole" v-model="settingsStore.settings.api.providers.claude.model">
+            <select class="text-pole" v-model="settingsStore.settings.api.selected_provider_models.claude">
               <option value="claude-3-5-sonnet-20240620">claude-3-5-sonnet-20240620</option>
               <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
               <option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option>
@@ -166,13 +177,6 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
             <h4>{{ t('apiConnections.openrouterKey') }}</h4>
             <div class="api-connections-drawer__input-group">
               <!-- TODO: Add secret management -->
-              <!-- <input
-                type="password"
-                class="text-pole"
-                autocomplete="off"
-                :placeholder="t('apiConnections.openrouterKeyPlaceholder')"
-                v-model="apiStore.oaiSettings.api_key_openrouter"
-              /> -->
               <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
             </div>
             <div class="neutral_warning">
@@ -184,7 +188,7 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
             <select
               v-show="hasOpenRouterGroupedModels"
               class="text-pole"
-              v-model="settingsStore.settings.api.providers.openrouter.model"
+              v-model="settingsStore.settings.api.selected_provider_models.openrouter"
             >
               <option value="OR_Website">{{ t('apiConnections.openrouterWebsite') }}</option>
               <optgroup v-for="(models, vendor) in apiStore.groupedOpenRouterModels" :key="vendor" :label="vendor">
@@ -196,8 +200,46 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
               type="text"
               class="text-pole"
               placeholder="google/gemini-pro-1.5"
-              v-model="settingsStore.settings.api.providers.openrouter.model"
+              v-model="settingsStore.settings.api.selected_provider_models.openrouter"
             />
+          </div>
+        </form>
+
+        <!-- MistralAI Form -->
+        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.MISTRALAI">
+          <div class="api-connections-drawer__section">
+            <h4>{{ t('apiConnections.mistralaiKey') }}</h4>
+            <div class="api-connections-drawer__input-group">
+              <!-- TODO: Add secret management -->
+              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+            </div>
+          </div>
+          <div class="api-connections-drawer__section">
+            <h4>{{ t('apiConnections.mistralaiModel') }}</h4>
+            <select class="text-pole" v-model="settingsStore.settings.api.selected_provider_models.mistralai">
+              <option value="mistral-large-latest">mistral-large-latest</option>
+              <option value="mistral-small-latest">mistral-small-latest</option>
+            </select>
+          </div>
+        </form>
+
+        <!-- Groq Form -->
+        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.GROQ">
+          <div class="api-connections-drawer__section">
+            <h4>{{ t('apiConnections.groqKey') }}</h4>
+            <div class="api-connections-drawer__input-group">
+              <!-- TODO: Add secret management -->
+              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+            </div>
+          </div>
+          <div class="api-connections-drawer__section">
+            <h4>{{ t('apiConnections.groqModel') }}</h4>
+            <select class="text-pole" v-model="settingsStore.settings.api.selected_provider_models.groq">
+              <option value="llama3-70b-8192">llama3-70b-8192</option>
+              <option value="llama3-8b-8192">llama3-8b-8192</option>
+              <option value="gemma-7b-it">gemma-7b-it</option>
+              <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+            </select>
           </div>
         </form>
 

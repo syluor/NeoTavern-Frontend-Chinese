@@ -40,16 +40,7 @@ export const useApiStore = defineStore('api', () => {
 
   const activeModel = computed(() => {
     const apiSettings = settingsStore.settings.api;
-    switch (apiSettings.chat_completion_source) {
-      case chat_completion_sources.OPENAI:
-        return apiSettings.providers.openai.model;
-      case chat_completion_sources.CLAUDE:
-        return apiSettings.providers.claude.model;
-      case chat_completion_sources.OPENROUTER:
-        return apiSettings.providers.openrouter.model;
-      default:
-        return apiSettings.providers.openai.model;
-    }
+    return apiSettings.selected_provider_models[apiSettings.chat_completion_source];
   });
 
   const groupedOpenRouterModels = computed<Record<string, ApiModel[]> | null>(() => {
@@ -91,17 +82,7 @@ export const useApiStore = defineStore('api', () => {
       if (profile.sampler) settingsStore.settings.api.selected_sampler = profile.sampler;
       if (profile.model) {
         const source = profile.chat_completion_source ?? settingsStore.settings.api.chat_completion_source;
-        switch (source) {
-          case 'openai':
-            settingsStore.settings.api.providers.openai.model = profile.model;
-            break;
-          case 'claude':
-            settingsStore.settings.api.providers.claude.model = profile.model;
-            break;
-          case 'openrouter':
-            settingsStore.settings.api.providers.openrouter.model = profile.model;
-            break;
-        }
+        settingsStore.settings.api.selected_provider_models[source] = profile.model;
       }
       // After applying, reconnect to validate the new settings.
       connect();
@@ -163,17 +144,18 @@ export const useApiStore = defineStore('api', () => {
         const source = apiSettings.chat_completion_source;
         const availableModels = modelList.value.map((m) => m.id);
 
+        // TODO: Add dynamic models for other providers
         if (source === chat_completion_sources.OPENAI) {
-          if (!availableModels.includes(apiSettings.providers.openai.model ?? '')) {
-            settingsStore.settings.api.providers.openai.model =
-              availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
+          const openaiModel = apiSettings.selected_provider_models.openai;
+          if (!availableModels.includes(openaiModel ?? '')) {
+            apiSettings.selected_provider_models.openai = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
           }
         } else if (source === chat_completion_sources.OPENROUTER) {
           if (
-            apiSettings.providers.openrouter.model !== 'OR_Website' &&
-            !availableModels.includes(apiSettings.providers.openrouter.model ?? '')
+            apiSettings.selected_provider_models.openrouter !== 'OR_Website' &&
+            !availableModels.includes(apiSettings.selected_provider_models.openrouter ?? '')
           ) {
-            settingsStore.settings.api.providers.openrouter.model =
+            apiSettings.selected_provider_models.openrouter =
               availableModels.length > 0 ? availableModels[0] : 'OR_Website';
           }
         }
@@ -199,7 +181,7 @@ export const useApiStore = defineStore('api', () => {
     }
   }
 
-  async function saveCurrentPresetAs(apiId: string, name: string) {
+  async function saveCurrentPresetAs(name: string) {
     try {
       // Create a clean preset object from current samplers
       const presetData: SamplerSettings = { ...settingsStore.settings.api.samplers };
@@ -213,15 +195,15 @@ export const useApiStore = defineStore('api', () => {
     }
   }
 
-  function updateCurrentPreset(apiId: string, name?: string) {
+  function updateCurrentPreset(name?: string) {
     if (!name) {
       toast.warning(t('aiConfig.presets.errors.noPresetName'));
       return;
     }
-    saveCurrentPresetAs(apiId, name);
+    saveCurrentPresetAs(name);
   }
 
-  async function renamePreset(apiId: string, oldName?: string) {
+  async function renamePreset(oldName?: string) {
     if (!oldName) {
       toast.warning(t('aiConfig.presets.errors.renameDefault'));
       return;
@@ -251,7 +233,7 @@ export const useApiStore = defineStore('api', () => {
     }
   }
 
-  async function deletePreset(apiId: string, name?: string) {
+  async function deletePreset(name?: string) {
     if (!name) {
       toast.warning(t('aiConfig.presets.errors.deleteDefault'));
       return;
@@ -276,7 +258,7 @@ export const useApiStore = defineStore('api', () => {
     }
   }
 
-  function importPreset(apiId: string) {
+  function importPreset() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -301,7 +283,7 @@ export const useApiStore = defineStore('api', () => {
     input.click();
   }
 
-  function exportPreset(apiId: string, name?: string) {
+  function exportPreset(name?: string) {
     if (!name) {
       toast.error(t('aiConfig.presets.errors.noExportSelected'));
       return;

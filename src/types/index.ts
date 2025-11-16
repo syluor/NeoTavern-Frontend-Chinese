@@ -1,4 +1,4 @@
-import type { SendOnEnterOptions, TagImportSetting } from '../constants';
+import type { OpenrouterMiddleoutType, SendOnEnterOptions, TagImportSetting } from '../constants';
 import type { I18nKey } from './i18n';
 import type { Path } from './utils';
 
@@ -334,7 +334,25 @@ export interface LegacyOaiSettings {
   openai_model?: string;
   claude_model?: string;
   openrouter_model?: string;
-  google_model?: string;
+  google_model?: string; // makersuite
+  mistralai_model?: string;
+  groq_model?: string;
+  deepseek_model?: string;
+  ai21_model?: string;
+  aimlapi_model?: string;
+  azure_openai_model?: string;
+  cohere_model?: string;
+  cometapi_model?: string;
+  custom_model?: string;
+  electronhub_model?: string;
+  fireworks_model?: string;
+  vertexai_model?: string;
+  moonshot_model?: string;
+  nanogpt_model?: string;
+  perplexity_model?: string;
+  pollinations_model?: string;
+  xai_model?: string;
+  zai_model?: string;
   reverse_proxy: string;
   proxy_password: string;
 
@@ -349,11 +367,14 @@ export interface LegacyOaiSettings {
   min_p_openai?: number;
   repetition_penalty_openai?: number;
   stream_openai?: boolean;
+  n?: number;
+  seed?: number;
   openai_max_context?: number;
   max_context_unlocked?: boolean;
   openai_max_tokens?: number;
   prompts?: LegacyOaiPrompt[];
   prompt_order?: LegacyOaiPromptOrderConfig[];
+  show_thoughts?: boolean;
 
   // Provider specific settings
   claude_use_sysprompt?: boolean;
@@ -372,6 +393,24 @@ export interface LegacyOaiPresetSettings {
   claude_model?: string;
   openrouter_model?: string;
   google_model?: string;
+  mistralai_model?: string;
+  groq_model?: string;
+  deepseek_model?: string;
+  ai21_model?: string;
+  aimlapi_model?: string;
+  azure_openai_model?: string;
+  cohere_model?: string;
+  cometapi_model?: string;
+  custom_model?: string;
+  electronhub_model?: string;
+  fireworks_model?: string;
+  vertexai_model?: string;
+  moonshot_model?: string;
+  nanogpt_model?: string;
+  perplexity_model?: string;
+  pollinations_model?: string;
+  xai_model?: string;
+  zai_model?: string;
   reverse_proxy: string;
   proxy_password: string;
 
@@ -392,6 +431,7 @@ export interface LegacyOaiPresetSettings {
   n?: number;
   prompts?: LegacyOaiPrompt[];
   prompt_order?: LegacyOaiPromptOrderConfig[];
+  show_thoughts?: boolean;
   // Provider specific settings
   claude_use_sysprompt?: boolean;
   assistant_prefill?: string;
@@ -416,12 +456,14 @@ export interface SamplerSettings {
   max_tokens: number;
   stream: boolean;
 
-  seed?: number;
-  stop?: string[];
-  n?: number;
+  seed: number;
+  stop: string[];
+  n: number;
 
-  prompts?: Prompt[];
-  prompt_order?: PromptOrderConfig;
+  prompts: Prompt[];
+  prompt_order: PromptOrderConfig;
+  providers: ProviderSettings;
+  show_thoughts: boolean;
 }
 
 // --- World Info Types ---
@@ -578,23 +620,12 @@ export type AccountStorageKey =
 export type AccountStorageState = Partial<Record<AccountStorageKey, string>>;
 
 export interface ProviderSettings {
-  openai: {
-    model: string;
-  };
   claude: {
-    model: string;
     use_sysprompt?: boolean;
     assistant_prefill?: string;
   };
-  openrouter: {
-    model: string;
-    use_fallback?: boolean;
-    providers?: string[];
-    allow_fallbacks?: boolean;
-    middleout?: boolean;
-  };
+  // vertexai and makersuite
   google: {
-    model: string;
     use_makersuite_sysprompt?: boolean;
   };
 }
@@ -642,7 +673,15 @@ export interface ExperimentalSettings {
     samplers: SamplerSettings;
     connection_profiles: ConnectionProfile[];
     selected_connection_profile?: string;
-    providers: ProviderSettings;
+    selected_provider_models: Record<ChatCompletionSource, string>;
+    provider_specific: {
+      openrouter: {
+        use_fallback: boolean;
+        providers: string[];
+        allow_fallbacks: boolean;
+        middleout: OpenrouterMiddleoutType;
+      };
+    };
   };
   worldInfo: WorldInfoSettings;
   account: AccountStorageState;

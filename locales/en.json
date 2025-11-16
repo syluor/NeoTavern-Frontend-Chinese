@@ -280,6 +280,10 @@
       "label": "Streaming",
       "description": "Display the response bit by bit as it is generated. When this is off, responses will be displayed all at once when they are complete."
     },
+    "showThoughts": {
+      "label": "Request model reasoning",
+      "description": "Allows the model to return its thinking process. This setting affects visibility only."
+    },
     "temperature": {
       "label": "Temperature"
     },
@@ -289,11 +293,20 @@
     "presPenalty": {
       "label": "Presence Penalty"
     },
+    "repPenalty": {
+      "label": "Repetition Penalty"
+    },
     "topK": {
       "label": "Top K"
     },
     "topP": {
       "label": "Top P"
+    },
+    "minP": {
+      "label": "Min P"
+    },
+    "topA": {
+      "label": "Top A"
     }
   },
   "userSettings": {
@@ -354,7 +367,8 @@
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI.",
-      "noModelError": "No model selected. Please check your API connection settings."
+      "noModelError": "No model selected. Please check your API connection settings.",
+      "noPersonaError": "No persona selected. Please check your persona settings."
     },
     "buttons": {
       "confirmEdit": "Confirm edit",
@@ -563,21 +577,40 @@
     "kobold": "KoboldAI Classic (TODO)",
     "source": "Chat Completion Source",
     "openaiKey": "OpenAI API key",
-    "openaiKeyPlaceholder": "Enter your OpenAI API key",
     "claudeKey": "Claude API Key",
-    "claudeKeyPlaceholder": "Enter your Claude API key",
     "openrouterKey": "OpenRouter API Key",
-    "openrouterKeyPlaceholder": "Enter your OpenRouter API key",
+    "mistralaiKey": "MistralAI API Key",
+    "groqKey": "Groq API Key",
     "manageKeys": "Manage API keys",
     "keyPrivacy": "For privacy reasons, your API key will be hidden after you click 'Connect'.",
     "openaiModel": "OpenAI Model",
     "claudeModel": "Claude Model",
+    "mistralaiModel": "MistralAI Model",
+    "groqModel": "Groq Model",
     "connect": "Connect",
     "connecting": "Connecting",
     "sources": {
       "openai": "OpenAI",
       "claude": "Claude",
-      "openrouter": "OpenRouter"
+      "openrouter": "OpenRouter",
+      "custom": "Custom (OpenAI-compatible)",
+      "ai21": "AI21",
+      "aimlapi": "AI/ML API",
+      "azure_openai": "Azure OpenAI",
+      "cohere": "Cohere",
+      "deepseek": "DeepSeek",
+      "electronhub": "Electron Hub",
+      "fireworks": "Fireworks AI",
+      "groq": "Groq",
+      "makersuite": "Google AI Studio",
+      "vertexai": "Google Vertex AI",
+      "mistralai": "MistralAI",
+      "moonshot": "Moonshot AI",
+      "nanogpt": "NanoGPT",
+      "perplexity": "Perplexity",
+      "pollinations": "Pollinations",
+      "xai": "xAI (Grok)",
+      "zai": "Z.AI (GLM)"
     },
     "modelGroups": {
       "gpt4o": "GPT-4o",

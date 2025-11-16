@@ -312,7 +312,9 @@
       "addReasoning": "Add a reasoning block",
       "deleteMessage": "Delete this message",
       "moveUp": "Move message up",
-      "moveDown": "Move message down"
+      "moveDown": "Move message down",
+      "swipeLeft": "Previous swipe",
+      "swipeRight": "Next swipe"
     },
     "delete": {
       "confirmTitle": "Confirm Deletion",
@@ -325,7 +327,15 @@
     "copy": {
       "success": "Message copied to clipboard.",
       "error": "Failed to copy message."
-    }
+    },
+    "optionsMenu": {
+      "startNewChat": "Start new chat",
+      "manageChats": "Manage chat files",
+      "regenerate": "Regenerate",
+      "continue": "Continue"
+    },
+    "typingIndicator": "",
+    "abort": "Abort generation"
   },
   "character": {
     "import": {
@@ -351,7 +361,12 @@
     },
     "switch": {
       "wait": "Please wait until the chat is saved before switching characters."
-    }
+    },
+    "create": {
+      "success": "New character created: {name}",
+      "error": "Failed to create character."
+    },
+    "tokenWarning": "Character definition is large ({tokens} tokens), using over {percentage}% of your context window. This may impact performance and context limits."
   },
   "characterPanel": {
     "pinToggle": "Locked = Character Management panel will stay open",

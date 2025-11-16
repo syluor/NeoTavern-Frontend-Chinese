@@ -71,3 +71,8 @@ export async function importCharacter(file: File): Promise<{ file_name: string }
 
   return data;
 }
+
+export async function createCharacter(character: Partial<Character>): Promise<Character> {
+  // TODO: Implement this endpoint on the backend.
+  return Promise.reject(new Error('Not implemented'));
+}

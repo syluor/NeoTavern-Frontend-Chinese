@@ -46,6 +46,10 @@ watch(
 
 const activeCharacter = computed(() => characterStore.activeCharacter);
 
+function createNew() {
+  characterStore.createNewCharacter();
+}
+
 function triggerImport() {
   fileInput.value?.click();
 }
@@ -91,7 +95,11 @@ onMounted(() => {
     <div ref="browserPane" class="character-panel__browser">
       <div class="character-panel__browser-header">
         <div class="character-panel__actions">
-          <div :title="t('characterPanel.createNew')" class="menu-button fa-solid fa-user-plus"></div>
+          <div
+            @click="createNew"
+            :title="t('characterPanel.createNew')"
+            class="menu-button fa-solid fa-user-plus"
+          ></div>
           <div
             @click="triggerImport"
             :title="t('characterPanel.importFile')"
@@ -186,16 +194,16 @@ onMounted(() => {
 
     <!-- Right Pane: Character Editor -->
     <div class="character-panel__editor">
-      <div v-if="!activeCharacter" class="character-panel__editor-placeholder">
+      <div v-show="!activeCharacter" class="character-panel__editor-placeholder">
         <div class="placeholder-icon fa-solid fa-user-pen"></div>
         <h2 class="placeholder-title">{{ t('characterPanel.editor.placeholderTitle') }}</h2>
         <p class="placeholder-text">{{ t('characterPanel.editor.placeholderText') }}</p>
-        <div class="menu-button">
+        <div @click="createNew" class="menu-button">
           <i class="fa-solid fa-user-plus"></i>&nbsp;
           <span>{{ t('characterPanel.editor.placeholderButton') }}</span>
         </div>
       </div>
-      <CharacterEditForm v-else />
+      <CharacterEditForm v-show="activeCharacter" />
     </div>
   </div>
 </template>

@@ -82,6 +82,14 @@ const formattedContent = computed(() => {
   return formatMessage(props.message);
 });
 
+const isLastMessage = computed(() => props.index === chatStore.chat.length - 1);
+const hasSwipes = computed(() => Array.isArray(props.message.swipes) && props.message.swipes.length >= 1);
+const canSwipe = computed(() => !props.message.is_user && hasSwipes.value && isLastMessage.value);
+
+function swipe(direction: 'left' | 'right') {
+  chatStore.swipeMessage(props.index, direction);
+}
+
 function startEditing() {
   chatStore.startEditing(props.index);
 }
@@ -107,8 +115,7 @@ async function copyMessage() {
 async function handleDeleteClick() {
   const message = props.message;
   const swipesArray = Array.isArray(message.swipes) ? message.swipes : [];
-  const isLastMessage = props.index === chatStore.chat.length - 1;
-  const canDeleteSwipe = !message.is_user && swipesArray.length > 1 && isLastMessage;
+  const canDeleteSwipe = !message.is_user && swipesArray.length > 1 && isLastMessage.value;
 
   const performDelete = (isSwipeDelete: boolean) => {
     if (isSwipeDelete) {
@@ -226,7 +233,23 @@ function moveDown() {
       <div v-show="isEditing" class="message__edit-area">
         <textarea v-model="editedContent" class="text-pole"></textarea>
       </div>
-      <!-- TODO: Implement swipes, reasoning block, media, etc. -->
+
+      <div v-if="canSwipe" class="message__footer">
+        <div class="message__swipe-controls">
+          <i
+            class="swipe-arrow fa-solid fa-chevron-left"
+            @click="swipe('left')"
+            :title="t('chat.buttons.swipeLeft')"
+          ></i>
+          <span class="swipe-counter">{{ (message.swipe_id ?? 0) + 1 }} / {{ message.swipes?.length ?? 0 }}</span>
+          <i
+            class="swipe-arrow fa-solid fa-chevron-right"
+            @click="swipe('right')"
+            :title="t('chat.buttons.swipeRight')"
+          ></i>
+        </div>
+      </div>
+      <!-- TODO: Implement reasoning block, media, etc. -->
     </div>
   </div>
 </template>

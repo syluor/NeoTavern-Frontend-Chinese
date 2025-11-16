@@ -134,6 +134,36 @@
     }
   }
 
+  &__footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+  }
+
+  &__swipe-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--black-30a);
+    border-radius: 15px;
+    padding: 2px 5px;
+
+    .swipe-arrow {
+      cursor: pointer;
+      opacity: 0.6;
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .swipe-counter {
+      font-size: 0.9em;
+      opacity: 0.8;
+      user-select: none;
+    }
+  }
+
   &__edit-area {
     display: flex;
     flex-direction: column;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { ChatMessage, ChatMetadata } from '../types';
+import { GenerationMode, type ChatMessage, type ChatMetadata } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
 import { useUiStore } from './ui.store';
@@ -33,11 +33,12 @@ export const useChatStore = defineStore('chat', () => {
   const chatSaveTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const saveMetadataTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
   const isGenerating = ref(false);
+  const activeChatFile = ref<string | null>(null);
+  const generationController = ref<AbortController | null>(null);
 
   function getCurrentChatId() {
     // TODO: Integrate group store later
-    const characterStore = useCharacterStore();
-    return characterStore.activeCharacter?.chat;
+    return activeChatFile.value;
   }
 
   async function saveChat() {
@@ -49,7 +50,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const characterStore = useCharacterStore();
     const activeCharacter = characterStore.activeCharacter;
-    if (!activeCharacter) {
+    if (!activeCharacter || !activeChatFile.value) {
       toast.error(t('chat.saveError'));
       return;
     }
@@ -67,7 +68,7 @@ export const useChatStore = defineStore('chat', () => {
         ...chat.value,
       ];
 
-      await apiSaveChat(activeCharacter, chatToSave);
+      await apiSaveChat(activeCharacter, activeChatFile.value, chatToSave);
       // TODO: Save token cache and itemized prompts
     } catch (error: any) {
       console.error('Failed to save chat:', error);
@@ -87,26 +88,37 @@ export const useChatStore = defineStore('chat', () => {
     activeMessageEditIndex.value = null;
     chatSaveTimeout.value = null;
     saveMetadataTimeout.value = null;
+    activeChatFile.value = null;
 
     const promptStore = usePromptStore();
     promptStore.extensionPrompts = {};
-    await promptStore.saveItemizedPrompts(getCurrentChatId());
+    const currentChatId = getCurrentChatId();
+    if (currentChatId) {
+      await promptStore.saveItemizedPrompts(currentChatId);
+    }
     promptStore.itemizedPrompts = [];
+  }
+
+  async function setActiveChatFile(chatFile: string) {
+    if (activeChatFile.value === chatFile) return;
+    await clearChat();
+    activeChatFile.value = chatFile;
+    await refreshChat();
   }
 
   async function refreshChat() {
     const characterStore = useCharacterStore();
     const activeCharacter = characterStore.activeCharacter;
 
-    if (!activeCharacter) {
-      console.error('refreshChat called with no active character');
+    if (!activeCharacter || !activeChatFile.value) {
+      console.error('refreshChat called with no active character or chat file');
       return;
     }
 
     // TODO: unshallow character logic if needed
 
     try {
-      const response = await fetchChat(activeCharacter, chatMetadata.value);
+      const response = await fetchChat(activeCharacter, activeChatFile.value);
       if (response.length > 0) {
         // Chat exists, load it
         const metadataItem = response.shift();
@@ -131,18 +143,33 @@ export const useChatStore = defineStore('chat', () => {
         chatMetadata.value['integrity'] = uuidv4();
       }
 
-      // TODO: getChatResult logic, which adds first message etc.
-
-      const promptStore = usePromptStore();
-      await promptStore.loadItemizedPrompts(getCurrentChatId());
+      const currentChatId = getCurrentChatId();
+      if (currentChatId) {
+        const promptStore = usePromptStore();
+        await promptStore.loadItemizedPrompts(currentChatId);
+      }
     } catch (error) {
       console.error('Failed to refresh chat:', error);
       toast.error(t('chat.loadError'));
     }
   }
 
-  async function generateResponse() {
+  function abortGeneration() {
+    if (generationController.value) {
+      generationController.value.abort();
+      isGenerating.value = false;
+      generationController.value = null;
+    }
+  }
+
+  async function generateResponse(mode: GenerationMode) {
     if (isGenerating.value) return;
+
+    if (generationController.value) {
+      generationController.value.abort();
+    }
+    generationController.value = new AbortController();
+
     const characterStore = useCharacterStore();
     const apiStore = useApiStore();
     const activeCharacter = characterStore.activeCharacter;
@@ -154,10 +181,28 @@ export const useChatStore = defineStore('chat', () => {
     try {
       isGenerating.value = true;
       const genStarted = new Date().toISOString();
-      // TODO: Show typing indicator
+      let lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
+      let chatHistoryForPrompt = [...chat.value];
 
-      const promptBuilder = new PromptBuilder(activeCharacter, chat.value);
+      if (mode === GenerationMode.REGENERATE) {
+        // If there's a last message and it's from the AI, remove it.
+        // If the chat is empty or the last message is from the user, proceed as a "New" generation.
+        if (lastMessage && !lastMessage.is_user) {
+          chatHistoryForPrompt.pop(); // Use history before the last AI message
+          chat.value.pop(); // Delete the message from display
+          lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
+        }
+      } else if (mode === GenerationMode.ADD_SWIPE) {
+        if (!lastMessage || lastMessage.is_user) return;
+        chatHistoryForPrompt.pop(); // Use history before the message we're swiping
+      } else if (mode === GenerationMode.CONTINUE) {
+        if (!lastMessage || lastMessage.is_user) return;
+      }
+
+      const forContinue = mode === GenerationMode.CONTINUE;
+      const promptBuilder = new PromptBuilder(activeCharacter, chatHistoryForPrompt, forContinue);
       const messages = await promptBuilder.build();
+
       if (messages.length === 0) {
         throw new Error(t('chat.generate.noPrompts'));
       }
@@ -171,63 +216,140 @@ export const useChatStore = defineStore('chat', () => {
         stream: apiStore.oaiSettings.stream_openai ?? true,
       };
 
-      if (!payload.stream) {
-        const response = (await ChatCompletionService.generate(payload)) as GenerationResponse;
+      const handleGenerationResult = async (content: string, reasoning?: string) => {
         const genFinished = new Date().toISOString();
-        const token_count = await getTokenCount(response.content);
-
-        const botMessage: ChatMessage = {
-          name: activeCharacter.name,
-          is_user: false,
-          mes: response.content,
+        const token_count = await getTokenCount(content);
+        const swipeInfo = {
           send_date: getMessageTimeStamp(),
           gen_started: genStarted,
           gen_finished: genFinished,
-          extra: {
-            reasoning: response.reasoning,
-            token_count: token_count,
-          },
+          extra: { reasoning, token_count },
         };
 
-        chat.value.push(botMessage);
+        if (mode === GenerationMode.CONTINUE && lastMessage) {
+          lastMessage.mes += content;
+          lastMessage.gen_finished = genFinished;
+          lastMessage.extra!.token_count = await getTokenCount(lastMessage.mes);
+        } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
+          if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
+          if (!Array.isArray(lastMessage.swipe_info)) lastMessage.swipe_info = [];
+          lastMessage.swipes.push(content);
+          lastMessage.swipe_info.push(swipeInfo);
+          syncSwipeToMes(chat.value.length - 1, lastMessage.swipes.length - 1);
+        } else {
+          // Handles NEW and REGENERATE
+          const botMessage: ChatMessage = {
+            name: activeCharacter.name,
+            is_user: false,
+            mes: content,
+            send_date: swipeInfo.send_date,
+            gen_started: genStarted,
+            gen_finished: genFinished,
+            swipes: [content],
+            swipe_info: [swipeInfo],
+            swipe_id: 0,
+            extra: { reasoning, token_count },
+          };
+          chat.value.push(botMessage);
+        }
         await saveChat();
+      };
+
+      if (!payload.stream) {
+        const response = (await ChatCompletionService.generate(
+          payload,
+          generationController.value.signal,
+        )) as GenerationResponse;
+        await handleGenerationResult(response.content, response.reasoning);
       } else {
         // Streaming logic
         const streamGenerator = (await ChatCompletionService.generate(
           payload as any,
+          generationController.value.signal,
         )) as unknown as () => AsyncGenerator<StreamedChunk>;
 
-        const botMessage: ChatMessage = {
-          name: activeCharacter.name,
-          is_user: false,
-          mes: '',
-          send_date: getMessageTimeStamp(),
-          gen_started: genStarted,
-          extra: { reasoning: '' },
-        };
-        chat.value.push(botMessage);
-        const messageIndex = chat.value.length - 1;
+        let streamedContent = '';
+        let streamedReasoning = '';
+        let targetMessageIndex = -1;
+
+        if (mode === GenerationMode.CONTINUE && lastMessage) {
+          targetMessageIndex = chat.value.length - 1;
+        } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
+          targetMessageIndex = chat.value.length - 1;
+          if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
+          if (!Array.isArray(lastMessage.swipe_info)) lastMessage.swipe_info = [];
+          lastMessage.swipe_id = lastMessage.swipes.length;
+          lastMessage.swipes.push(''); // Add placeholder for new swipe
+          lastMessage.mes = '';
+          lastMessage.extra = { reasoning: '' };
+        } else {
+          // Handles NEW and REGENERATE
+          const botMessage: ChatMessage = {
+            name: activeCharacter.name,
+            is_user: false,
+            mes: '',
+            send_date: getMessageTimeStamp(),
+            gen_started: genStarted,
+            swipes: [''],
+            swipe_id: 0,
+            swipe_info: [],
+            extra: { reasoning: '' },
+          };
+          chat.value.push(botMessage);
+          targetMessageIndex = chat.value.length - 1;
+        }
 
         try {
           for await (const chunk of streamGenerator()) {
-            chat.value[messageIndex].mes += chunk.delta;
-            if (chunk.reasoning) {
-              chat.value[messageIndex].extra!.reasoning = chunk.reasoning;
+            streamedContent += chunk.delta;
+            if (chunk.reasoning) streamedReasoning += chunk.reasoning;
+
+            const targetMessage = chat.value[targetMessageIndex];
+            if (mode === GenerationMode.ADD_SWIPE) {
+              targetMessage.swipes![targetMessage.swipe_id!] += chunk.delta;
+              targetMessage.mes = targetMessage.swipes![targetMessage.swipe_id!];
+            } else {
+              targetMessage.mes += chunk.delta;
             }
+            if (chunk.reasoning) targetMessage.extra!.reasoning = streamedReasoning;
           }
         } finally {
-          const finalMessage = chat.value[messageIndex];
+          const finalMessage = chat.value[targetMessageIndex];
+          if (!finalMessage) return; // Aborted before message was created
           finalMessage.gen_finished = new Date().toISOString();
           finalMessage.extra!.token_count = await getTokenCount(finalMessage.mes);
+
+          if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
+            finalMessage.swipes![0] = finalMessage.mes;
+          }
+
+          const swipeInfo = {
+            send_date: finalMessage.send_date,
+            gen_started: genStarted,
+            gen_finished: finalMessage.gen_finished,
+            extra: { ...finalMessage.extra },
+          };
+
+          if (mode === GenerationMode.ADD_SWIPE) {
+            if (!Array.isArray(finalMessage.swipe_info)) finalMessage.swipe_info = [];
+            finalMessage.swipe_info.push(swipeInfo);
+          } else if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
+            finalMessage.swipe_info = [swipeInfo];
+          }
+
           await saveChat();
         }
       }
     } catch (error: any) {
-      console.error('Failed to generate response:', error);
-      toast.error(error.message || t('chat.generate.errorFallback'));
+      if (error.name === 'AbortError') {
+        toast.info('Generation aborted.');
+      } else {
+        console.error('Failed to generate response:', error);
+        toast.error(error.message || t('chat.generate.errorFallback'));
+      }
     } finally {
       isGenerating.value = false;
-      // TODO: Hide typing indicator
+      generationController.value = null;
     }
   }
 
@@ -249,7 +371,7 @@ export const useChatStore = defineStore('chat', () => {
     chat.value.push(userMessage);
     await saveChat();
 
-    await generateResponse();
+    await generateResponse(GenerationMode.NEW);
   }
 
   function startEditing(index: number) {
@@ -266,7 +388,11 @@ export const useChatStore = defineStore('chat', () => {
 
   async function saveMessageEdit(newContent: string) {
     if (activeMessageEditIndex.value !== null) {
-      chat.value[activeMessageEditIndex.value].mes = newContent;
+      const message = chat.value[activeMessageEditIndex.value];
+      message.mes = newContent;
+      if (message.swipes && typeof message.swipe_id === 'number' && message.swipes[message.swipe_id] !== undefined) {
+        message.swipes[message.swipe_id] = newContent;
+      }
       await saveChat();
       cancelEditing();
     }
@@ -289,6 +415,28 @@ export const useChatStore = defineStore('chat', () => {
       message.gen_started = swipeInfo.gen_started;
       message.gen_finished = swipeInfo.gen_finished;
       message.extra = { ...swipeInfo.extra };
+    }
+    saveChat();
+  }
+
+  function swipeMessage(messageIndex: number, direction: 'left' | 'right') {
+    const message = chat.value[messageIndex];
+    if (!message || !Array.isArray(message.swipes)) return;
+
+    let currentSwipeId = message.swipe_id ?? 0;
+    const swipeCount = message.swipes.length;
+
+    if (direction === 'left') {
+      currentSwipeId = (currentSwipeId - 1 + swipeCount) % swipeCount;
+      syncSwipeToMes(messageIndex, currentSwipeId);
+    } else {
+      // Right swipe
+      if (currentSwipeId < swipeCount - 1) {
+        currentSwipeId++;
+        syncSwipeToMes(messageIndex, currentSwipeId);
+      } else {
+        generateResponse(GenerationMode.ADD_SWIPE);
+      }
     }
   }
 
@@ -353,17 +501,21 @@ export const useChatStore = defineStore('chat', () => {
     chatCreateDate,
     activeMessageEditIndex,
     isGenerating,
+    activeChatFile,
     clearChat,
     refreshChat,
     saveChat,
     sendMessage,
     generateResponse,
+    abortGeneration,
     startEditing,
     cancelEditing,
     saveMessageEdit,
     deleteMessage,
     deleteSwipe,
+    swipeMessage,
     moveMessage,
     getCurrentChatId,
+    setActiveChatFile,
   };
 });

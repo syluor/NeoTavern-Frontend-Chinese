@@ -14,7 +14,7 @@ import type { Path, ValueForPath } from '../../types/utils';
 
 type CharacterFormData = Omit<Character, 'data'> & {
   data: Omit<NonNullable<Character['data']>, 'depth_prompt'> & {
-    depth_prompt: {
+    depth_prompt?: {
       prompt: string;
       depth: number;
       role: MessageRole;
@@ -166,7 +166,7 @@ function handleEditorSubmit({ value }: { value: string }) {
 </script>
 
 <template>
-  <div v-if="activeCharacter && formData.data" class="character-edit-form">
+  <div v-show="activeCharacter && formData.data" class="character-edit-form">
     <form id="character-editor-form" action="javascript:void(null);" method="post" enctype="multipart/form-data">
       <div id="character-editor-header" class="character-edit-form__header">
         <div id="character-editor-name-container" class="character-edit-form__header-main">
@@ -289,6 +289,7 @@ function handleEditorSubmit({ value }: { value: string }) {
         >
           <div v-show="isCreatorNotesOpen">
             <div class="inline-drawer-content">
+              <!-- TODO: We should make sure this is sanitized when we loading the character -->
               <div v-if="formData.data.creator_notes" v-html="formData.data.creator_notes"></div>
               <div v-else>{{ t('characterEditor.noCreatorNotes') }}</div>
             </div>
@@ -393,8 +394,9 @@ function handleEditorSubmit({ value }: { value: string }) {
                 @click="openMaximizeEditor('data.depth_prompt.prompt', t('characterEditor.advanced.characterNote'))"
               ></i>
             </label>
+            <!-- @vue-ignore -->
             <textarea
-              :value="formData.data.depth_prompt.prompt"
+              :value="formData.data.depth_prompt?.prompt"
               @input="updateValue('data.depth_prompt.prompt', ($event.target as HTMLTextAreaElement).value)"
               class="text-pole"
               rows="5"
@@ -403,8 +405,9 @@ function handleEditorSubmit({ value }: { value: string }) {
           </div>
           <div class="character-note__controls">
             <label>{{ t('characterEditor.advanced.depth') }}</label>
+            <!-- @vue-ignore -->
             <input
-              :value="formData.data.depth_prompt.depth"
+              :value="formData.data.depth_prompt?.depth"
               @input="updateValue('data.depth_prompt.depth', ($event.target as HTMLInputElement).valueAsNumber)"
               type="number"
               min="0"
@@ -412,8 +415,9 @@ function handleEditorSubmit({ value }: { value: string }) {
               class="text-pole"
             />
             <label>{{ t('characterEditor.advanced.role') }}</label>
+            <!-- @vue-ignore -->
             <select
-              :value="formData.data.depth_prompt.role"
+              :value="formData.data.depth_prompt?.role"
               @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
               class="text-pole"
             >

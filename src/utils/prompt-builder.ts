@@ -5,6 +5,13 @@ import { useApiStore } from '../stores/api.store';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
 
+// TODO: Replace with a real API call to the backend for accurate tokenization
+async function getTokenCount(text: string): Promise<number> {
+  if (!text || typeof text !== 'string') return 0;
+  // This is a very rough approximation. The backend will have a proper tokenizer.
+  return Math.round(text.length / 4);
+}
+
 // TODO: Add proper templating engine
 function substitute(text: string, char: Character, user: string): string {
   if (!text) return '';
@@ -17,10 +24,12 @@ export class PromptBuilder {
   private settings: ReturnType<typeof useApiStore>['oaiSettings'];
   private playerName: string;
   private maxContext: number;
+  private forContinue: boolean;
 
-  constructor(character: Character, chatHistory: ChatMessage[]) {
+  constructor(character: Character, chatHistory: ChatMessage[], forContinue = false) {
     this.character = character;
     this.chatHistory = chatHistory;
+    this.forContinue = forContinue;
 
     // Stores need to be accessed inside the constructor or methods
     const apiStore = useApiStore();
@@ -32,10 +41,11 @@ export class PromptBuilder {
   }
 
   public async build(): Promise<ApiChatMessage[]> {
-    const messages: ApiChatMessage[] = [];
-    const worldInfoStore = useWorldInfoStore();
+    const finalMessages: ApiChatMessage[] = [];
+    let currentTokenCount = 0;
 
-    // Process World Info first
+    // 1. Process World Info
+    const worldInfoStore = useWorldInfoStore();
     const activeBooks = worldInfoStore.bookNames
       .filter((name) => worldInfoStore.activeBookNames.includes(name))
       .map((name) => worldInfoStore.getBookFromCache(name));
@@ -50,13 +60,15 @@ export class PromptBuilder {
     );
     const { worldInfoBefore, worldInfoAfter } = await processor.process();
 
-    const promptOrderConfig = this.settings.prompt_order?.[0]; // Not using character_id
+    // 2. Build non-history prompts and count their tokens
+    const fixedPrompts: ApiChatMessage[] = [];
+    const promptOrderConfig = this.settings.prompt_order?.[0];
     if (!promptOrderConfig) {
       console.error('Default prompt order not found in settings.');
       return [];
     }
-
     const enabledPrompts = promptOrderConfig.order.filter((p) => p.enabled);
+    const historyPlaceholder = { role: 'system', content: '[[CHAT_HISTORY_PLACEHOLDER]]' } as const;
 
     for (const promptConfig of enabledPrompts) {
       const promptDefinition = this.settings.prompts?.find((p) => p.identifier === promptConfig.identifier);
@@ -65,64 +77,91 @@ export class PromptBuilder {
       if (promptDefinition.marker) {
         switch (promptDefinition.identifier) {
           case 'chatHistory':
-            messages.push(...this.getChatHistoryMessages());
+            fixedPrompts.push(historyPlaceholder);
             break;
           case 'charDescription':
             if (this.character.description) {
-              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.description });
+              fixedPrompts.push({ role: 'system', content: this.character.description });
             }
             break;
           case 'charPersonality':
             if (this.character.personality) {
-              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.personality });
+              fixedPrompts.push({ role: 'system', content: this.character.personality });
             }
             break;
           case 'scenario':
             if (this.character.scenario) {
-              messages.push({ role: promptDefinition.role ?? 'system', content: this.character.scenario });
+              fixedPrompts.push({ role: 'system', content: this.character.scenario });
             }
             break;
           case 'dialogueExamples':
             if (this.character.mes_example) {
               const example = substitute(this.character.mes_example, this.character, this.playerName);
-              const examples = example.split('<START>');
-              for (const ex of examples) {
-                // FIXME: I'm not sure this is correct.
-                if (ex.trim()) messages.push({ role: promptDefinition.role ?? 'system', content: ex.trim() });
-              }
+              fixedPrompts.push({ role: 'system', content: example });
             }
             break;
           case 'worldInfoBefore':
             if (worldInfoBefore) {
-              messages.push({ role: promptDefinition.role ?? 'system', content: worldInfoBefore });
+              fixedPrompts.push({ role: 'system', content: worldInfoBefore });
             }
             break;
           case 'worldInfoAfter':
             if (worldInfoAfter) {
-              messages.push({ role: promptDefinition.role ?? 'system', content: worldInfoAfter });
+              fixedPrompts.push({ role: 'system', content: worldInfoAfter });
             }
             break;
         }
       } else {
         if (promptDefinition.content && promptDefinition.role) {
           const content = substitute(promptDefinition.content, this.character, this.playerName);
-
           if (content) {
-            messages.push({ role: promptDefinition.role, content });
+            fixedPrompts.push({ role: promptDefinition.role, content });
           }
         }
       }
     }
     // TODO: Handle other WI positions like AT_DEPTH, EM, etc.
-    return messages;
-  }
 
-  private getChatHistoryMessages(): ApiChatMessage[] {
-    return this.chatHistory
-      .filter((msg) => !msg.is_system)
-      .map((msg) => ({
+    for (const prompt of fixedPrompts) {
+      if (prompt.content !== historyPlaceholder.content) {
+        currentTokenCount += await getTokenCount(prompt.content);
+      }
+    }
+
+    // 3. Build chat history within the remaining token budget
+    const historyBudget = this.maxContext - currentTokenCount - (this.settings.openai_max_tokens ?? 500);
+    const historyMessages: ApiChatMessage[] = [];
+    let historyTokenCount = 0;
+
+    const historySource = this.forContinue ? this.chatHistory : this.chatHistory.slice(0, -1);
+
+    for (let i = historySource.length - 1; i >= 0; i--) {
+      const msg = this.chatHistory[i];
+      if (msg.is_system) continue;
+
+      const apiMsg: ApiChatMessage = {
         role: msg.is_user ? 'user' : 'assistant',
         content: msg.mes,
-      }));
+      };
+      const msgTokenCount = await getTokenCount(apiMsg.content);
+
+      if (historyTokenCount + msgTokenCount <= historyBudget) {
+        historyTokenCount += msgTokenCount;
+        historyMessages.unshift(apiMsg);
+      } else {
+        break; // Stop when budget is exceeded
+      }
+    }
+
+    // 4. Assemble final prompt array
+    for (const prompt of fixedPrompts) {
+      if (prompt.content === historyPlaceholder.content) {
+        finalMessages.push(...historyMessages);
+      } else {
+        finalMessages.push(prompt);
+      }
+    }
+
+    return finalMessages;
   }
 }

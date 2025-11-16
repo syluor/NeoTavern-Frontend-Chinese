@@ -316,6 +316,8 @@ export interface MessageSchema {
       deleteMessage: string;
       moveUp: string;
       moveDown: string;
+      swipeLeft: string;
+      swipeRight: string;
     };
     delete: {
       confirmTitle: string;
@@ -329,6 +331,14 @@ export interface MessageSchema {
       success: string;
       error: string;
     };
+    optionsMenu: {
+      startNewChat: string;
+      manageChats: string;
+      regenerate: string;
+      continue: string;
+    };
+    typingIndicator: string;
+    abort: string;
   };
   character: {
     import: {
@@ -355,6 +365,11 @@ export interface MessageSchema {
     switch: {
       wait: string;
     };
+    create: {
+      success: string;
+      error: string;
+    };
+    tokenWarning: string;
   };
   characterPanel: {
     pinToggle: string;

@@ -7,6 +7,13 @@ export type SettingsPath = Path<Settings>;
 export type OaiSettingsPath = Path<OaiSettings>;
 // -----------------------------------------
 
+export enum GenerationMode {
+  NEW = 'new',
+  CONTINUE = 'continue',
+  REGENERATE = 'regenerate',
+  ADD_SWIPE = 'add_swipe',
+}
+
 export type MessageRole = 'user' | 'assistant' | 'system';
 
 export interface Character {

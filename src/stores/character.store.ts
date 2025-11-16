@@ -6,6 +6,7 @@ import {
   saveCharacter,
   fetchCharacterByAvatar,
   importCharacter as apiImportCharacter,
+  createCharacter as apiCreateCharacter,
 } from '../api/characters';
 import DOMPurify from 'dompurify';
 import { humanizedDateTime } from '../utils/date';
@@ -20,6 +21,7 @@ import { onlyUnique } from '../utils/array';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { getFirstMessage } from '../utils/chat';
 import { get } from 'lodash-es';
+import { useApiStore } from './api.store';
 
 // TODO: Replace with a real API call to the backend for accurate tokenization
 async function getTokenCount(text: string): Promise<number> {
@@ -129,6 +131,14 @@ export const useCharacterStore = defineStore('character', () => {
       permanent: total,
       fields: newFieldCounts,
     };
+
+    const apiStore = useApiStore();
+    const maxContext = apiStore.oaiSettings.openai_max_context ?? 4096;
+    const warningThreshold = maxContext * 0.75;
+
+    if (total > warningThreshold) {
+      toast.warning(t('character.tokenWarning', { tokens: total, percentage: 75 }), undefined, { timeout: 8000 });
+    }
   }, DebounceTimeout.RELAXED);
 
   async function refreshCharacters() {
@@ -139,7 +149,7 @@ export const useCharacterStore = defineStore('character', () => {
       for (const char of newCharacters) {
         char.name = DOMPurify.sanitize(char.name);
         if (!char.chat) {
-          char.chat = `${char.name} - ${humanizedDateTime()}`;
+          char.chat = `${char.name} - ${humanizedDateTime()}.jsonl`;
         }
         char.chat = String(char.chat);
       }
@@ -179,7 +189,7 @@ export const useCharacterStore = defineStore('character', () => {
       await chatStore.clearChat();
       // TODO: resetSelectedGroup();
       activeCharacterIndex.value = index;
-      await chatStore.refreshChat();
+      await chatStore.setActiveChatFile(activeCharacter.value!.chat!);
     }
     // If the same character is clicked, do nothing.
     // The UI is now persistent, so no need to switch views.
@@ -410,6 +420,24 @@ export const useCharacterStore = defineStore('character', () => {
     }, 5000);
   }
 
+  async function createNewCharacter() {
+    const newCharData: Partial<Character> = {
+      name: 'New Character',
+      description: '',
+      first_mes: '',
+    };
+    try {
+      // TODO: This API endpoint doesn't exist yet and will fail.
+      const createdChar = await apiCreateCharacter(newCharData);
+      toast.success(t('character.create.success', { name: createdChar.name }));
+      await refreshCharacters();
+      highlightCharacter(createdChar.avatar);
+    } catch (error) {
+      console.error('Failed to create new character:', error);
+      toast.error(t('character.create.error'));
+    }
+  }
+
   return {
     characters,
     activeCharacterIndex,
@@ -433,5 +461,6 @@ export const useCharacterStore = defineStore('character', () => {
     importTagsForCharacters,
     highlightedAvatar,
     highlightCharacter,
+    createNewCharacter,
   };
 });

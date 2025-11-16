@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
-import { POPUP_TYPE, POPUP_RESULT, type PopupOptions, type CustomPopupButton } from '../../types';
+import { POPUP_TYPE, POPUP_RESULT, type CustomPopupButton, type CustomPopupInput } from '../../types';
 import 'cropperjs';
 import type { I18nKey } from '../../types/i18n';
 
@@ -21,7 +21,16 @@ const props = defineProps({
   content: { type: String, default: '' },
   type: { type: Number as PropType<POPUP_TYPE>, default: POPUP_TYPE.TEXT },
   inputValue: { type: String, default: '' },
-  options: { type: Object as PropType<PopupOptions>, default: () => ({}) },
+
+  okButton: { type: [String, Boolean] as PropType<I18nKey | boolean>, default: undefined },
+  cancelButton: { type: [String, Boolean] as PropType<I18nKey | boolean>, default: undefined },
+  rows: { type: Number },
+  wide: { type: Boolean, default: false },
+  large: { type: Boolean, default: false },
+  customButtons: { type: Array as PropType<CustomPopupButton[]>, default: undefined },
+  customInputs: { type: Array as PropType<CustomPopupInput[]>, default: undefined },
+  defaultResult: { type: Number },
+  cropImage: { type: String },
 });
 
 const emit = defineEmits(['close', 'submit']);
@@ -35,13 +44,13 @@ const internalInputValue = ref(props.inputValue);
 const generatedButtons = ref<CustomPopupButton[]>([]);
 
 function resolveOptions() {
-  if (props.options.customButtons) {
-    generatedButtons.value = props.options.customButtons;
+  if (props.customButtons) {
+    generatedButtons.value = props.customButtons;
     return;
   }
 
   const buttons: CustomPopupButton[] = [];
-  const { okButton, cancelButton } = props.options;
+  const { okButton, cancelButton } = props;
 
   const showOk = okButton !== false;
   const showCancel = cancelButton !== false;
@@ -148,20 +157,14 @@ function handleEnter(evt: KeyboardEvent) {
     const isInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
     if (!isInput || settings.shouldSendOnEnter) {
       evt.preventDefault();
-      handleResult(props.options.defaultResult ?? POPUP_RESULT.AFFIRMATIVE);
+      handleResult(props.defaultResult ?? POPUP_RESULT.AFFIRMATIVE);
     }
   }
 }
 </script>
 
 <template>
-  <dialog
-    ref="dialog"
-    class="popup"
-    :class="{ wide: options.wide, large: options.large }"
-    @cancel="onCancel"
-    @keydown="handleEnter"
-  >
+  <dialog ref="dialog" class="popup" :class="{ wide: wide, large: large }" @cancel="onCancel" @keydown="handleEnter">
     <div class="popup-body">
       <h3 v-if="title" v-html="title"></h3>
       <div
@@ -173,12 +176,12 @@ function handleEnter(evt: KeyboardEvent) {
           v-if="type === POPUP_TYPE.INPUT"
           ref="mainInput"
           class="popup-input"
-          :rows="options.rows"
+          :rows="rows"
           v-model="internalInputValue"
         ></textarea>
         <div v-if="type === POPUP_TYPE.CROP" class="crop-container">
           <cropper-canvas>
-            <cropper-image :src="options.cropImage" alt="Image to crop" translatable></cropper-image>
+            <cropper-image :src="cropImage" alt="Image to crop" translatable></cropper-image>
             <cropper-shade hidden></cropper-shade>
             <cropper-handle action="move" plain></cropper-handle>
             <cropper-selection

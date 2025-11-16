@@ -587,10 +587,6 @@
           "enabled": "Enabled"
         }
       },
-      "auto_fix_generated_markdown": {
-        "label": "Auto-fix Markdown",
-        "description": "Automatically attempt to fix malformed markdown in AI-generated messages."
-      },
       "world_import_dialog": {
         "label": "Lorebook Import Dialog",
         "description": "Ask to import World Info for new characters. If unchecked, a brief message will be shown instead."
@@ -598,10 +594,6 @@
       "confirm_message_delete": {
         "label": "Confirm Message Deletion",
         "description": "Show a confirmation dialog before deleting a chat message."
-      },
-      "movingUI": {
-        "label": "Movable UI Elements",
-        "description": "Allow UI elements like the zoomed avatar viewer to be moved around and have multiple instances open."
       },
       "zoomed_avatar_magnification": {
         "label": "Magnify Zoomed Avatars",

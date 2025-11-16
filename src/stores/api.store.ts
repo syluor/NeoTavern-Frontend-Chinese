@@ -1,94 +1,79 @@
 import { defineStore } from 'pinia';
 import { ref, watch, computed } from 'vue';
-import type { ApiModel, OaiPrompt, OaiPromptOrderConfig, OaiSettings } from '../types';
+import type { ApiModel, SamplerSettings, Prompt, PromptOrderConfig } from '../types';
 import { POPUP_RESULT, POPUP_TYPE, chat_completion_sources } from '../types';
 import { fetchChatCompletionStatus } from '../api/connection';
 import { toast } from '../composables/useToast';
 import { useSettingsStore } from './settings.store';
-import { defaultsDeep, isEqual } from 'lodash-es';
 import { useStrictI18n } from '../composables/useStrictI18n';
-import { fetchAllPresets, savePreset, deletePreset as apiDeletePreset, type Preset } from '../api/presets';
+import {
+  fetchAllExperimentalPresets,
+  saveExperimentalPreset,
+  deletePreset as apiDeletePreset,
+  type Preset,
+} from '../api/presets';
 import { usePopupStore } from './popup.store';
 import { downloadFile, readFileAsText } from '../utils/file';
 
 export const useApiStore = defineStore('api', () => {
   const { t } = useStrictI18n();
-
   const settingsStore = useSettingsStore();
 
-  const mainApi = ref('openai');
-  const oaiSettings = ref<OaiSettings>({} as OaiSettings);
   const onlineStatus = ref(t('api.status.notConnected'));
   const isConnecting = ref(false);
   const modelList = ref<ApiModel[]>([]);
   const presets = ref<Record<string, Preset[]>>({});
 
-  const defaultOaiSettings: OaiSettings = {
-    chat_completion_source: chat_completion_sources.OPENAI,
-    openai_model: 'gpt-4o',
-    claude_model: 'claude-sonnet-4-5',
-    openrouter_model: 'OR_Website',
-    temp_openai: 1.0,
-    freq_pen_openai: 0,
-    pres_pen_openai: 0,
-    top_p_openai: 1,
-    top_k_openai: 0,
-    openai_max_context: 16384,
-    openai_max_tokens: 500,
-    stream_openai: true,
-    proxy_password: '',
-    reverse_proxy: '',
-    prompts: [
-      {
-        name: 'Main Prompt',
-        system_prompt: true,
-        role: 'system',
-        content: "Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}.",
-        identifier: 'main',
-      },
-      { name: 'Post-History Instructions', system_prompt: true, role: 'system', content: '', identifier: 'jailbreak' },
-      { identifier: 'chatHistory', name: 'Chat History', system_prompt: true, marker: true },
-      { identifier: 'charDescription', name: 'Char Description', system_prompt: true, marker: true },
-      { identifier: 'charPersonality', name: 'Char Personality', system_prompt: true, marker: true },
-      { identifier: 'scenario', name: 'Scenario', system_prompt: true, marker: true },
-      { identifier: 'dialogueExamples', name: 'Chat Examples', system_prompt: true, marker: true },
-      { identifier: 'worldInfoAfter', name: 'World Info (after)', system_prompt: true, marker: true },
-      { identifier: 'worldInfoBefore', name: 'World Info (before)', system_prompt: true, marker: true },
-    ] as OaiPrompt[],
-    prompt_order: [
-      {
-        character_id: 100000,
-        order: [
-          { identifier: 'main', enabled: true },
-          { identifier: 'charDescription', enabled: true },
-          { identifier: 'charPersonality', enabled: true },
-          { identifier: 'scenario', enabled: true },
-          { identifier: 'dialogueExamples', enabled: true },
-          { identifier: 'worldInfoBefore', enabled: true },
-          { identifier: 'chatHistory', enabled: true },
-          { identifier: 'worldInfoAfter', enabled: true },
-          { identifier: 'jailbreak', enabled: true },
-        ],
-      },
-    ] as OaiPromptOrderConfig[],
+  const apiSettings = computed(() => settingsStore.settings.api);
+
+  const defaultPrompts: Prompt[] = [
+    {
+      name: 'Main Prompt',
+      system_prompt: true,
+      role: 'system',
+      content: "Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}.",
+      identifier: 'main',
+    },
+    { name: 'Post-History Instructions', system_prompt: true, role: 'system', content: '', identifier: 'jailbreak' },
+    { identifier: 'chatHistory', name: 'Chat History', system_prompt: true, marker: true },
+    { identifier: 'charDescription', name: 'Char Description', system_prompt: true, marker: true },
+    { identifier: 'charPersonality', name: 'Char Personality', system_prompt: true, marker: true },
+    { identifier: 'scenario', name: 'Scenario', system_prompt: true, marker: true },
+    { identifier: 'dialogueExamples', name: 'Chat Examples', system_prompt: true, marker: true },
+    { identifier: 'worldInfoAfter', name: 'World Info (after)', system_prompt: true, marker: true },
+    { identifier: 'worldInfoBefore', name: 'World Info (before)', system_prompt: true, marker: true },
+  ];
+
+  const defaultPromptOrder: PromptOrderConfig = {
+    order: [
+      { identifier: 'main', enabled: true },
+      { identifier: 'charDescription', enabled: true },
+      { identifier: 'charPersonality', enabled: true },
+      { identifier: 'scenario', enabled: true },
+      { identifier: 'dialogueExamples', enabled: true },
+      { identifier: 'worldInfoBefore', enabled: true },
+      { identifier: 'chatHistory', enabled: true },
+      { identifier: 'worldInfoAfter', enabled: true },
+      { identifier: 'jailbreak', enabled: true },
+    ],
   };
 
   const activeModel = computed(() => {
-    switch (oaiSettings.value.chat_completion_source) {
+    switch (apiSettings.value.chat_completion_source) {
       case chat_completion_sources.OPENAI:
-        return oaiSettings.value.openai_model;
+        return apiSettings.value.openai_model;
       case chat_completion_sources.CLAUDE:
-        return oaiSettings.value.claude_model;
+        return apiSettings.value.claude_model;
       case chat_completion_sources.OPENROUTER:
-        return oaiSettings.value.openrouter_model;
+        return apiSettings.value.openrouter_model;
       default:
-        return oaiSettings.value.openai_model;
+        return apiSettings.value.openai_model;
     }
   });
 
   const groupedOpenRouterModels = computed<Record<string, ApiModel[]> | null>(() => {
     if (
-      oaiSettings.value.chat_completion_source !== chat_completion_sources.OPENROUTER ||
+      apiSettings.value.chat_completion_source !== chat_completion_sources.OPENROUTER ||
       modelList.value.length === 0
     ) {
       return null;
@@ -112,42 +97,9 @@ export const useApiStore = defineStore('api', () => {
     return vendors;
   });
 
-  // When settings are loaded or changed from the backend, update our local API state.
-  watch(
-    () => settingsStore.settings,
-    (newSettings) => {
-      if (newSettings) {
-        mainApi.value = newSettings.api.main;
-        oaiSettings.value = defaultsDeep({}, newSettings.api.oai, defaultOaiSettings);
-      } else {
-        oaiSettings.value = { ...defaultOaiSettings };
-      }
-    },
-    { deep: true, immediate: true },
-  );
-
-  // When the user changes API settings in the UI, save them back to the settings store.
-  watch(mainApi, (newValue) => {
-    if (settingsStore.settingsInitializing) return;
-    if (newValue !== settingsStore.settings?.api.main) {
-      settingsStore.setSetting('api.main', newValue);
-    }
-  });
-
-  watch(
-    oaiSettings,
-    (newSettings) => {
-      if (settingsStore.settingsInitializing) return;
-      if (!isEqual(newSettings, settingsStore.settings?.api.oai)) {
-        settingsStore.setSetting('api.oai', newSettings);
-      }
-    },
-    { deep: true },
-  );
-
   // When the main API or source changes, try to reconnect
   watch(
-    () => [mainApi.value, oaiSettings.value.chat_completion_source],
+    () => [apiSettings.value.main, apiSettings.value.chat_completion_source],
     ([newMainApi, newSource], [oldMainApi, oldSource]) => {
       if (settingsStore.settingsInitializing) return;
       // Only connect if the actual values have changed
@@ -159,13 +111,13 @@ export const useApiStore = defineStore('api', () => {
 
   // When the user selects a different preset, apply its settings
   watch(
-    () => oaiSettings.value.preset_settings_openai,
+    () => apiSettings.value.selected_sampler,
     (newPresetName) => {
       if (settingsStore.settingsInitializing || !newPresetName) return;
 
       const preset = presets.value.openai?.find((p) => p.name === newPresetName);
       if (preset) {
-        Object.assign(oaiSettings.value, preset.preset);
+        Object.assign(apiSettings.value.samplers, preset.preset);
       }
     },
   );
@@ -175,7 +127,7 @@ export const useApiStore = defineStore('api', () => {
 
     modelList.value = [];
 
-    if (mainApi.value !== 'openai') {
+    if (apiSettings.value.main !== 'openai') {
       onlineStatus.value = `${t('api.status.notConnected')} ${t('api.status.notImplemented')}`;
       return;
     }
@@ -186,7 +138,7 @@ export const useApiStore = defineStore('api', () => {
     try {
       // TODO: Implement secret management. For now, we pass the key directly.
       // TODO: Implement reverse proxy confirmation popup.
-      const response = await fetchChatCompletionStatus(oaiSettings.value);
+      const response = await fetchChatCompletionStatus(apiSettings.value);
 
       if (response.error) {
         throw new Error(response.error);
@@ -196,19 +148,19 @@ export const useApiStore = defineStore('api', () => {
         modelList.value = response.data;
 
         // Check if current model selection is still valid
-        const source = oaiSettings.value.chat_completion_source;
+        const source = apiSettings.value.chat_completion_source;
         const availableModels = modelList.value.map((m) => m.id);
 
         if (source === chat_completion_sources.OPENAI) {
-          if (!availableModels.includes(oaiSettings.value.openai_model ?? '')) {
-            oaiSettings.value.openai_model = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
+          if (!availableModels.includes(apiSettings.value.openai_model ?? '')) {
+            apiSettings.value.openai_model = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
           }
         } else if (source === chat_completion_sources.OPENROUTER) {
           if (
-            oaiSettings.value.openrouter_model !== 'OR_Website' &&
-            !availableModels.includes(oaiSettings.value.openrouter_model ?? '')
+            apiSettings.value.openrouter_model !== 'OR_Website' &&
+            !availableModels.includes(apiSettings.value.openrouter_model ?? '')
           ) {
-            oaiSettings.value.openrouter_model = availableModels.length > 0 ? availableModels[0] : 'OR_Website';
+            apiSettings.value.openrouter_model = availableModels.length > 0 ? availableModels[0] : 'OR_Website';
           }
         }
       }
@@ -226,7 +178,7 @@ export const useApiStore = defineStore('api', () => {
 
   async function loadPresetsForApi(apiId: string) {
     try {
-      presets.value[apiId] = await fetchAllPresets(apiId);
+      presets.value[apiId] = await fetchAllExperimentalPresets();
     } catch (error) {
       console.error(`Failed to load presets for ${apiId}:`, error);
       toast.error(`Could not load presets for ${apiId}.`);
@@ -235,21 +187,12 @@ export const useApiStore = defineStore('api', () => {
 
   async function saveCurrentPresetAs(apiId: string, name: string) {
     try {
-      // Create a clean preset object from current settings
-      const presetData: Partial<OaiSettings> = {
-        temp_openai: oaiSettings.value.temp_openai,
-        freq_pen_openai: oaiSettings.value.freq_pen_openai,
-        pres_pen_openai: oaiSettings.value.pres_pen_openai,
-        top_p_openai: oaiSettings.value.top_p_openai,
-        top_k_openai: oaiSettings.value.top_k_openai,
-        openai_max_context: oaiSettings.value.openai_max_context,
-        openai_max_tokens: oaiSettings.value.openai_max_tokens,
-        stream_openai: oaiSettings.value.stream_openai,
-        // TODO: Add all other settings that should be part of a preset
-      };
-      await savePreset(apiId, name, presetData);
+      // Create a clean preset object from current samplers
+      const presetData: SamplerSettings = { ...apiSettings.value.samplers };
+
+      await saveExperimentalPreset(name, presetData);
       await loadPresetsForApi(apiId);
-      oaiSettings.value.preset_settings_openai = name;
+      apiSettings.value.selected_sampler = name;
       toast.success(`Preset "${name}" saved.`);
     } catch (error) {
       toast.error(`Failed to save preset "${name}".`);
@@ -282,12 +225,12 @@ export const useApiStore = defineStore('api', () => {
         if (!presetToRename) throw new Error('Preset not found');
 
         // Rename is a delete and save operation
-        await apiDeletePreset(apiId, oldName);
-        await savePreset(apiId, newName, presetToRename.preset);
+        await apiDeletePreset(oldName);
+        await saveExperimentalPreset(newName, presetToRename.preset);
 
         toast.success(`Preset renamed to "${newName}".`);
         await loadPresetsForApi(apiId);
-        oaiSettings.value.preset_settings_openai = newName;
+        apiSettings.value.selected_sampler = newName;
       } catch (error) {
         toast.error('Failed to rename preset.');
         console.error(error);
@@ -309,10 +252,10 @@ export const useApiStore = defineStore('api', () => {
 
     if (result === POPUP_RESULT.AFFIRMATIVE) {
       try {
-        await apiDeletePreset(apiId, name);
+        await apiDeletePreset(name);
         toast.success(`Preset "${name}" deleted.`);
-        if (oaiSettings.value.preset_settings_openai === name) {
-          oaiSettings.value.preset_settings_openai = 'Default';
+        if (apiSettings.value.selected_sampler === name) {
+          apiSettings.value.selected_sampler = 'Default';
         }
         await loadPresetsForApi(apiId);
       } catch (error) {
@@ -334,10 +277,10 @@ export const useApiStore = defineStore('api', () => {
         const presetData = JSON.parse(content);
         const name = file.name.replace(/\.json$/, '');
         // TODO: Add confirmation for overwriting existing preset, like original ST
-        await savePreset(apiId, name, presetData);
+        await saveExperimentalPreset(name, presetData);
         toast.success(`Preset "${name}" imported.`);
         await loadPresetsForApi(apiId);
-        oaiSettings.value.preset_settings_openai = name;
+        apiSettings.value.selected_sampler = name;
       } catch (error) {
         toast.error(t('aiConfig.presets.errors.importInvalid'));
         console.error(error);
@@ -362,21 +305,21 @@ export const useApiStore = defineStore('api', () => {
   }
 
   // --- Prompt Management ---
-  function updatePromptOrder(newOrder: OaiPromptOrderConfig['order']) {
-    if (oaiSettings.value.prompt_order && oaiSettings.value.prompt_order[0]) {
-      oaiSettings.value.prompt_order[0].order = newOrder;
+  function updatePromptOrder(newOrder: PromptOrderConfig['order']) {
+    if (apiSettings.value.prompt_order) {
+      apiSettings.value.prompt_order.order = newOrder;
     }
   }
 
   function removePromptFromOrder(identifier: string) {
-    const promptOrder = oaiSettings.value.prompt_order?.[0];
+    const promptOrder = apiSettings.value.prompt_order;
     if (promptOrder) {
       promptOrder.order = promptOrder.order.filter((p) => p.identifier !== identifier);
     }
   }
 
   function addPromptToOrder(identifier: string) {
-    const promptOrder = oaiSettings.value.prompt_order?.[0];
+    const promptOrder = apiSettings.value.prompt_order;
     if (promptOrder) {
       if (promptOrder.order.some((p) => p.identifier === identifier)) return;
       promptOrder.order.push({ identifier, enabled: true });
@@ -384,27 +327,26 @@ export const useApiStore = defineStore('api', () => {
   }
 
   function togglePromptEnabled(identifier: string, enabled: boolean) {
-    const orderItem = oaiSettings.value.prompt_order?.[0].order.find((p) => p.identifier === identifier);
+    const orderItem = apiSettings.value.prompt_order?.order.find((p) => p.identifier === identifier);
     if (orderItem) {
       orderItem.enabled = enabled;
     }
   }
 
   function updatePromptContent(identifier: string, content: string) {
-    const prompt = oaiSettings.value.prompts?.find((p) => p.identifier === identifier);
+    const prompt = apiSettings.value.prompts?.find((p) => p.identifier === identifier);
     if (prompt) {
       prompt.content = content;
     }
   }
 
   function resetPrompts() {
-    oaiSettings.value.prompts = JSON.parse(JSON.stringify(defaultOaiSettings.prompts));
-    oaiSettings.value.prompt_order = JSON.parse(JSON.stringify(defaultOaiSettings.prompt_order));
+    apiSettings.value.prompts = JSON.parse(JSON.stringify(defaultPrompts));
+    apiSettings.value.prompt_order = JSON.parse(JSON.stringify(defaultPromptOrder));
   }
 
   return {
-    mainApi,
-    oaiSettings,
+    apiSettings,
     onlineStatus,
     isConnecting,
     connect,

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { MenuType, ZoomedAvatar } from '../types';
-import { useSettingsStore } from './settings.store';
 
 export const useUiStore = defineStore('ui', () => {
   const isChatSaving = ref<boolean>(false);
@@ -15,7 +14,6 @@ export const useUiStore = defineStore('ui', () => {
   const zoomedAvatars = ref<ZoomedAvatar[]>([]);
 
   function toggleZoomedAvatar(avatarData: Omit<ZoomedAvatar, 'id'>) {
-    const settingsStore = useSettingsStore();
     const id = avatarData.charName; // Use charName as ID to toggle
 
     const existingIndex = zoomedAvatars.value.findIndex((avatar) => avatar.id === id);
@@ -24,11 +22,6 @@ export const useUiStore = defineStore('ui', () => {
       // It exists, so remove it
       zoomedAvatars.value.splice(existingIndex, 1);
     } else {
-      // It doesn't exist, so add it
-      if (!settingsStore.settings.ui.panels.movingUI) {
-        // If movingUI is off, only allow one at a time
-        zoomedAvatars.value = [];
-      }
       zoomedAvatars.value.push({ ...avatarData, id });
     }
   }

@@ -21,7 +21,7 @@ function substitute(text: string, char: Character, user: string): string {
 export class PromptBuilder {
   private character: Character;
   private chatHistory: ChatMessage[];
-  private settings: ReturnType<typeof useApiStore>['oaiSettings'];
+  private settings: ReturnType<typeof useApiStore>['apiSettings'];
   private playerName: string;
   private maxContext: number;
   private forContinue: boolean;
@@ -35,9 +35,9 @@ export class PromptBuilder {
     const apiStore = useApiStore();
     const uiStore = useUiStore();
 
-    this.settings = apiStore.oaiSettings;
+    this.settings = apiStore.apiSettings;
     this.playerName = uiStore.activePlayerName || 'User';
-    this.maxContext = apiStore.oaiSettings.openai_max_context ?? 4096;
+    this.maxContext = apiStore.apiSettings.samplers.max_context ?? 4096;
   }
 
   public async build(): Promise<ApiChatMessage[]> {
@@ -62,7 +62,7 @@ export class PromptBuilder {
 
     // 2. Build non-history prompts and count their tokens
     const fixedPrompts: ApiChatMessage[] = [];
-    const promptOrderConfig = this.settings.prompt_order?.[0];
+    const promptOrderConfig = this.settings.prompt_order;
     if (!promptOrderConfig) {
       console.error('Default prompt order not found in settings.');
       return [];
@@ -129,7 +129,7 @@ export class PromptBuilder {
     }
 
     // 3. Build chat history within the remaining token budget
-    const historyBudget = this.maxContext - currentTokenCount - (this.settings.openai_max_tokens ?? 500);
+    const historyBudget = this.maxContext - currentTokenCount - (this.settings.samplers.max_tokens ?? 500);
     const historyMessages: ApiChatMessage[] = [];
     let historyTokenCount = 0;
 

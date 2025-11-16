@@ -207,13 +207,14 @@ export const useChatStore = defineStore('chat', () => {
         throw new Error(t('chat.generate.noPrompts'));
       }
 
+      const samplers = apiStore.apiSettings.samplers;
       const payload = {
         messages,
         model: apiStore.activeModel,
-        chat_completion_source: apiStore.oaiSettings.chat_completion_source,
-        max_tokens: apiStore.oaiSettings.openai_max_tokens,
-        temperature: apiStore.oaiSettings.temp_openai,
-        stream: apiStore.oaiSettings.stream_openai ?? true,
+        chat_completion_source: apiStore.apiSettings.chat_completion_source,
+        max_tokens: samplers.max_tokens,
+        temperature: samplers.temperature,
+        stream: samplers.stream ?? true,
       };
 
       const handleGenerationResult = async (content: string, reasoning?: string) => {

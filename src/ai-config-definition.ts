@@ -6,7 +6,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
     items: [
       {
         widget: 'preset-manager',
-        id: 'preset_settings_openai',
+        id: 'api.selected_sampler',
         apiId: 'openai',
         label: 'aiConfig.presets.chatCompletion.label',
         conditions: { api: 'openai' },
@@ -29,18 +29,18 @@ export const aiConfigDefinition: AiConfigSection[] = [
     conditions: { api: 'openai' },
     items: [
       {
-        id: 'openai_max_context',
+        id: 'api.samplers.max_context',
         widget: 'slider',
         label: 'aiConfig.contextSize.label',
         min: 512,
         max: 4095, // Default for older models, will be updated from API
         step: 1,
-        maxUnlockedId: 'max_context_unlocked',
+        maxUnlockedId: 'api.samplers.max_context_unlocked',
         unlockLabel: 'aiConfig.contextSize.unlocked',
         unlockTooltip: 'aiConfig.contextSize.unlockedTooltip',
       },
       {
-        id: 'openai_max_tokens',
+        id: 'api.samplers.max_tokens',
         widget: 'number-input',
         label: 'aiConfig.maxResponseLength.label',
         min: 1,
@@ -49,7 +49,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
       },
       { widget: 'hr' },
       {
-        id: 'stream_openai',
+        id: 'api.samplers.stream',
         widget: 'checkbox',
         label: 'aiConfig.streaming.label',
         description: 'aiConfig.streaming.description',
@@ -61,7 +61,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
     conditions: { api: 'openai' },
     items: [
       {
-        id: 'temp_openai',
+        id: 'api.samplers.temperature',
         widget: 'slider',
         label: 'aiConfig.temperature.label',
         min: 0,
@@ -69,7 +69,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         step: 0.01,
       },
       {
-        id: 'freq_pen_openai',
+        id: 'api.samplers.frequency_penalty',
         widget: 'slider',
         label: 'aiConfig.freqPenalty.label',
         min: -2,
@@ -77,7 +77,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         step: 0.01,
       },
       {
-        id: 'pres_pen_openai',
+        id: 'api.samplers.presence_penalty',
         widget: 'slider',
         label: 'aiConfig.presPenalty.label',
         min: -2,
@@ -85,7 +85,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         step: 0.01,
       },
       {
-        id: 'top_k_openai',
+        id: 'api.samplers.top_k',
         widget: 'slider',
         label: 'aiConfig.topK.label',
         min: 0,
@@ -93,7 +93,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         step: 1,
       },
       {
-        id: 'top_p_openai',
+        id: 'api.samplers.top_p',
         widget: 'slider',
         label: 'aiConfig.topP.label',
         min: 0,

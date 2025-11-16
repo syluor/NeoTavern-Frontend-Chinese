@@ -7,10 +7,12 @@ import type { AiConfigCondition, AiConfigSection } from '../../types';
 import { POPUP_TYPE } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import PromptManagerPopup from './PromptManagerPopup.vue';
+import { useSettingsStore } from '../../stores/settings.store';
 
 const { t } = useStrictI18n();
 const apiStore = useApiStore();
 const popupStore = usePopupStore();
+const settingsStore = useSettingsStore();
 
 const isPanelPinned = ref(false); // TODO: connect to settings
 const isPromptManagerVisible = ref(false);
@@ -20,11 +22,11 @@ function checkConditions(conditions?: AiConfigCondition): boolean {
 
   if (conditions.api) {
     const apis = Array.isArray(conditions.api) ? conditions.api : [conditions.api];
-    if (!apis.includes(apiStore.mainApi)) return false;
+    if (!apis.includes(apiStore.apiSettings.main)) return false;
   }
   if (conditions.source) {
     const sources = Array.isArray(conditions.source) ? conditions.source : [conditions.source];
-    if (!apiStore.oaiSettings.chat_completion_source || !sources.includes(apiStore.oaiSettings.chat_completion_source))
+    if (!apiStore.apiSettings.chat_completion_source || !sources.includes(apiStore.apiSettings.chat_completion_source))
       return false;
   }
   // TODO: Add source_not and other conditions
@@ -39,19 +41,11 @@ function getVisibleItems(section: AiConfigSection) {
   return section.items.filter((item) => checkConditions(item.conditions));
 }
 
-// Helper to get and set nested values, especially for unlocked sliders
-function getSetting(id: string, fallback: any = undefined) {
-  return (apiStore.oaiSettings as Record<string, any>)[id] ?? fallback;
-}
-function setSetting(id: string, value: any) {
-  (apiStore.oaiSettings as Record<string, any>)[id] = value;
-}
-
 async function handleNewPreset(apiId: string) {
   const { result, value } = await popupStore.show({
     title: t('aiConfig.presets.newName'),
     type: POPUP_TYPE.INPUT,
-    inputValue: apiStore.oaiSettings.preset_settings_openai || 'New Preset',
+    inputValue: apiStore.apiSettings.selected_sampler || 'New Preset',
   });
 
   if (result === 1 && value) {
@@ -99,20 +93,20 @@ onMounted(() => {
                 <div
                   class="menu-button-icon fa-solid fa-file-export"
                   :title="t('aiConfig.presets.export')"
-                  @click="item.apiId ? apiStore.exportPreset(item.apiId, getSetting(item.id)) : undefined"
+                  @click="item.apiId ? apiStore.exportPreset(item.apiId, settingsStore.getSetting(item.id)) : undefined"
                 ></div>
                 <div
                   class="menu-button-icon fa-solid fa-trash-can"
                   :title="t('aiConfig.presets.delete')"
-                  @click="item.apiId ? apiStore.deletePreset(item.apiId, getSetting(item.id)) : undefined"
+                  @click="item.apiId ? apiStore.deletePreset(item.apiId, settingsStore.getSetting(item.id)) : undefined"
                 ></div>
               </div>
             </div>
             <div class="preset-manager__controls">
               <select
                 class="text-pole"
-                :value="getSetting(item.id)"
-                @change="setSetting(item.id, ($event.target as HTMLSelectElement).value)"
+                :value="settingsStore.getSetting(item.id)"
+                @change="settingsStore.setSetting(item.id, ($event.target as HTMLSelectElement).value)"
               >
                 <option v-for="preset in apiStore.presets[item.apiId!]" :key="preset.name" :value="preset.name">
                   {{ preset.name }}
@@ -121,12 +115,12 @@ onMounted(() => {
               <div
                 class="menu-button-icon fa-solid fa-save"
                 :title="t('aiConfig.presets.update')"
-                @click="apiStore.updateCurrentPreset(item.apiId!, getSetting(item.id))"
+                @click="apiStore.updateCurrentPreset(item.apiId!, settingsStore.getSetting(item.id))"
               ></div>
               <div
                 class="menu-button-icon fa-solid fa-pencil"
                 :title="t('aiConfig.presets.rename')"
-                @click="apiStore.renamePreset(item.apiId!, getSetting(item.id))"
+                @click="apiStore.renamePreset(item.apiId!, settingsStore.getSetting(item.id))"
               ></div>
               <div
                 class="menu-button-icon fa-solid fa-file-circle-plus"
@@ -155,29 +149,29 @@ onMounted(() => {
                 type="range"
                 class="neo-range-slider"
                 :min="item.min"
-                :max="item.maxUnlockedId && getSetting(item.maxUnlockedId) ? 131072 : item.max"
+                :max="item.maxUnlockedId && settingsStore.getSetting(item.maxUnlockedId) ? 131072 : item.max"
                 :step="item.step"
-                :value="getSetting(item.id)"
-                @input="setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
+                :value="settingsStore.getSetting(item.id)"
+                @input="settingsStore.setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
               />
               <input
                 type="number"
                 class="neo-range-input"
                 :min="item.min"
-                :max="item.maxUnlockedId && getSetting(item.maxUnlockedId) ? 131072 : item.max"
+                :max="item.maxUnlockedId && settingsStore.getSetting(item.maxUnlockedId) ? 131072 : item.max"
                 :step="item.step"
-                :value="getSetting(item.id)"
-                @input="setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
+                :value="settingsStore.getSetting(item.id)"
+                @input="settingsStore.setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
               />
             </div>
             <div v-show="item.maxUnlockedId && item.unlockLabel" class="range-block-addon">
               <label class="checkbox-label" :title="item.unlockTooltip ? t(item.unlockTooltip) : ''">
                 <input
                   type="checkbox"
-                  :checked="item.maxUnlockedId ? getSetting(item.maxUnlockedId) : false"
+                  :checked="item.maxUnlockedId ? settingsStore.getSetting(item.maxUnlockedId) : false"
                   @change="
                     item.maxUnlockedId
-                      ? setSetting(item.maxUnlockedId, ($event.target as HTMLInputElement).checked)
+                      ? settingsStore.setSetting(item.maxUnlockedId, ($event.target as HTMLInputElement).checked)
                       : undefined
                   "
                 />
@@ -195,8 +189,8 @@ onMounted(() => {
               :min="item.min"
               :max="item.max"
               :step="item.step"
-              :value="getSetting(item.id)"
-              @input="setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
+              :value="settingsStore.getSetting(item.id)"
+              @input="settingsStore.setSetting(item.id, Number(($event.target as HTMLInputElement).value))"
             />
           </div>
 
@@ -205,8 +199,8 @@ onMounted(() => {
             <label class="checkbox-label">
               <input
                 type="checkbox"
-                :checked="getSetting(item.id)"
-                @change="setSetting(item.id, ($event.target as HTMLInputElement).checked)"
+                :checked="settingsStore.getSetting(item.id)"
+                @change="settingsStore.setSetting(item.id, ($event.target as HTMLInputElement).checked)"
               />
               <span>{{ item.label ? t(item.label) : '' }}</span>
             </label>

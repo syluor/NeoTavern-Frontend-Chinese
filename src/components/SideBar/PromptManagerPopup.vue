@@ -25,13 +25,13 @@ const draggedIndex = ref<number | null>(null);
 const dragOverIndex = ref<number | null>(null);
 
 // Assuming the first prompt_order config is the one we're editing
-const promptOrderConfig = computed(() => apiStore.oaiSettings.prompt_order?.[0]);
+const promptOrderConfig = computed(() => apiStore.apiSettings.prompt_order);
 
 const orderedPrompts = computed(() => {
   if (!promptOrderConfig.value) return [];
 
   return promptOrderConfig.value.order.map((orderItem) => {
-    const promptDetail = apiStore.oaiSettings.prompts?.find((p) => p.identifier === orderItem.identifier);
+    const promptDetail = apiStore.apiSettings.prompts?.find((p) => p.identifier === orderItem.identifier);
     return {
       ...promptDetail,
       ...orderItem,
@@ -40,9 +40,9 @@ const orderedPrompts = computed(() => {
 });
 
 const unusedPrompts = computed(() => {
-  if (!promptOrderConfig.value || !apiStore.oaiSettings.prompts) return [];
+  if (!promptOrderConfig.value || !apiStore.apiSettings.prompts) return [];
   const usedIdentifiers = new Set(promptOrderConfig.value.order.map((item) => item.identifier));
-  return apiStore.oaiSettings.prompts.filter((p) => !usedIdentifiers.has(p.identifier));
+  return apiStore.apiSettings.prompts.filter((p) => !usedIdentifiers.has(p.identifier));
 });
 
 watch(

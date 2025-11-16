@@ -9,21 +9,28 @@ import {
   type SettingDefinition,
   type SettingsPath,
   type AccountStorageKey,
+  type Persona,
 } from '../types';
-import { fetchUserSettings, saveUserSettings as apiSaveUserSettings } from '../api/settings';
+import {
+  fetchUserSettings,
+  saveUserSettings as apiSaveUserSettings,
+  type ParsedUserSettingsResponse,
+} from '../api/settings';
 import { settingsDefinition } from '../settings-definition';
 import { toast } from '../composables/useToast';
 import { set, get, defaultsDeep } from 'lodash-es';
 import { useUiStore } from './ui.store';
 import type { ValueForPath } from '../types/utils';
 import { defaultWorldInfoSettings } from './world-info.store';
+import { migratePreset, saveExperimentalPreset } from '../api/presets';
 
 // --- Create type aliases for convenience ---
 type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
 // -----------------------------------------
 
 function createDefaultSettings(): Settings {
-  const defaultSettings: Record<string, any> = {};
+  // @ts-ignore
+  const defaultSettings: Settings = {};
   for (const def of settingsDefinition) {
     // This now correctly sets nested properties based on the new structure
     set(defaultSettings, def.id, def.defaultValue);
@@ -32,7 +39,27 @@ function createDefaultSettings(): Settings {
   // Manually set complex default objects that aren't in settingsDefinition
   defaultSettings.api = {
     main: 'openai',
-    oai: {}, // This will be populated by the api.store's defaults
+    chat_completion_source: 'openai',
+    openai_model: 'gpt-4o',
+    claude_model: 'claude-3-5-sonnet-20240620',
+    openrouter_model: 'OR_Website',
+    reverse_proxy: '',
+    proxy_password: '',
+    selected_sampler: 'Default',
+    samplers: {
+      temperature: 1.0,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      top_p: 1,
+      top_k: 0,
+      top_a: 0,
+      min_p: 0,
+      max_context: 16384,
+      max_tokens: 500,
+      stream: true,
+    },
+    prompts: [],
+    prompt_order: { order: [] },
   };
   defaultSettings.worldInfo = defaultWorldInfoSettings;
   defaultSettings.account = {};
@@ -40,23 +67,51 @@ function createDefaultSettings(): Settings {
     showNotifications: true,
     allowMultiConnections: false,
     autoLock: false,
-    personas: {},
-    defaultPersona: null,
-    personaDescriptions: {},
+    defaultPersonaId: null,
+    personas: [],
   };
 
   return defaultSettings as Settings;
 }
 
-function migrateLegacyToExperimental(legacy: LegacySettings): Settings {
+function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsResponse): Settings {
+  const legacy = userSettingsResponse.settings;
   const p = legacy.power_user || ({} as LegacySettings['power_user']);
+  const oai = legacy.oai_settings || ({} as LegacySettings['oai_settings']);
+
+  // Migrate personas from old format to new array format
+  const migratedPersonas: Persona[] = [];
+  const oldPersonaNames = p.personas ?? {};
+  const oldPersonaDescriptions = p.persona_descriptions ?? {};
+  const allAvatarIds = new Set([...Object.keys(oldPersonaNames), ...Object.keys(oldPersonaDescriptions)]);
+
+  for (const avatarId of allAvatarIds) {
+    migratedPersonas.push({
+      avatarId: avatarId,
+      name: oldPersonaNames[avatarId] ?? '[Unnamed]',
+      ...(oldPersonaDescriptions[avatarId] ?? {}),
+    } as Persona);
+  }
+
+  // Migrate presets
+  if (
+    userSettingsResponse.v2ExperimentalSamplerPresets.length === 0 &&
+    Array.isArray(userSettingsResponse.openai_setting_names) &&
+    Array.isArray(userSettingsResponse.openai_settings)
+  ) {
+    userSettingsResponse.openai_setting_names.forEach(async (name: string, i: number) => {
+      try {
+        await saveExperimentalPreset(name, migratePreset(userSettingsResponse.openai_settings[i]));
+      } catch (e) {
+        console.error(`Failed to parse legacy preset "${name}":`, userSettingsResponse.openai_settings[i]);
+      }
+    });
+  }
+
   const migrated: Settings = {
     ui: {
       background: {
         ...(legacy.background || {}),
-      },
-      panels: {
-        movingUI: p.movingUI,
       },
       avatars: {
         zoomedMagnification: p.zoomed_avatar_magnification,
@@ -65,7 +120,6 @@ function migrateLegacyToExperimental(legacy: LegacySettings): Settings {
     },
     chat: {
       sendOnEnter: p.send_on_enter,
-      autoFixMarkdown: p.auto_fix_generated_markdown,
       confirmMessageDelete: p.confirm_message_delete,
     },
     character: {
@@ -77,13 +131,33 @@ function migrateLegacyToExperimental(legacy: LegacySettings): Settings {
       showNotifications: p.persona_show_notifications,
       allowMultiConnections: p.persona_allow_multi_connections,
       autoLock: p.persona_auto_lock,
-      personas: p.personas,
-      defaultPersona: p.default_persona,
-      personaDescriptions: p.persona_descriptions,
+      defaultPersonaId: p.default_persona,
+      personas: migratedPersonas,
     },
     api: {
       main: legacy.main_api || 'openai',
-      oai: legacy.oai_settings,
+      chat_completion_source: oai.chat_completion_source,
+      openai_model: oai.openai_model,
+      claude_model: oai.claude_model,
+      openrouter_model: oai.openrouter_model,
+      reverse_proxy: oai.reverse_proxy,
+      proxy_password: oai.proxy_password,
+      prompts: oai.prompts,
+      prompt_order: oai.prompt_order?.[0] ? { order: oai.prompt_order[0].order } : undefined,
+      selected_sampler: oai.preset_settings_openai,
+      samplers: {
+        temperature: oai.temp_openai || 1.0,
+        frequency_penalty: oai.freq_pen_openai || 0,
+        presence_penalty: oai.pres_pen_openai || 0,
+        top_p: oai.top_p_openai || 1,
+        top_k: oai.top_k_openai || 0,
+        top_a: oai.top_a_openai || 0,
+        min_p: oai.min_p_openai || 0,
+        max_context: oai.openai_max_context || 4096,
+        max_context_unlocked: oai.max_context_unlocked || false,
+        max_tokens: oai.openai_max_tokens || 500,
+        stream: oai.stream_openai ?? true,
+      },
     },
     worldInfo: legacy.world_info_settings,
     account: legacy.account_storage,
@@ -145,7 +219,8 @@ export const useSettingsStore = defineStore('settings', () => {
     if (!settingsInitializing.value) return;
 
     try {
-      const legacySettings = (await fetchUserSettings()) as LegacySettings;
+      const userSettingsResponse = await fetchUserSettings();
+      const legacySettings = userSettingsResponse.settings;
       fullLegacySettings.value = legacySettings;
 
       const defaultSettings = createDefaultSettings();
@@ -156,7 +231,7 @@ export const useSettingsStore = defineStore('settings', () => {
         experimentalSettings = defaultsDeep({}, legacySettings.v2Experimental, defaultSettings);
       } else {
         // If not, migrate from legacy structure.
-        experimentalSettings = migrateLegacyToExperimental(legacySettings);
+        experimentalSettings = migrateLegacyToExperimental(userSettingsResponse);
         // Then merge with defaults.
         experimentalSettings = defaultsDeep(experimentalSettings, defaultSettings);
       }

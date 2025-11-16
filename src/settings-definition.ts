@@ -53,15 +53,6 @@ export const settingsDefinition: SettingDefinition[] = [
     ],
   },
   {
-    id: 'chat.autoFixMarkdown',
-    label: 'settings.power_user.auto_fix_generated_markdown.label',
-    description: 'settings.power_user.auto_fix_generated_markdown.description',
-    category: 'Chat/Message Handling',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: false,
-  },
-  {
     id: 'chat.confirmMessageDelete',
     label: 'settings.power_user.confirm_message_delete.label',
     description: 'settings.power_user.confirm_message_delete.description',
@@ -72,15 +63,6 @@ export const settingsDefinition: SettingDefinition[] = [
   },
 
   // --- UI & Display ---
-  {
-    id: 'ui.panels.movingUI',
-    label: 'settings.power_user.movingUI.label',
-    description: 'settings.power_user.movingUI.description',
-    category: 'UI & Display',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: false,
-  },
   {
     id: 'ui.avatars.zoomedMagnification',
     label: 'settings.power_user.zoomed_avatar_magnification.label',

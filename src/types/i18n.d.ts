@@ -590,19 +590,11 @@ export interface MessageSchema {
           enabled: string;
         };
       };
-      auto_fix_generated_markdown: {
-        label: string;
-        description: string;
-      };
       world_import_dialog: {
         label: string;
         description: string;
       };
       confirm_message_delete: {
-        label: string;
-        description: string;
-      };
-      movingUI: {
         label: string;
         description: string;
       };

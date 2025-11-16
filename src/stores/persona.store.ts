@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import { useSettingsStore } from './settings.store';
 import { useUiStore } from './ui.store';
 import { fetchAllPersonaAvatars, deletePersonaAvatar, uploadPersonaAvatar } from '../api/personas';
@@ -19,63 +19,18 @@ export const usePersonaStore = defineStore('persona', () => {
   const activePersonaId = ref<string | null>(null);
   const lastAvatarUpdate = ref(Date.now());
 
-  const personas = computed<Persona[]>(() => {
-    const personaNames = settingsStore.settings.persona.personas ?? {};
-    const personaDescriptions = settingsStore.settings.persona.personaDescriptions ?? {};
-
-    return allPersonaAvatars.value.map((avatarId) => {
-      const descriptionData = personaDescriptions[avatarId] || createDefaultDescription();
-      return {
-        ...descriptionData,
-        avatarId: avatarId,
-        name: personaNames[avatarId] ?? '[Unnamed Persona]',
-      };
-    });
+  const personas = computed<Persona[]>({
+    get: () => settingsStore.settings.persona.personas,
+    set: (value) => {
+      settingsStore.setSetting('persona.personas', value);
+    },
   });
 
   const activePersona = computed<Persona | null>(() => {
     return personas.value.find((p) => p.avatarId === activePersonaId.value) ?? null;
   });
 
-  async function initialize() {
-    await refreshPersonas();
-    const defaultPersona = settingsStore.settings.persona.defaultPersona;
-    if (defaultPersona && allPersonaAvatars.value.includes(defaultPersona)) {
-      await setActivePersona(defaultPersona);
-    } else if (personas.value.length > 0) {
-      await setActivePersona(personas.value[0].avatarId);
-    }
-  }
-
-  async function refreshPersonas() {
-    try {
-      allPersonaAvatars.value = await fetchAllPersonaAvatars();
-      // Ensure every avatar has a corresponding entry in settings
-      const personaSettings = { ...(settingsStore.settings.persona.personas ?? {}) };
-      const descriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
-      let settingsChanged = false;
-
-      for (const avatarId of allPersonaAvatars.value) {
-        if (!personaSettings[avatarId]) {
-          personaSettings[avatarId] = '[Unnamed Persona]';
-          settingsChanged = true;
-        }
-        if (!descriptions[avatarId]) {
-          descriptions[avatarId] = createDefaultDescription();
-          settingsChanged = true;
-        }
-      }
-      if (settingsChanged) {
-        settingsStore.setSetting('persona.personas', personaSettings);
-        settingsStore.setSetting('persona.personaDescriptions', descriptions);
-      }
-    } catch (error) {
-      console.error('Failed to refresh personas:', error);
-      toast.error('Could not load personas.');
-    }
-  }
-
-  function createDefaultDescription(): PersonaDescription {
+  function createDefaultDescription(): Omit<Persona, 'avatarId' | 'name'> {
     return {
       description: '',
       position: 0, // In Prompt
@@ -85,6 +40,49 @@ export const usePersonaStore = defineStore('persona', () => {
       connections: [],
       title: '',
     };
+  }
+
+  async function initialize() {
+    await refreshPersonas();
+    const defaultPersonaId = settingsStore.settings.persona.defaultPersonaId;
+    if (defaultPersonaId && personas.value.some((p) => p.avatarId === defaultPersonaId)) {
+      await setActivePersona(defaultPersonaId);
+    } else if (personas.value.length > 0) {
+      await setActivePersona(personas.value[0].avatarId);
+    }
+  }
+
+  async function refreshPersonas() {
+    try {
+      allPersonaAvatars.value = await fetchAllPersonaAvatars();
+      const currentPersonas = [...toRaw(personas.value)];
+      let settingsChanged = false;
+
+      // Add new personas for any new avatars
+      for (const avatarId of allPersonaAvatars.value) {
+        if (!currentPersonas.some((p) => p.avatarId === avatarId)) {
+          currentPersonas.push({
+            ...createDefaultDescription(),
+            avatarId: avatarId,
+            name: '[Unnamed Persona]',
+          });
+          settingsChanged = true;
+        }
+      }
+
+      // Remove personas for deleted avatars
+      const finalPersonas = currentPersonas.filter((p) => allPersonaAvatars.value.includes(p.avatarId));
+      if (finalPersonas.length !== currentPersonas.length) {
+        settingsChanged = true;
+      }
+
+      if (settingsChanged) {
+        personas.value = finalPersonas;
+      }
+    } catch (error) {
+      console.error('Failed to refresh personas:', error);
+      toast.error('Could not load personas.');
+    }
   }
 
   async function setActivePersona(avatarId: string | null) {
@@ -101,11 +99,12 @@ export const usePersonaStore = defineStore('persona', () => {
   }
 
   function updateActivePersonaField<K extends keyof PersonaDescription>(field: K, value: PersonaDescription[K]) {
-    if (!activePersonaId.value) return;
-    const newDescriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
-    if (newDescriptions[activePersonaId.value]) {
-      newDescriptions[activePersonaId.value][field] = value;
-      settingsStore.setSetting('persona.personaDescriptions', newDescriptions);
+    if (!activePersona.value) return;
+    const index = personas.value.findIndex((p) => p.avatarId === activePersona.value?.avatarId);
+    if (index > -1) {
+      const updatedPersona = { ...personas.value[index], [field]: value };
+      personas.value.splice(index, 1, updatedPersona);
+      // The change will be saved by the settings store watcher
     }
   }
 
@@ -120,12 +119,14 @@ export const usePersonaStore = defineStore('persona', () => {
     });
 
     if (result === POPUP_RESULT.AFFIRMATIVE && newName && activePersonaId.value) {
-      const currentPersonas = { ...(settingsStore.settings.persona.personas ?? {}) };
-      currentPersonas[activePersonaId.value] = newName;
-      settingsStore.setSetting('persona.personas', currentPersonas);
-      // also update the main username if this is the active persona
-      uiStore.activePlayerName = newName;
-      settingsStore.setLegacySetting('username', newName);
+      const index = personas.value.findIndex((p) => p.avatarId === activePersonaId.value);
+      if (index > -1) {
+        const updatedPersona = { ...personas.value[index], name: newName };
+        personas.value.splice(index, 1, updatedPersona);
+        // also update the main username if this is the active persona
+        uiStore.activePlayerName = newName;
+        settingsStore.setLegacySetting('username', newName);
+      }
     }
   }
 
@@ -163,21 +164,14 @@ export const usePersonaStore = defineStore('persona', () => {
     try {
       await deletePersonaAvatar(avatarId);
 
-      const newPersonas = { ...(settingsStore.settings.persona.personas ?? {}) };
-      delete newPersonas[avatarId];
-      settingsStore.setSetting('persona.personas', newPersonas);
+      personas.value = personas.value.filter((p) => p.avatarId !== avatarId);
 
-      const newDescriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
-      delete newDescriptions[avatarId];
-      settingsStore.setSetting('persona.personaDescriptions', newDescriptions);
-
-      if (settingsStore.settings.persona.defaultPersona === avatarId) {
-        settingsStore.setSetting('persona.defaultPersona', null);
+      if (settingsStore.settings.persona.defaultPersonaId === avatarId) {
+        settingsStore.setSetting('persona.defaultPersonaId', null);
       }
       // TODO: Handle chat and character locks
 
       toast.success(t('personaManagement.delete.success'));
-      await refreshPersonas();
 
       if (activePersonaId.value === avatarId) {
         const nextPersona = personas.value.length > 0 ? personas.value[0].avatarId : null;

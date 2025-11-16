@@ -1,54 +1,65 @@
+import type { LegacyOaiPresetSettings, SamplerSettings } from '../types';
 import { getRequestHeaders } from '../utils/api';
-import type { OaiSettings } from '../types';
+import { fetchUserSettings } from './settings';
 
 export interface Preset {
   name: string;
-  preset: Partial<OaiSettings>;
+  preset: SamplerSettings;
 }
 
-// TODO: apiId should be a type
-export async function fetchAllPresets(apiId: string): Promise<Preset[]> {
-  if (apiId === 'openai') {
-    const response = await fetch('/api/settings/get', {
-      method: 'POST',
-      headers: getRequestHeaders(),
-      body: JSON.stringify({}),
-      cache: 'no-cache',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch settings for presets');
-    }
-    const data = await response.json();
+export function migratePreset(legacyPreset: LegacyOaiPresetSettings): SamplerSettings {
+  // @ts-ignore
+  const newPreset: SamplerSettings = {};
+  if (legacyPreset.temperature !== undefined) newPreset.temperature = legacyPreset.temperature;
+  if (legacyPreset.frequency_penalty !== undefined) newPreset.frequency_penalty = legacyPreset.frequency_penalty;
+  if (legacyPreset.presence_penalty !== undefined) newPreset.presence_penalty = legacyPreset.presence_penalty;
+  if (legacyPreset.top_p !== undefined) newPreset.top_p = legacyPreset.top_p;
+  if (legacyPreset.top_k !== undefined) newPreset.top_k = legacyPreset.top_k;
+  if (legacyPreset.top_a !== undefined) newPreset.top_a = legacyPreset.top_a;
+  if (legacyPreset.min_p !== undefined) newPreset.min_p = legacyPreset.min_p;
+  if (legacyPreset.openai_max_context !== undefined) newPreset.max_context = legacyPreset.openai_max_context;
+  if (legacyPreset.openai_max_tokens !== undefined) newPreset.max_tokens = legacyPreset.openai_max_tokens;
+  if (legacyPreset.stream_openai !== undefined) newPreset.stream = legacyPreset.stream_openai;
+  // TODO: Migrate other settings if needed
 
-    const presets: Preset[] = [];
-    // These keys are based on the original SillyTavern backend response
-    const names = data.openai_setting_names ?? [];
-    const settingsData = data.openai_settings ?? [];
-
-    if (Array.isArray(names) && Array.isArray(settingsData)) {
-      names.forEach((name: string, i: number) => {
-        try {
-          presets.push({
-            name,
-            preset: JSON.parse(settingsData[i]),
-          });
-        } catch (e) {
-          console.error(`Failed to parse preset "${name}":`, settingsData[i]);
-        }
-      });
-    }
-
-    return presets;
+  // If there are no new keys, it means the preset was already in the new format.
+  if (Object.keys(newPreset).length === 0) {
+    // @ts-ignore
+    return legacyPreset as SamplerSettings;
   }
-  return Promise.resolve([]);
+
+  return newPreset;
 }
 
-export async function savePreset(apiId: string, name: string, preset: Partial<OaiSettings>): Promise<any> {
+export async function fetchAllExperimentalPresets(): Promise<Preset[]> {
+  const userSettingsResponse = await fetchUserSettings();
+
+  const presets: Preset[] = [];
+  const names = userSettingsResponse.v2ExperimentalSamplerPreset_names ?? [];
+  const settingsData = userSettingsResponse.v2ExperimentalSamplerPresets ?? [];
+
+  if (Array.isArray(names) && Array.isArray(settingsData)) {
+    names.forEach((name: string, i: number) => {
+      try {
+        presets.push({
+          name,
+          preset: settingsData[i],
+        });
+      } catch (e) {
+        console.error(`Failed to parse preset "${name}":`, settingsData[i]);
+      }
+    });
+  }
+
+  return presets;
+}
+
+export async function saveExperimentalPreset(name: string, preset: SamplerSettings): Promise<any> {
   const response = await fetch('/api/presets/save', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      apiId,
+      apiId: 'v2ExperimentalSamplerPreset',
       name,
       preset,
     }),
@@ -61,11 +72,11 @@ export async function savePreset(apiId: string, name: string, preset: Partial<Oa
   return await response.json();
 }
 
-export async function deletePreset(apiId: string, name: string): Promise<any> {
+export async function deletePreset(name: string): Promise<any> {
   const response = await fetch('/api/presets/delete', {
     method: 'POST',
     headers: getRequestHeaders(),
-    body: JSON.stringify({ apiId, name }),
+    body: JSON.stringify({ apiId: 'v2ExperimentalSamplerPreset', name }),
   });
 
   if (!response.ok) {

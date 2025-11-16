@@ -171,7 +171,7 @@ export const useCharacterStore = defineStore('character', () => {
     };
 
     const apiStore = useApiStore();
-    const maxContext = apiStore.oaiSettings.openai_max_context ?? 4096;
+    const maxContext = apiStore.apiSettings.samplers.max_context;
     const warningThreshold = maxContext * 0.75;
 
     if (total > warningThreshold) {

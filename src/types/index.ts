@@ -4,7 +4,7 @@ import type { Path } from './utils';
 
 // --- Helper types for safe config IDs ---
 export type SettingsPath = Path<Settings>;
-export type OaiSettingsPath = Path<OaiSettings>;
+export type OaiSettingsPath = Path<LegacyOaiSettings>;
 // -----------------------------------------
 
 export enum GenerationMode {
@@ -238,17 +238,26 @@ export interface ApiModel {
   [key: string]: any;
 }
 
-export interface OaiPrompt {
+export interface LegacyOaiPrompt {
   name: string;
   system_prompt: boolean;
   role?: MessageRole;
   content?: string;
-  identifier: string; // TODO: This should be a type.
+  identifier: string;
   marker?: boolean;
 }
 
-export interface OaiPromptOrderConfig {
-  character_id: number; // TODO: I think this should be removed.
+export interface LegacyOaiPromptOrderConfig {
+  character_id: number;
+  order: {
+    identifier: string;
+    enabled: boolean;
+  }[];
+}
+
+export interface Prompt extends Omit<LegacyOaiPrompt, ''> {}
+
+export interface PromptOrderConfig {
   order: {
     identifier: string;
     enabled: boolean;
@@ -263,7 +272,7 @@ export interface AiConfigCondition {
 
 // TODO: Some values might change based on model/source, e.g., max tokens
 export interface AiConfigItem {
-  id?: OaiSettingsPath;
+  id?: SettingsPath;
   widget:
     | 'preset-manager'
     | 'slider'
@@ -287,7 +296,7 @@ export interface AiConfigItem {
   min?: number;
   max?: number;
   step?: number;
-  maxUnlockedId?: OaiSettingsPath;
+  maxUnlockedId?: SettingsPath;
   unlockLabel?: I18nKey;
   unlockTooltip?: I18nKey;
 
@@ -310,7 +319,8 @@ export interface AiConfigSection {
   items: AiConfigItem[];
 }
 
-export interface OaiSettings {
+// settings.oai_settings
+export interface LegacyOaiSettings {
   chat_completion_source: ChatCompletionSource;
   openai_model: string;
   claude_model: string;
@@ -332,8 +342,48 @@ export interface OaiSettings {
   openai_max_context?: number;
   max_context_unlocked?: boolean;
   openai_max_tokens?: number;
-  prompts?: OaiPrompt[];
-  prompt_order?: OaiPromptOrderConfig[];
+  prompts?: LegacyOaiPrompt[];
+  prompt_order?: LegacyOaiPromptOrderConfig[];
+}
+
+// userResponse.openai_settings
+export interface LegacyOaiPresetSettings {
+  chat_completion_source: ChatCompletionSource;
+  openai_model: string;
+  claude_model: string;
+  openrouter_model: string;
+  reverse_proxy: string;
+  proxy_password: string;
+
+  // Generation settings
+  temperature?: number;
+  frequency_penalty?: number;
+  presence_penalty?: number;
+  top_p?: number;
+  top_k?: number;
+  top_a?: number;
+  min_p?: number;
+  repetition_penalty?: number;
+  stream_openai?: boolean;
+  openai_max_context?: number;
+  max_context_unlocked?: boolean;
+  openai_max_tokens?: number;
+  prompts?: LegacyOaiPrompt[];
+  prompt_order?: LegacyOaiPromptOrderConfig[];
+}
+
+export interface SamplerSettings {
+  temperature: number;
+  frequency_penalty: number;
+  presence_penalty: number;
+  top_p: number;
+  top_k: number;
+  top_a: number;
+  min_p: number;
+  max_context: number;
+  max_context_unlocked?: boolean;
+  max_tokens: number;
+  stream: boolean;
 }
 
 // --- World Info Types ---
@@ -502,9 +552,6 @@ export interface ExperimentalSettings {
       thumbnailColumns: number;
       animation: boolean;
     };
-    panels: {
-      movingUI: boolean;
-    };
     avatars: {
       zoomedMagnification: boolean;
       neverResize: boolean;
@@ -512,7 +559,6 @@ export interface ExperimentalSettings {
   };
   chat: {
     sendOnEnter: SendOnEnterOptions;
-    autoFixMarkdown: boolean;
     confirmMessageDelete: boolean;
   };
   character: {
@@ -524,13 +570,24 @@ export interface ExperimentalSettings {
     showNotifications: boolean;
     allowMultiConnections: boolean;
     autoLock: boolean;
-    personas: Record<string, string>; // avatarId -> name
-    defaultPersona: string | null;
-    personaDescriptions: Record<string, PersonaDescription>;
+    defaultPersonaId: string | null;
+    personas: Persona[];
   };
   api: {
     main: string;
-    oai: OaiSettings;
+    // Connection-specific settings
+    chat_completion_source: ChatCompletionSource;
+    openai_model: string;
+    claude_model: string;
+    openrouter_model: string;
+    reverse_proxy: string;
+    proxy_password: string;
+    // Sampler settings
+    selected_sampler?: string;
+    samplers: SamplerSettings;
+    // Prompt construction settings
+    prompts?: Prompt[];
+    prompt_order?: PromptOrderConfig;
   };
   worldInfo: WorldInfoSettings;
   account: AccountStorageState;
@@ -568,7 +625,7 @@ export interface LegacySettings {
     thumbnailColumns: number;
     animation: boolean;
   };
-  oai_settings: OaiSettings;
+  oai_settings: LegacyOaiSettings;
   world_info_settings: WorldInfoSettings;
   account_storage: AccountStorageState;
   username?: string;

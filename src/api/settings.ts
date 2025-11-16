@@ -1,7 +1,23 @@
-import type { LegacySettings } from '../types';
+import type { LegacyOaiPresetSettings, LegacyOaiSettings, LegacySettings, SamplerSettings } from '../types';
 import { getRequestHeaders } from '../utils/api';
 
-export async function fetchUserSettings(): Promise<LegacySettings> {
+export interface UserSettingsResponse {
+  settings: string; // JSON string of LegacySettings
+  openai_setting_names: string[];
+  openai_settings: string[]; // JSON string of LegacyOaiPresetSettings
+  v2ExperimentalSamplerPreset_names?: string[];
+  v2ExperimentalSamplerPresets?: string[]; // JSON string of SamplerSettings
+}
+
+export interface ParsedUserSettingsResponse {
+  settings: LegacySettings;
+  openai_setting_names: string[];
+  openai_settings: LegacyOaiPresetSettings[];
+  v2ExperimentalSamplerPreset_names: string[];
+  v2ExperimentalSamplerPresets: SamplerSettings[];
+}
+
+export async function fetchUserSettings(): Promise<ParsedUserSettingsResponse> {
   const response = await fetch('/api/settings/get', {
     method: 'POST',
     headers: getRequestHeaders(),
@@ -13,7 +29,16 @@ export async function fetchUserSettings(): Promise<LegacySettings> {
     throw new Error('Failed to fetch user settings');
   }
 
-  return JSON.parse((await response.json())['settings']);
+  const data = (await response.json()) as UserSettingsResponse;
+  return {
+    settings: JSON.parse(data.settings) as LegacySettings,
+    openai_setting_names: data.openai_setting_names,
+    openai_settings: data.openai_settings.map((s) => JSON.parse(s) as LegacyOaiSettings),
+    v2ExperimentalSamplerPreset_names: data.v2ExperimentalSamplerPreset_names ?? [],
+    v2ExperimentalSamplerPresets: (data.v2ExperimentalSamplerPresets ?? []).map(
+      (s) => JSON.parse(s) as SamplerSettings,
+    ),
+  };
 }
 
 export async function saveUserSettings(settings: LegacySettings): Promise<void> {

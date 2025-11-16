@@ -1,7 +1,10 @@
 import { getRequestHeaders } from '../utils/api';
-import type { OaiSettings } from '../types';
 
-export async function fetchChatCompletionStatus(settings: Partial<OaiSettings>): Promise<any> {
+export async function fetchChatCompletionStatus(settings: {
+  chat_completion_source: string;
+  reverse_proxy?: string;
+  proxy_password?: string;
+}): Promise<any> {
   const response = await fetch('/api/backends/chat-completions/status', {
     method: 'POST',
     headers: getRequestHeaders(),

@@ -31,7 +31,7 @@ const hasOpenRouterGroupedModels = computed(() => {
 
       <div class="api-connections-drawer__section">
         <h3>{{ t('apiConnections.api') }}</h3>
-        <select class="text-pole" v-model="apiStore.mainApi">
+        <select class="text-pole" v-model="apiStore.apiSettings.main">
           <option value="openai">{{ t('apiConnections.chatCompletion') }}</option>
           <option value="textgenerationwebui" disabled>{{ t('apiConnections.textCompletion') }}</option>
           <option value="novel" disabled>{{ t('apiConnections.novel') }}</option>
@@ -40,10 +40,10 @@ const hasOpenRouterGroupedModels = computed(() => {
         </select>
       </div>
 
-      <div v-show="apiStore.mainApi === 'openai'">
+      <div v-show="apiStore.apiSettings.main === 'openai'">
         <div class="api-connections-drawer__section">
           <h4>{{ t('apiConnections.source') }}</h4>
-          <select class="text-pole" v-model="apiStore.oaiSettings.chat_completion_source">
+          <select class="text-pole" v-model="apiStore.apiSettings.chat_completion_source">
             <optgroup>
               <option :value="chat_completion_sources.OPENAI">{{ t('apiConnections.sources.openai') }}</option>
               <option :value="chat_completion_sources.CLAUDE">{{ t('apiConnections.sources.claude') }}</option>
@@ -54,7 +54,7 @@ const hasOpenRouterGroupedModels = computed(() => {
         </div>
 
         <!-- OpenAI Form -->
-        <form v-show="apiStore.oaiSettings.chat_completion_source === chat_completion_sources.OPENAI">
+        <form v-show="apiStore.apiSettings.chat_completion_source === chat_completion_sources.OPENAI">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openaiKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -74,7 +74,7 @@ const hasOpenRouterGroupedModels = computed(() => {
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openaiModel') }}</h4>
-            <select class="text-pole" v-model="apiStore.oaiSettings.openai_model">
+            <select class="text-pole" v-model="apiStore.apiSettings.openai_model">
               <optgroup :label="t('apiConnections.modelGroups.gpt4o')">
                 <option value="gpt-4o">gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
@@ -92,7 +92,7 @@ const hasOpenRouterGroupedModels = computed(() => {
         </form>
 
         <!-- Claude Form (placeholder) -->
-        <form v-show="apiStore.oaiSettings.chat_completion_source === chat_completion_sources.CLAUDE">
+        <form v-show="apiStore.apiSettings.chat_completion_source === chat_completion_sources.CLAUDE">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.claudeKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -112,7 +112,7 @@ const hasOpenRouterGroupedModels = computed(() => {
           </div>
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.claudeModel') }}</h4>
-            <select class="text-pole" v-model="apiStore.oaiSettings.claude_model">
+            <select class="text-pole" v-model="apiStore.apiSettings.claude_model">
               <option value="claude-3-5-sonnet-20240620">claude-3-5-sonnet-20240620</option>
               <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
               <option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option>
@@ -121,7 +121,7 @@ const hasOpenRouterGroupedModels = computed(() => {
         </form>
 
         <!-- OpenRouter Form -->
-        <form v-show="apiStore.oaiSettings.chat_completion_source === chat_completion_sources.OPENROUTER">
+        <form v-show="apiStore.apiSettings.chat_completion_source === chat_completion_sources.OPENROUTER">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openrouterKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -144,7 +144,7 @@ const hasOpenRouterGroupedModels = computed(() => {
             <select
               v-show="hasOpenRouterGroupedModels"
               class="text-pole"
-              v-model="apiStore.oaiSettings.openrouter_model"
+              v-model="apiStore.apiSettings.openrouter_model"
             >
               <option value="OR_Website">{{ t('apiConnections.openrouterWebsite') }}</option>
               <optgroup v-for="(models, vendor) in apiStore.groupedOpenRouterModels" :key="vendor" :label="vendor">
@@ -156,7 +156,7 @@ const hasOpenRouterGroupedModels = computed(() => {
               type="text"
               class="text-pole"
               placeholder="google/gemini-pro-1.5"
-              v-model="apiStore.oaiSettings.openrouter_model"
+              v-model="apiStore.apiSettings.openrouter_model"
             />
           </div>
         </form>

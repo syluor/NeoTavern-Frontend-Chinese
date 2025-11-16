@@ -145,7 +145,6 @@ watch(
         </div>
 
         <div v-show="isOptionsMenuVisible" ref="optionsMenu" class="options-menu">
-          <!-- TODO: Add logic for these buttons -->
           <a class="options-menu__item" @click="openChatManagement">
             <i class="fa-solid fa-address-book"></i>
             <span>{{ t('chat.optionsMenu.manageChats') }}</span>

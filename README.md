@@ -1,72 +1,93 @@
-<h1 align="center" style="text-align: center; width: fit-content; margin-left: auto; margin-right: auto;">ts-base</h1>
+_Everthing below written with AI_
+
+<h1 align="center">SillyTavern Experimental Frontend</h1>
 
 <p align="center">
-  <a href="https://github.com/bgub/ts-base/actions">CI</a>
-  ·
-  <a href="https://github.com/bgub/ts-base/issues">Issues</a>
+  A modern, experimental frontend for SillyTavern, built with Vue 3 and Vite.
 </p>
 
-<span align="center">
+<p align="center">
+  <a href="https://github.com/bmen25124/SillyTavern-Experimental-Frontend/actions/workflows/ci.yml">CI Status</a>
+  ·
+  <a href="https://github.com/bmen25124/SillyTavern-Experimental-Frontend/issues">Report a Bug</a>
+  ·
+  <a href="https://github.com/bmen25124/SillyTavern-Experimental-Frontend/issues">Request a Feature</a>
+</p>
 
-[![npm](https://img.shields.io/npm/v/%40bgub%2Fts-base?logo=npm&label=npm)](https://www.npmjs.com/package/@bgub/ts-base)
-[![CI](https://github.com/bgub/ts-base/actions/workflows/ci.yml/badge.svg)](https://github.com/bgub/ts-base/actions)
-[![Codecov](https://codecov.io/github/bgub/ts-base/branch/main/graph/badge.svg)](https://codecov.io/github/bgub/ts-base)
-[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ff69b4)](https://github.com/sponsors/bgub)
+<p align="center">
 
-</span>
+[![CI](https://github.com/bmen25124/SillyTavern-Experimental-Frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/bmen25124/SillyTavern-Experimental-Frontend/actions)
+[![Codecov](https://codecov.io/github/bmen25124/SillyTavern-Experimental-Frontend/branch/main/graph/badge.svg)](https://codecov.io/github/bmen25124/SillyTavern-Experimental-Frontend)
 
-TypeScript library starter that works out-of-the-box with Node, Deno, Bun, and the browser. Batteries included: linting, testing, bundling.
+</p>
 
-## Features
+This repository contains an experimental, modern frontend for SillyTavern. It aims to provide a clean, performant, and extensible user interface by leveraging modern web technologies like Vue 3, Vite, and Pinia.
 
-- **Biome**: lint and format with a single tool
-- **Vitest**: fast tests with coverage and thresholds
-- **Size Limit**: keep bundles tiny, with CI checks
-- **tsdown**: ESM builds for Node and a separate browser bundle
-- **CI**: lint, typecheck, test, coverage, and size comments/badges
-- **Commit Linting**: conventional commits enforced in CI
-- **Deno-friendly**: `.ts` source imports for direct consumption
-- **Multi-runtime**: `src/internal.ts` is runtime-agnostic; `src/index.ts` (Node) and `src/browser.ts` (browser) wire runtime-specific APIs
+## ✨ Features
 
-## Usage
+-   **Modern Tech Stack**: Built with Vue 3, Vite, Pinia, and TypeScript for a fast, type-safe, and maintainable codebase.
+-   **Comprehensive Character Management**: A detailed character browser and editor panel, including support for importing, creating, and editing characters with advanced options.
+-   **Advanced AI Configuration**: A dedicated panel for managing AI settings like temperature, penalties, context size, and presets.
+-   **Flexible API Connections**: UI to connect to various AI backends, with initial support for OpenAI-compatible Chat Completion APIs (including OpenAI, Claude, and OpenRouter).
+-   **Powerful World Info (Lorebooks)**: A full-featured system for managing lorebooks and their entries, complete with a two-pane browser and editor view.
+-   **User Persona Management**: Create and manage multiple user personas, each with its own avatar, name, and description.
+-   **Dynamic & Customizable UI**: Features resizable panels and a clean, modern design.
+-   **Extensible**: A simple extension system allows for adding custom functionality via JavaScript and CSS.
+-   **Internationalization (i18n)**: Supports multiple languages with `vue-i18n` and includes a script for easy management of translation keys.
 
-Install dependencies and run scripts:
+## 🚀 Getting Started
 
-```bash
-pnpm i
-pnpm lint
-pnpm test
-pnpm build
-```
+### Prerequisites
 
-Node usage:
+-   Node.js (v20 or higher recommended)
+-   pnpm (or your package manager of choice)
+-   A running instance of the SillyTavern backend server.
 
-```ts
-import { add, greet, getSecureRandomId } from '@bgub/ts-base';
+### Development
 
-console.log(add(2, 3));
-console.log(greet('Ada'));
-console.log(getSecureRandomId());
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/sillytavern-experimental-frontend.git
+    cd sillytavern-experimental-frontend
+    ```
 
-Browser usage (bundled or via import maps):
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
 
-```ts
-import { add, greet, getSecureRandomId } from '@bgub/ts-base/browser';
+3.  **Run the development server:**
+    ```bash
+    pnpm dev
+    ```
+    This will start the Vite development server. By default, it proxies API requests to `http://localhost:8000`, which is the standard SillyTavern backend address. You can configure the proxy in `vite.config.ts`.
 
-add(1, 2);
-greet('Linus');
-getSecureRandomId();
-```
+### Available Scripts
 
-## Project Structure
+-   `pnpm dev`: Starts the development server.
+-   `pnpm build`: Compiles and bundles the application for production.
+-   `pnpm test`: Runs unit tests with Vitest and generates a coverage report.
+-   `pnpm lint`: Lints the codebase with ESLint.
+-   `pnpm format`: Formats the code with Prettier.
+-   `pnpm i18n`: Checks for unused i18n keys and generates TypeScript types for them.
 
-- `src/internal.ts`: core logic, no Node/browser APIs
-- `src/index.ts`: Node adapter (e.g., `crypto.randomBytes`)
-- `src/browser.ts`: browser adapter (e.g., `crypto.getRandomValues`)
-- `tsdown.config.ts`: builds Node entry and browser `core` bundle
-- `vitest.config.ts`: coverage config and thresholds
+## 📁 Project Structure
 
-## License
+The codebase is organized to separate concerns and promote maintainability:
 
-MIT © [bgub](https://github.com/bgub)
+-   `src/`: Main source code directory.
+    -   `api/`: Functions for communicating with the SillyTavern backend.
+    -   `components/`: Reusable Vue components, organized by feature (e.g., `Chat`, `CharacterPanel`).
+    -   `composables/`: Vue composables for reusable, stateful logic (e.g., `useDraggable`).
+    -   `stores/`: Pinia state management stores for global application state.
+    -   `styles/`: Global SCSS styles, variables, and component-specific styles.
+    -   `types/`: TypeScript type definitions for the application.
+    -   `utils/`: General utility functions (e.g., date formatting, API helpers).
+    -   `main.ts`: The main application entry point.
+-   `public/`: Static assets and example extensions.
+-   `locales/`: Internationalization (i18n) translation files.
+-   `vite.config.ts`: Configuration for the Vite build tool, including the development server proxy.
+
+## ⚖️ License
+
+MIT © [bmen25124](https://github.com/bmen25124)

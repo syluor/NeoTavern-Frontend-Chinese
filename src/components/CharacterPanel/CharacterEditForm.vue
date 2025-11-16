@@ -35,7 +35,7 @@ const isUpdatingFromStore = ref(false);
 
 // --- State for new features ---
 const isPeeking = ref(false);
-const isSpoilerModeActive = computed(() => settingsStore.powerUser.spoiler_free_mode);
+const isSpoilerModeActive = computed(() => settingsStore.settings.character.spoilerFreeMode);
 const areDetailsHidden = computed(() => isSpoilerModeActive.value && !isPeeking.value);
 
 // --- Drawer States ---

@@ -606,6 +606,28 @@
       "zoomed_avatar_magnification": {
         "label": "Magnify Zoomed Avatars",
         "description": "Enable magnification effect when hovering over a zoomed-in avatar."
+      },
+      "tag_import_setting": {
+        "label": "Tag Import Behavior",
+        "description": "How to handle tags when importing characters.",
+        "options": {
+          "none": "Do not import tags",
+          "all": "Import all tags",
+          "only_existing": "Import only existing tags",
+          "ask": "Ask for each character"
+        }
+      },
+      "persona_show_notifications": {
+        "label": "Show Persona Notifications",
+        "description": "Display a notification when the active persona is switched."
+      },
+      "persona_allow_multi_connections": {
+        "label": "Allow Multiple Persona Connections",
+        "description": "Permit a single character to be connected to multiple personas."
+      },
+      "persona_auto_lock": {
+        "label": "Auto-lock Persona to Chat",
+        "description": "Automatically lock a chosen persona to a chat when it's selected."
       }
     },
     "background": {

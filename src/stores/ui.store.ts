@@ -25,7 +25,7 @@ export const useUiStore = defineStore('ui', () => {
       zoomedAvatars.value.splice(existingIndex, 1);
     } else {
       // It doesn't exist, so add it
-      if (!settingsStore.powerUser.movingUI) {
+      if (!settingsStore.settings.ui.panels.movingUI) {
         // If movingUI is off, only allow one at a time
         zoomedAvatars.value = [];
       }

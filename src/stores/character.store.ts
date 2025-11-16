@@ -381,7 +381,7 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function importTagsForCharacters(avatarFileNames: string[]) {
     const settingsStore = useSettingsStore();
-    if (settingsStore.powerUser.tag_import_setting === 'none') {
+    if (settingsStore.settings.character.tagImportSetting === 'none') {
       return;
     }
     // TODO: Implement 'ask' setting for tag import.
@@ -396,7 +396,7 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function handleTagImport(character: Character) {
     const settingsStore = useSettingsStore();
-    const setting = settingsStore.powerUser.tag_import_setting;
+    const setting = settingsStore.settings.character.tagImportSetting;
 
     const alreadyAssignedTags = character.tags ?? [];
     const tagsFromCard = (character.tags ?? [])

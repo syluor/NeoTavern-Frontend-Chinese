@@ -59,9 +59,9 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   });
 
   const settings = computed({
-    get: () => settingsStore.settings.world_info_settings,
+    get: () => settingsStore.settings.worldInfo,
     set: (value) => {
-      settingsStore.setSetting('world_info_settings', { ...value });
+      settingsStore.setSetting('worldInfo', { ...value });
     },
   });
 
@@ -116,7 +116,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   }
 
   watch(
-    () => settingsStore.settings.world_info_settings,
+    () => settingsStore.settings.worldInfo,
     (newSettings) => {
       if (newSettings) {
         const newValues = defaultsDeep({}, newSettings, defaultWorldInfoSettings);

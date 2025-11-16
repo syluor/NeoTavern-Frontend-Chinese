@@ -489,7 +489,58 @@ export type AccountStorageKey =
 
 export type AccountStorageState = Partial<Record<AccountStorageKey, string>>;
 
-export type Settings = {
+/**
+ * The new, organized settings structure for the experimental frontend.
+ * This is the primary `Settings` type used throughout the application.
+ */
+export interface ExperimentalSettings {
+  ui: {
+    background: {
+      name: string;
+      url: string;
+      fitting: BackgroundFitting;
+      thumbnailColumns: number;
+      animation: boolean;
+    };
+    panels: {
+      movingUI: boolean;
+    };
+    avatars: {
+      zoomedMagnification: boolean;
+      neverResize: boolean;
+    };
+  };
+  chat: {
+    sendOnEnter: SendOnEnterOptions;
+    autoFixMarkdown: boolean;
+    confirmMessageDelete: boolean;
+  };
+  character: {
+    spoilerFreeMode: boolean;
+    worldImportDialog: boolean;
+    tagImportSetting: TagImportSetting;
+  };
+  persona: {
+    showNotifications: boolean;
+    allowMultiConnections: boolean;
+    autoLock: boolean;
+    personas: Record<string, string>; // avatarId -> name
+    defaultPersona: string | null;
+    personaDescriptions: Record<string, PersonaDescription>;
+  };
+  api: {
+    main: string;
+    oai: OaiSettings;
+  };
+  worldInfo: WorldInfoSettings;
+  account: AccountStorageState;
+}
+
+/**
+ * The legacy settings structure fetched from and saved to the server.
+ * It contains the new structure under `v2Experimental` to avoid data loss.
+ */
+export interface LegacySettings {
   power_user: {
     external_media_forbidden_overrides: Array<string>;
     external_media_allowed_overrides: Array<string>;
@@ -523,7 +574,13 @@ export type Settings = {
   username?: string;
   user_avatar?: string;
   main_api?: string;
-};
+
+  // The new, structured settings object.
+  v2Experimental?: ExperimentalSettings;
+}
+
+// Re-alias Settings to our new experimental structure for use throughout the app.
+export type Settings = ExperimentalSettings;
 
 export interface ZoomedAvatar {
   id: string; // Unique ID, can be character name or a UUID

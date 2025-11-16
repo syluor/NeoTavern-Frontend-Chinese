@@ -117,8 +117,8 @@ export const useApiStore = defineStore('api', () => {
     () => settingsStore.settings,
     (newSettings) => {
       if (newSettings) {
-        mainApi.value = newSettings.main_api || 'openai';
-        oaiSettings.value = defaultsDeep({}, newSettings.oai_settings, defaultOaiSettings);
+        mainApi.value = newSettings.api.main;
+        oaiSettings.value = defaultsDeep({}, newSettings.api.oai, defaultOaiSettings);
       } else {
         oaiSettings.value = { ...defaultOaiSettings };
       }
@@ -129,8 +129,8 @@ export const useApiStore = defineStore('api', () => {
   // When the user changes API settings in the UI, save them back to the settings store.
   watch(mainApi, (newValue) => {
     if (settingsStore.settingsInitializing) return;
-    if (newValue !== settingsStore.settings?.main_api) {
-      settingsStore.setSetting('main_api', newValue);
+    if (newValue !== settingsStore.settings?.api.main) {
+      settingsStore.setSetting('api.main', newValue);
     }
   });
 
@@ -138,8 +138,8 @@ export const useApiStore = defineStore('api', () => {
     oaiSettings,
     (newSettings) => {
       if (settingsStore.settingsInitializing) return;
-      if (!isEqual(newSettings, settingsStore.settings?.oai_settings)) {
-        settingsStore.setSetting('oai_settings', newSettings);
+      if (!isEqual(newSettings, settingsStore.settings?.api.oai)) {
+        settingsStore.setSetting('api.oai', newSettings);
       }
     },
     { deep: true },

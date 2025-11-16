@@ -20,8 +20,8 @@ export const usePersonaStore = defineStore('persona', () => {
   const lastAvatarUpdate = ref(Date.now());
 
   const personas = computed<Persona[]>(() => {
-    const personaNames = settingsStore.settings.power_user.personas ?? {};
-    const personaDescriptions = settingsStore.settings.power_user.persona_descriptions ?? {};
+    const personaNames = settingsStore.settings.persona.personas ?? {};
+    const personaDescriptions = settingsStore.settings.persona.personaDescriptions ?? {};
 
     return allPersonaAvatars.value.map((avatarId) => {
       const descriptionData = personaDescriptions[avatarId] || createDefaultDescription();
@@ -39,8 +39,7 @@ export const usePersonaStore = defineStore('persona', () => {
 
   async function initialize() {
     await refreshPersonas();
-    // TODO: Implement loadPersonaForCurrentChat logic
-    const defaultPersona = settingsStore.settings.power_user.default_persona;
+    const defaultPersona = settingsStore.settings.persona.defaultPersona;
     if (defaultPersona && allPersonaAvatars.value.includes(defaultPersona)) {
       await setActivePersona(defaultPersona);
     } else if (personas.value.length > 0) {
@@ -52,9 +51,10 @@ export const usePersonaStore = defineStore('persona', () => {
     try {
       allPersonaAvatars.value = await fetchAllPersonaAvatars();
       // Ensure every avatar has a corresponding entry in settings
-      const personaSettings = settingsStore.settings.power_user.personas ?? {};
-      const descriptions = settingsStore.settings.power_user.persona_descriptions ?? {};
+      const personaSettings = { ...(settingsStore.settings.persona.personas ?? {}) };
+      const descriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
       let settingsChanged = false;
+
       for (const avatarId of allPersonaAvatars.value) {
         if (!personaSettings[avatarId]) {
           personaSettings[avatarId] = '[Unnamed Persona]';
@@ -66,8 +66,8 @@ export const usePersonaStore = defineStore('persona', () => {
         }
       }
       if (settingsChanged) {
-        settingsStore.setSetting('power_user.personas', personaSettings);
-        settingsStore.setSetting('power_user.persona_descriptions', descriptions);
+        settingsStore.setSetting('persona.personas', personaSettings);
+        settingsStore.setSetting('persona.personaDescriptions', descriptions);
       }
     } catch (error) {
       console.error('Failed to refresh personas:', error);
@@ -94,18 +94,18 @@ export const usePersonaStore = defineStore('persona', () => {
       activePersonaId.value = avatarId;
       uiStore.activePlayerName = persona.name;
       uiStore.activePlayerAvatar = persona.avatarId;
-      // TODO: Legacy settings sync, review if needed
-      settingsStore.setSetting('username', persona.name);
-      settingsStore.setSetting('user_avatar', persona.avatarId);
+      // Sync back to legacy fields for compatibility with other parts of the app
+      settingsStore.setLegacySetting('username', persona.name);
+      settingsStore.setLegacySetting('user_avatar', persona.avatarId);
     }
   }
 
   function updateActivePersonaField<K extends keyof PersonaDescription>(field: K, value: PersonaDescription[K]) {
     if (!activePersonaId.value) return;
-    const descriptions = settingsStore.settings.power_user.persona_descriptions ?? {};
-    if (descriptions[activePersonaId.value]) {
-      descriptions[activePersonaId.value][field] = value;
-      settingsStore.setSetting('power_user.persona_descriptions', { ...descriptions });
+    const newDescriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
+    if (newDescriptions[activePersonaId.value]) {
+      newDescriptions[activePersonaId.value][field] = value;
+      settingsStore.setSetting('persona.personaDescriptions', newDescriptions);
     }
   }
 
@@ -120,12 +120,12 @@ export const usePersonaStore = defineStore('persona', () => {
     });
 
     if (result === POPUP_RESULT.AFFIRMATIVE && newName && activePersonaId.value) {
-      const currentPersonas = { ...(settingsStore.settings.power_user.personas ?? {}) };
+      const currentPersonas = { ...(settingsStore.settings.persona.personas ?? {}) };
       currentPersonas[activePersonaId.value] = newName;
-      settingsStore.setSetting('power_user.personas', currentPersonas);
+      settingsStore.setSetting('persona.personas', currentPersonas);
       // also update the main username if this is the active persona
       uiStore.activePlayerName = newName;
-      settingsStore.setSetting('username', newName);
+      settingsStore.setLegacySetting('username', newName);
     }
   }
 
@@ -133,7 +133,7 @@ export const usePersonaStore = defineStore('persona', () => {
     if (!activePersonaId.value) return;
 
     let cropData;
-    if (!settingsStore.powerUser.never_resize_avatars) {
+    if (!settingsStore.settings.ui.avatars.neverResize) {
       const dataUrl = await getBase64Async(file);
       const { result, value } = await popupStore.show({
         title: t('popup.cropAvatar.title'),
@@ -163,16 +163,16 @@ export const usePersonaStore = defineStore('persona', () => {
     try {
       await deletePersonaAvatar(avatarId);
 
-      const newPersonas = { ...(settingsStore.settings.power_user.personas ?? {}) };
+      const newPersonas = { ...(settingsStore.settings.persona.personas ?? {}) };
       delete newPersonas[avatarId];
-      settingsStore.setSetting('power_user.personas', newPersonas);
+      settingsStore.setSetting('persona.personas', newPersonas);
 
-      const newDescriptions = { ...(settingsStore.settings.power_user.persona_descriptions ?? {}) };
+      const newDescriptions = { ...(settingsStore.settings.persona.personaDescriptions ?? {}) };
       delete newDescriptions[avatarId];
-      settingsStore.setSetting('power_user.persona_descriptions', newDescriptions);
+      settingsStore.setSetting('persona.personaDescriptions', newDescriptions);
 
-      if (settingsStore.settings.power_user.default_persona === avatarId) {
-        settingsStore.setSetting('power_user.default_persona', null);
+      if (settingsStore.settings.persona.defaultPersona === avatarId) {
+        settingsStore.setSetting('persona.defaultPersona', null);
       }
       // TODO: Handle chat and character locks
 

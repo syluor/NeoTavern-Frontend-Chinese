@@ -1,10 +1,10 @@
 import type { SettingDefinition } from './types';
-import { SendOnEnterOptions } from './constants';
+import { SendOnEnterOptions, TagImportSetting } from './constants';
 
 export const settingsDefinition: SettingDefinition[] = [
   // --- Character Handling ---
   {
-    id: 'power_user.spoiler_free_mode',
+    id: 'character.spoilerFreeMode',
     label: 'settings.power_user.spoiler_free_mode.label',
     description: 'settings.power_user.spoiler_free_mode.description',
     category: 'Character Handling',
@@ -13,16 +13,7 @@ export const settingsDefinition: SettingDefinition[] = [
     defaultValue: false,
   },
   {
-    id: 'power_user.never_resize_avatars',
-    label: 'settings.power_user.never_resize_avatars.label',
-    description: 'settings.power_user.never_resize_avatars.description',
-    category: 'Character Handling',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: false,
-  },
-  {
-    id: 'power_user.world_import_dialog',
+    id: 'character.worldImportDialog',
     label: 'settings.power_user.world_import_dialog.label',
     description: 'settings.power_user.world_import_dialog.description',
     category: 'Character Handling',
@@ -30,10 +21,25 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: true,
   },
+  {
+    id: 'character.tagImportSetting',
+    label: 'settings.power_user.tag_import_setting.label',
+    description: 'settings.power_user.tag_import_setting.description',
+    category: 'Character Handling',
+    type: 'enum',
+    widget: 'select',
+    defaultValue: TagImportSetting.ASK,
+    options: [
+      { value: TagImportSetting.NONE, label: 'settings.power_user.tag_import_setting.options.none' },
+      { value: TagImportSetting.ALL, label: 'settings.power_user.tag_import_setting.options.all' },
+      { value: TagImportSetting.ONLY_EXISTING, label: 'settings.power_user.tag_import_setting.options.only_existing' },
+      { value: TagImportSetting.ASK, label: 'settings.power_user.tag_import_setting.options.ask' },
+    ],
+  },
 
   // --- Chat/Message Handling ---
   {
-    id: 'power_user.send_on_enter',
+    id: 'chat.sendOnEnter',
     label: 'settings.power_user.send_on_enter.label',
     description: 'settings.power_user.send_on_enter.description',
     category: 'Chat/Message Handling',
@@ -47,7 +53,7 @@ export const settingsDefinition: SettingDefinition[] = [
     ],
   },
   {
-    id: 'power_user.auto_fix_generated_markdown',
+    id: 'chat.autoFixMarkdown',
     label: 'settings.power_user.auto_fix_generated_markdown.label',
     description: 'settings.power_user.auto_fix_generated_markdown.description',
     category: 'Chat/Message Handling',
@@ -56,7 +62,7 @@ export const settingsDefinition: SettingDefinition[] = [
     defaultValue: false,
   },
   {
-    id: 'power_user.confirm_message_delete',
+    id: 'chat.confirmMessageDelete',
     label: 'settings.power_user.confirm_message_delete.label',
     description: 'settings.power_user.confirm_message_delete.description',
     category: 'Chat/Message Handling',
@@ -64,8 +70,10 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: true,
   },
+
+  // --- UI & Display ---
   {
-    id: 'power_user.movingUI',
+    id: 'ui.panels.movingUI',
     label: 'settings.power_user.movingUI.label',
     description: 'settings.power_user.movingUI.description',
     category: 'UI & Display',
@@ -74,7 +82,7 @@ export const settingsDefinition: SettingDefinition[] = [
     defaultValue: false,
   },
   {
-    id: 'power_user.zoomed_avatar_magnification',
+    id: 'ui.avatars.zoomedMagnification',
     label: 'settings.power_user.zoomed_avatar_magnification.label',
     description: 'settings.power_user.zoomed_avatar_magnification.description',
     category: 'UI & Display',
@@ -82,10 +90,19 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: true,
   },
+  {
+    id: 'ui.avatars.neverResize',
+    label: 'settings.power_user.never_resize_avatars.label',
+    description: 'settings.power_user.never_resize_avatars.description',
+    category: 'UI & Display',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: false,
+  },
 
   // --- Appearance ---
   {
-    id: 'background.thumbnailColumns',
+    id: 'ui.background.thumbnailColumns',
     label: 'settings.background.thumbnailColumns.label',
     description: 'settings.background.thumbnailColumns.description',
     category: 'Appearance',
@@ -97,10 +114,39 @@ export const settingsDefinition: SettingDefinition[] = [
     step: 1,
   },
   {
-    id: 'background.animation',
+    id: 'ui.background.animation',
     label: 'settings.background.animation.label',
     description: 'settings.background.animation.description',
     category: 'Appearance',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: false,
+  },
+
+  // --- Persona ---
+  {
+    id: 'persona.showNotifications',
+    label: 'settings.power_user.persona_show_notifications.label',
+    description: 'settings.power_user.persona_show_notifications.description',
+    category: 'Persona',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: true,
+  },
+  {
+    id: 'persona.allowMultiConnections',
+    label: 'settings.power_user.persona_allow_multi_connections.label',
+    description: 'settings.power_user.persona_allow_multi_connections.description',
+    category: 'Persona',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: false,
+  },
+  {
+    id: 'persona.autoLock',
+    label: 'settings.power_user.persona_auto_lock.label',
+    description: 'settings.power_user.persona_auto_lock.description',
+    category: 'Persona',
     type: 'boolean',
     widget: 'checkbox',
     defaultValue: false,

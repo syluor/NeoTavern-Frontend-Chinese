@@ -20,18 +20,18 @@ export const useBackgroundStore = defineStore('background', () => {
   const searchTerm = ref('');
 
   const thumbnailColumns = computed({
-    get: () => settingsStore.settings.background.thumbnailColumns,
-    set: (value) => settingsStore.setSetting('background.thumbnailColumns', value),
+    get: () => settingsStore.settings.ui.background.thumbnailColumns,
+    set: (value) => settingsStore.setSetting('ui.background.thumbnailColumns', value),
   });
 
   const fitting = computed({
-    get: () => settingsStore.settings.background.fitting,
-    set: (value) => settingsStore.setSetting('background.fitting', value),
+    get: () => settingsStore.settings.ui.background.fitting,
+    set: (value) => settingsStore.setSetting('ui.background.fitting', value),
   });
 
   const currentBackgroundUrl = computed(() => {
     const lockedBg = chatStore.chatMetadata[BG_METADATA_KEY];
-    return lockedBg ?? settingsStore.settings.background.url;
+    return lockedBg ?? settingsStore.settings.ui.background.url;
   });
 
   const filteredSystemBackgrounds = computed(() =>
@@ -61,9 +61,9 @@ export const useBackgroundStore = defineStore('background', () => {
   }
 
   function setBackground(fileName: string, fileUrl: string, fittingMode: BackgroundFitting) {
-    settingsStore.setSetting('background.name', fileName);
-    settingsStore.setSetting('background.url', fileUrl);
-    settingsStore.setSetting('background.fitting', fittingMode);
+    settingsStore.setSetting('ui.background.name', fileName);
+    settingsStore.setSetting('ui.background.url', fileUrl);
+    settingsStore.setSetting('ui.background.fitting', fittingMode);
   }
 
   function selectBackground(fileName: string, isCustom: boolean) {
@@ -72,8 +72,8 @@ export const useBackgroundStore = defineStore('background', () => {
       // If locked, clicking a new background updates the lock
       lockBackground(fileUrl);
     } else {
-      settingsStore.setSetting('background.name', fileName);
-      settingsStore.setSetting('background.url', fileUrl);
+      settingsStore.setSetting('ui.background.name', fileName);
+      settingsStore.setSetting('ui.background.url', fileUrl);
     }
   }
 

@@ -125,7 +125,7 @@ async function handleDeleteClick() {
     }
   };
 
-  if (!settingsStore.powerUser.confirm_message_delete) {
+  if (!settingsStore.settings.chat.confirmMessageDelete) {
     performDelete(canDeleteSwipe);
     return;
   }

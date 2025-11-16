@@ -70,7 +70,7 @@ export function formatMessage(message: ChatMessage): string {
 
   // TODO: Add more complex logic from original messageFormatting, like param substitution, regex, etc.
 
-  if (settingsStore.powerUser.auto_fix_generated_markdown && !message.is_system) {
+  if (settingsStore.settings.chat.autoFixMarkdown && !message.is_system) {
     mes = fixMarkdown(mes);
   }
 

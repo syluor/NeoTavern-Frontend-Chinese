@@ -610,6 +610,28 @@ export interface MessageSchema {
         label: string;
         description: string;
       };
+      tag_import_setting: {
+        label: string;
+        description: string;
+        options: {
+          none: string;
+          all: string;
+          only_existing: string;
+          ask: string;
+        };
+      };
+      persona_show_notifications: {
+        label: string;
+        description: string;
+      };
+      persona_allow_multi_connections: {
+        label: string;
+        description: string;
+      };
+      persona_auto_lock: {
+        label: string;
+        description: string;
+      };
     };
     background: {
       thumbnailColumns: {

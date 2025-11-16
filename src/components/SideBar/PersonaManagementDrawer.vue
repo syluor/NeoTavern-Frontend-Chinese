@@ -210,15 +210,15 @@ onMounted(() => {
           <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
           <div class="persona-editor__global-settings">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.power_user.persona_show_notifications" />
+              <input type="checkbox" v-model="settingsStore.settings.persona.showNotifications" />
               <span>{{ t('personaManagement.globalSettings.showNotifications') }}</span>
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.power_user.persona_allow_multi_connections" />
+              <input type="checkbox" v-model="settingsStore.settings.persona.allowMultiConnections" />
               <span>{{ t('personaManagement.globalSettings.allowMultiConnections') }}</span>
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.power_user.persona_auto_lock" />
+              <input type="checkbox" v-model="settingsStore.settings.persona.autoLock" />
               <span>{{ t('personaManagement.globalSettings.autoLock') }}</span>
             </label>
           </div>

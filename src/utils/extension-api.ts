@@ -348,7 +348,10 @@ export const extensionAPI = {
      * @param field The key of the persona to update.
      * @param value The new value.
      */
-    updateActiveField: async <K extends keyof PersonaDescription>(field: K, value: PersonaDescription[K]): Promise<void> => {
+    updateActiveField: async <K extends keyof PersonaDescription>(
+      field: K,
+      value: PersonaDescription[K],
+    ): Promise<void> => {
       await usePersonaStore().updateActivePersonaField(field, value);
     },
 

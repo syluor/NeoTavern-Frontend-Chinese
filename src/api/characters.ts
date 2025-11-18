@@ -102,3 +102,20 @@ export async function deleteCharacter(avatar: string, deleteChats: boolean): Pro
     throw new Error('Failed to delete character');
   }
 }
+
+export async function updateCharacterImage(avatar: string, imageFile: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('avatar_url', avatar);
+  formData.append('avatar', imageFile);
+
+  const response = await fetch(`${API_BASE}/edit-avatar`, {
+    method: 'POST',
+    headers: getRequestHeaders({ omitContentType: true }),
+    body: formData,
+    cache: 'no-cache',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update avatar image');
+  }
+}

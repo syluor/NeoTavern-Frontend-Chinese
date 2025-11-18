@@ -189,7 +189,7 @@ function revokePreviewUrl() {
   }
 }
 
-function handleAvatarFileChange(event: Event) {
+async function handleAvatarFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     const file = input.files[0];
@@ -205,7 +205,7 @@ function handleAvatarFileChange(event: Event) {
         updateValue('name', name);
       }
     } else {
-      // TODO: Implement avatar update for existing characters via store
+      await characterStore.updateCharacterImage(formData.value.avatar, file);
     }
   }
 }

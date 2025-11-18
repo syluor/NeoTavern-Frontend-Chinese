@@ -473,6 +473,9 @@ export interface MessageSchema {
       success: string;
       error: string;
     };
+    updateImage: {
+      error: string;
+    };
     tokenWarning: string;
   };
   characterPanel: {

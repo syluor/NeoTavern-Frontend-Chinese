@@ -6,9 +6,18 @@ export function getThumbnailUrl(type: ThumbnailType, file: string | undefined): 
   if (!file || file === 'none') {
     return default_avatar;
   }
-  const personaStore = usePersonaStore();
-  const timestamp = personaStore.lastAvatarUpdate;
-  return `/thumbnail?type=${type}&file=${encodeURIComponent(file)}&t=${timestamp}`;
+
+  if (type === 'persona') {
+    const personaStore = usePersonaStore();
+    const timestamp = personaStore.lastAvatarUpdate;
+    return `/thumbnail?type=persona&file=${encodeURIComponent(file)}&t=${timestamp}`;
+  }
+  if (type === 'avatar') {
+    // TODO: I know this is a bit hacky, we might want to revisit this later
+    const timestamp = Date.now();
+    return `/thumbnail?type=avatar&file=${encodeURIComponent(file)}&t=${timestamp}`;
+  }
+  return `/thumbnail?type=avatar&file=${encodeURIComponent(file)}`;
 }
 
 interface AvatarDetails {

@@ -8,6 +8,7 @@ import {
   importCharacter as apiImportCharacter,
   createCharacter as apiCreateCharacter,
   deleteCharacter as apiDeleteCharacter,
+  updateCharacterImage as apiUpdateCharacterImage,
 } from '../api/characters';
 import DOMPurify from 'dompurify';
 import { humanizedDateTime } from '../utils/date';
@@ -578,6 +579,21 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
+  async function updateCharacterImage(avatar: string, imageFile: File) {
+    try {
+      await apiUpdateCharacterImage(avatar, imageFile);
+      const character = characters.value.find((c) => c.avatar === avatar);
+      if (character) {
+        // Force refresh
+        character.avatar = character.avatar;
+      }
+      await refreshCharacters();
+    } catch (error) {
+      console.error('Failed to update character image:', error);
+      toast.error(t('character.updateImage.error'));
+    }
+  }
+
   return {
     characters,
     activeCharacterIndex,
@@ -609,6 +625,7 @@ export const useCharacterStore = defineStore('character', () => {
     cancelCreating,
     createNewCharacter,
     deleteCharacter,
+    updateCharacterImage,
     updateAndSaveCharacter,
   };
 });

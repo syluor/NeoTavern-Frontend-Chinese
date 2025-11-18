@@ -470,6 +470,9 @@
       "success": "Character deleted.",
       "error": "Failed to delete character."
     },
+    "updateImage": {
+      "error": "Failed to update character image."
+    },
     "tokenWarning": "Character definition is large ({tokens} tokens), using over {percentage}% of your context window. This may impact performance and context limits."
   },
   "characterPanel": {

@@ -4,7 +4,7 @@ import { usePersonaStore } from '../../stores/persona.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { getThumbnailUrl } from '../../utils/image';
-import Pagination from '../common/Pagination.vue';
+import Pagination from '../Common/Pagination.vue';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types';
 

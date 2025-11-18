@@ -32,12 +32,14 @@ export function formatText(text: string, options?: { isSystem?: boolean }): stri
     formattedText = converter.makeHtml(formattedText);
   }
 
+  // @ts-ignore
   const config: DOMPurify.Config = {
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
     ADD_TAGS: ['custom-style', 'q'], // Allow <q> for quotes
   };
 
+  // @ts-ignore
   return DOMPurify.sanitize(formattedText, config);
 }
 

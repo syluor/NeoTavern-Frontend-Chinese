@@ -1,27 +1,22 @@
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
+import pinia from './stores';
 import App from './App.vue';
 import { useAuthStore } from './stores/auth.store';
 import { toast } from './composables/useToast';
 import i18n from './i18n';
-import * as Vue from 'vue';
 import type { StrictT } from './composables/useStrictI18n';
-import { extensionAPI } from './utils/extension-api';
 
 import './styles/main.scss';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-// Expose Vue for extensions that might need to mount their own components
-window.SillyTavern = {
-  extensionAPI,
-  vue: Vue,
-};
-
 async function initializeApp() {
   const app = createApp(App);
-  const pinia = createPinia();
   app.use(pinia);
   app.use(i18n);
+
+  // Dynamically import and initialize the extension API
+  await import('./utils/extension-api');
+
   // @ts-ignore
   const t = i18n.global.t as StrictT;
 

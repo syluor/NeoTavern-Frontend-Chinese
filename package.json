@@ -8,7 +8,8 @@
     "i18n": "node manage-i18n.js",
     "i18n:remove": "node manage-i18n.js --remove",
     "dev": "pnpm i18n && vite",
-    "build": "pnpm i18n && vue-tsc --noEmit && vite build",
+    "build:types": "vite build --config vite.config.types.ts",
+    "build": "pnpm i18n && vue-tsc --noEmit && vite build && pnpm build:types",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.ts",
     "lint:fix": "eslint . --ext .vue,.js,.ts --fix",
@@ -38,6 +39,7 @@
     "sass": "^1.93.3",
     "typescript": "^5.9.2",
     "vite": "^7.2.2",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.3"
   },

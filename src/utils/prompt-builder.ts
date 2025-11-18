@@ -1,5 +1,4 @@
-import type { Character, ChatMessage, Persona, SamplerSettings, PromtBuilderOptions } from '../types';
-import type { ApiChatMessage } from '../api/generation';
+import type { Character, ChatMessage, Persona, SamplerSettings, ApiChatMessage, PromptBuilderOptions } from '../types';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
 import { defaultSamplerSettings } from '../constants';
@@ -25,7 +24,7 @@ export class PromptBuilder {
   private persona: Persona;
   private maxContext: number;
 
-  constructor({ character, chatHistory, samplerSettings, persona }: PromtBuilderOptions) {
+  constructor({ character, chatHistory, samplerSettings, persona }: PromptBuilderOptions) {
     this.character = character;
     this.chatHistory = chatHistory;
     this.samplerSettings = samplerSettings;
@@ -35,7 +34,7 @@ export class PromptBuilder {
   }
 
   public async build(): Promise<ApiChatMessage[]> {
-    const options: PromtBuilderOptions = {
+    const options: PromptBuilderOptions = {
       character: this.character,
       chatHistory: this.chatHistory,
       samplerSettings: this.samplerSettings,

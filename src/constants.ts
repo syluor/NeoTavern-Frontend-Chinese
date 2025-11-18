@@ -1,10 +1,4 @@
-import {
-  ReasoningEffort,
-  type ChatCompletionSource,
-  type Prompt,
-  type PromptOrderConfig,
-  type SamplerSettings,
-} from './types';
+import { type ChatCompletionSource, type Prompt, type PromptOrderConfig, type SamplerSettings } from './types';
 
 export enum OpenrouterMiddleoutType {
   AUTO = 'auto',
@@ -31,6 +25,30 @@ export enum TagImportSetting {
   ALL = 'all',
   ONLY_EXISTING = 'only_existing',
   ASK = 'ask',
+}
+
+export enum EventPriority {
+  LOWEST = 10,
+  LOW = 30,
+  MEDIUM = 50,
+  HIGH = 70,
+  HIGHEST = 90,
+}
+
+export enum ReasoningEffort {
+  AUTO = 'auto',
+  MIN = 'min',
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  MAX = 'max',
+}
+
+export enum GenerationMode {
+  NEW = 'new',
+  CONTINUE = 'continue',
+  REGENERATE = 'regenerate',
+  ADD_SWIPE = 'add_swipe',
 }
 
 export const DEFAULT_SAVE_EDIT_TIMEOUT = DebounceTimeout.RELAXED;

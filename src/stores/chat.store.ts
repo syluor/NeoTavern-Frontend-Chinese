@@ -2,12 +2,13 @@ import { defineStore } from 'pinia';
 import { nextTick, ref, watch } from 'vue';
 import { debounce, type DebouncedFunc } from 'lodash-es';
 import {
-  GenerationMode,
   type ChatMessage,
   type ChatMetadata,
   type SwipeInfo,
   type Character,
   type GenerationContext,
+  type GenerationResponse,
+  type StreamedChunk,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -20,14 +21,9 @@ import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { PromptBuilder } from '../utils/prompt-builder';
-import {
-  buildChatCompletionPayload,
-  ChatCompletionService,
-  type GenerationResponse,
-  type StreamedChunk,
-} from '../api/generation';
+import { buildChatCompletionPayload, ChatCompletionService } from '../api/generation';
 import { getThumbnailUrl } from '../utils/image';
-import { default_user_avatar, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
+import { default_user_avatar, DEFAULT_SAVE_EDIT_TIMEOUT, GenerationMode } from '../constants';
 import { useSettingsStore } from './settings.store';
 import { usePersonaStore } from './persona.store';
 import { eventEmitter } from '../utils/event-emitter';
@@ -66,9 +62,6 @@ export const useChatStore = defineStore('chat', () => {
       uiStore.isChatSaving = true;
       const chatToSave = [
         {
-          user_name: uiStore.activePlayerName,
-          character_name: activeCharacter.name,
-          create_date: chatCreateDate.value,
           chat_metadata: chatMetadata.value,
         },
         ...chat.value,

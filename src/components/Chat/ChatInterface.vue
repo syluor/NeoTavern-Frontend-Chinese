@@ -5,7 +5,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
 import ChatManagementPopup from './ChatManagementPopup.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { GenerationMode } from '../../types';
+import { GenerationMode } from '../../constants';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();

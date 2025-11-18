@@ -1,4 +1,4 @@
-import { useI18n as useOriginalI18n, type NamedValue, type TranslateOptions } from 'vue-i18n';
+import { useI18n as useOriginalI18n, type NamedValue, type TranslateOptions, type Composer } from 'vue-i18n';
 import type { I18nKey } from '../types/i18n';
 
 export interface StrictT {
@@ -12,11 +12,15 @@ export interface StrictT {
   (key: I18nKey, plural: number, options: TranslateOptions): string;
 }
 
+type UseStrictI18nReturn = Omit<Composer, 't'> & {
+  t: StrictT;
+};
+
 /**
  * A wrapper around `vue-i18n/useI18n` that provides a strictly-typed `t` function,
  * ensuring that only valid, auto-generated keys are used.
  */
-export function useStrictI18n() {
+export function useStrictI18n(): UseStrictI18nReturn {
   const i18n = useOriginalI18n();
 
   const strictT = i18n.t as StrictT;

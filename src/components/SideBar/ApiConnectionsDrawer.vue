@@ -5,6 +5,7 @@ import { chat_completion_sources, type ConnectionProfile } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
+import ConnectionProfileSelector from '../Common/ConnectionProfileSelector.vue';
 import { OpenrouterMiddleoutType } from '../../constants';
 
 const { t } = useStrictI18n();
@@ -45,12 +46,7 @@ const openrouterProvidersString = computed({
       <div class="api-connections-drawer__section">
         <h3>{{ t('apiConnections.profile') }}</h3>
         <div class="preset-manager__controls">
-          <select class="text-pole" v-model="apiStore.selectedConnectionProfileName">
-            <option :value="undefined">{{ t('apiConnections.profileManagement.none') }}</option>
-            <option v-for="profile in apiStore.connectionProfiles" :key="profile.name" :value="profile.name">
-              {{ profile.name }}
-            </option>
-          </select>
+          <ConnectionProfileSelector v-model="apiStore.selectedConnectionProfileName" />
           <div
             class="menu-button-icon fa-solid fa-file-circle-plus"
             :title="t('apiConnections.profileManagement.create')"

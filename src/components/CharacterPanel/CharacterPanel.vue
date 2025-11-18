@@ -3,7 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import type { Character } from '../../types';
 import CharacterEditForm from './CharacterEditForm.vue';
-import Pagination from '../common/Pagination.vue';
+import Pagination from '../Common/Pagination.vue';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useResizable } from '../../composables/useResizable';

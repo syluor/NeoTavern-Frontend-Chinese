@@ -1,19 +1,12 @@
-import { set } from 'lodash-es';
+import { createApp } from 'vue';
 import { useChatStore } from '../stores/chat.store';
 import { useSettingsStore } from '../stores/settings.store';
 import { useCharacterStore } from '../stores/character.store';
 import { usePersonaStore } from '../stores/persona.store';
 import { useUiStore } from '../stores/ui.store';
-import { usePopupStore, type PopupShowOptions } from '../stores/popup.store';
+import { usePopupStore } from '../stores/popup.store';
 import { toast } from '../composables/useToast';
-import {
-  ChatCompletionService,
-  buildChatCompletionPayload,
-  type ChatCompletionPayload,
-  type GenerationResponse,
-  type StreamedChunk,
-  type ApiChatMessage,
-} from '../api/generation';
+import { ChatCompletionService, buildChatCompletionPayload } from '../api/generation';
 import {
   type Character,
   type ChatMessage,
@@ -21,13 +14,18 @@ import {
   type SettingsPath,
   type Persona,
   type MenuType,
-  GenerationMode,
   type SamplerSettings,
-  EventPriority,
   type PersonaDescription,
   type WorldInfoSettings,
   type WorldInfoBook,
   type WorldInfoEntry,
+  type LlmGenerationOptions,
+  type PopupShowOptions,
+  type ApiChatMessage,
+  type ChatCompletionPayload,
+  type GenerationResponse,
+  type StreamedChunk,
+  type ExtensionAPI,
 } from '../types';
 import type { ValueForPath } from '../types/utils';
 import { eventEmitter } from './event-emitter';
@@ -37,12 +35,25 @@ import { WorldInfoProcessor } from './world-info-processor';
 import { useApiStore } from '../stores/api.store';
 import { useWorldInfoStore } from '../stores/world-info.store';
 
+import * as Vue from 'vue';
+import i18n from '../i18n';
+import pinia from '../stores';
+import { GenerationMode } from '../constants';
+
+/**
+ * A registry of standard, mountable Vue components that can be used by extensions.
+ * We use dynamic imports to avoid circular dependencies and load components on demand.
+ */
+const mountableComponents: Record<string, () => Promise<any>> = {
+  ConnectionProfileSelector: () => import('../components/Common/ConnectionProfileSelector.vue'),
+};
+
 /**
  * The public API exposed to extensions.
  * This facade provides controlled access to the application's state and actions,
  * ensuring stability and preventing extensions from breaking on internal refactors.
  */
-export const extensionAPI = {
+const baseExtensionAPI: ExtensionAPI = {
   /**
    * Functions related to chat management.
    */
@@ -155,7 +166,7 @@ export const extensionAPI = {
 
     /**
      * A direct, low-level interface to the chat completion service.
-     * Use this for custom generation logic.
+     * Use this for custom generation logic. Prefer `extensionAPI.llm.generate` for background tasks.
      * @param payload The payload for the generation request. See `ChatCompletionPayload`.
      * @param signal An optional AbortSignal to cancel the request.
      * @returns A Promise that resolves to a GenerationResponse or a stream generator function.
@@ -214,47 +225,50 @@ export const extensionAPI = {
    */
   settings: {
     /**
-     * Retrieves a setting value in a type-safe way.
-     * @param path The dot-notation path to the setting (e.g., 'chat.sendOnEnter').
+     * (SCOPED) Retrieves a setting value from this extension's dedicated storage.
+     * @param path The key for the setting within the extension's scope.
      * @returns The value of the setting.
      */
-    get: <P extends SettingsPath>(path: P): ValueForPath<Settings, P> => {
-      return useSettingsStore().getSetting(path);
+    get: (path: string): any => {
+      // This is a placeholder; it will be replaced by the scoped proxy.
+      console.warn('[ExtensionAPI] settings.get called outside of a registered extension scope.');
+      return undefined;
     },
 
     /**
-     * Updates a single setting value. Triggers a debounced save.
-     * @param path The dot-notation path to the setting.
-     * @param value The new value to set, which must match the setting's type.
+     * (GLOBAL, READ-ONLY) Retrieves a setting value from the main application settings.
+     * @param path The dot-notation path to the global setting (e.g., 'chat.sendOnEnter').
+     * @returns The value of the setting.
      */
-    set: <P extends SettingsPath>(path: P, value: ValueForPath<Settings, P>): void => {
+    getGlobal: <P extends SettingsPath>(path: P): ValueForPath<Settings, P> => {
+      const value = useSettingsStore().getSetting(path);
+      if (typeof value === 'object') {
+        return JSON.parse(JSON.stringify(value));
+      }
+      return value;
+    },
+
+    /**
+     * (SCOPED) Updates a single setting value in this extension's dedicated storage.
+     * @param path The key for the setting within the extension's scope.
+     * @param value The new value to set.
+     */
+    set: (path: string, value: any): void => {
+      // This is a placeholder; it will be replaced by the scoped proxy.
+      console.warn('[ExtensionAPI] settings.set called outside of a registered extension scope.');
+    },
+
+    /**
+     * (GLOBAL, READ-ONLY) Retrieves a setting value from the main application settings.
+     * @param path The dot-notation path to the global setting (e.g., 'chat.sendOnEnter').
+     * @returns The value of the setting.
+     */
+    setGlobal: <P extends SettingsPath>(path: P, value: ValueForPath<Settings, P>): void => {
       useSettingsStore().setSetting(path, value);
     },
 
     /**
-     * Updates multiple settings at once. This is more efficient as it triggers only one debounced save.
-     * @param updates An object where keys are dot-notation setting paths and values are the new settings.
-     */
-    setMultiple: (updates: { [P in SettingsPath]?: ValueForPath<Settings, P> }): void => {
-      const store = useSettingsStore();
-      Object.entries(updates).forEach(([path, value]) => {
-        // Use lodash's `set` to apply each update to the reactive settings object without saving yet.
-        set(store.settings, path, value);
-      });
-      // Trigger a single debounced save after all changes are applied.
-      store.saveSettingsDebounced();
-    },
-
-    /**
-     * Gets a deep copy of all settings. Modifying the returned object will not affect application state.
-     * @returns A deep copy of the entire settings object.
-     */
-    getAll: (): Settings => {
-      return JSON.parse(JSON.stringify(useSettingsStore().settings));
-    },
-
-    /**
-     * Triggers debounced saving.
+     * Triggers a debounced save of all settings.
      */
     save: (): void => {
       useSettingsStore().saveSettingsDebounced();
@@ -271,7 +285,6 @@ export const extensionAPI = {
      */
     getActive: (): Character | null => {
       const character = useCharacterStore().activeCharacter;
-      // Return a deep copy to prevent direct mutation from extensions.
       return character ? JSON.parse(JSON.stringify(character)) : null;
     },
 
@@ -485,6 +498,39 @@ export const extensionAPI = {
     showPopup: (options: PopupShowOptions): Promise<{ result: number; value: any }> => {
       return usePopupStore().show(options);
     },
+
+    /**
+     * Renders a standard, pre-built Vue component into a given container.
+     * @param container The HTMLElement where the component should be mounted.
+     * @param componentName The name of the component to mount (e.g., 'ConnectionProfileSelector').
+     * @param props An object of props to pass to the component.
+     */
+    mountComponent: async (
+      container: HTMLElement,
+      componentName: string,
+      props: Record<string, any>,
+    ): Promise<void> => {
+      if (!container) {
+        console.error(`[ExtensionAPI] mountComponent failed: container is null or undefined.`);
+        return;
+      }
+      const componentLoader = mountableComponents[componentName];
+      if (!componentLoader) {
+        console.error(`[ExtensionAPI] Component "${componentName}" is not a valid mountable component.`);
+        return;
+      }
+      try {
+        const componentModule = await componentLoader();
+        const component = componentModule.default;
+        container.innerHTML = '';
+        const componentApp = createApp(component, props);
+        componentApp.use(pinia);
+        componentApp.use(i18n);
+        componentApp.mount(container);
+      } catch (error) {
+        console.error(`[ExtensionAPI] Failed to load and mount component "${componentName}":`, error);
+      }
+    },
   },
 
   /**
@@ -498,14 +544,112 @@ export const extensionAPI = {
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
     emit: eventEmitter.emit.bind(eventEmitter),
-    /** Constants for event listener priorities. */
-    Priority: EventPriority,
+  },
+
+  /**
+   * Functions for generalized, non-chat-related LLM tasks.
+   */
+  llm: {
+    /**
+     * Performs a generation task using a specified or active connection profile.
+     * Ideal for background tasks like translation, summarization, etc.
+     * @param messages The array of messages to send to the model.
+     * @param options Configuration for the generation task.
+     */
+    generate: (
+      messages: ApiChatMessage[],
+      options: LlmGenerationOptions = {},
+    ): Promise<GenerationResponse | (() => AsyncGenerator<StreamedChunk>)> => {
+      const settingsStore = useSettingsStore();
+      const apiStore = useApiStore();
+
+      let source = settingsStore.settings.api.chat_completion_source;
+      let model: string | undefined = apiStore.activeModel;
+      let samplerSettings = { ...settingsStore.settings.api.samplers, ...(options.samplerOverrides ?? {}) };
+      const profileName = options.connectionProfileName;
+
+      if (profileName) {
+        const profile = apiStore.connectionProfiles.find((p) => p.name === profileName);
+        if (!profile) {
+          throw new Error(`[ExtensionAPI] Connection profile "${profileName}" not found.`);
+        }
+        source = profile.chat_completion_source ?? source;
+        model = profile.model ?? model;
+
+        if (profile.sampler) {
+          const sampler = apiStore.presets.find((p) => p.name === profile.sampler);
+          if (sampler) {
+            samplerSettings = { ...sampler.preset, ...(options.samplerOverrides ?? {}) };
+          } else {
+            throw new Error(`[ExtensionAPI] Sampler preset "${profile.sampler}" not found.`);
+          }
+        }
+      }
+
+      if (!model) {
+        throw new Error('No model specified or found in the active/selected profile.');
+      }
+
+      const payload = buildChatCompletionPayload({
+        samplerSettings,
+        messages,
+        model,
+        source,
+        providerSpecific: settingsStore.settings.api.provider_specific,
+        modelList: apiStore.modelList,
+      });
+
+      return ChatCompletionService.generate(payload, options.signal);
+    },
+  },
+};
+
+/**
+ * Creates a proxy for the extension API that scopes settings access to the specific extension.
+ * @param extensionName The unique name of the extension.
+ */
+function createScopedApiProxy(extensionName: string): ExtensionAPI {
+  const settingsStore = useSettingsStore();
+
+  const scopedSettings = {
+    get: (path: string): any => {
+      const fullPath = `extensionSettings.${extensionName}.${path}`;
+      const value = settingsStore.getSetting(fullPath as SettingsPath);
+      if (typeof value === 'object') {
+        return JSON.parse(JSON.stringify(value));
+      }
+      return value;
+    },
+    set: (path: string, value: any): void => {
+      const fullPath = `extensionSettings.${extensionName}.${path}`;
+      settingsStore.setSetting(fullPath as SettingsPath, value);
+    },
+    getGlobal: baseExtensionAPI.settings.getGlobal,
+    setGlobal: baseExtensionAPI.settings.setGlobal,
+    save: baseExtensionAPI.settings.save,
+  };
+
+  return {
+    ...baseExtensionAPI,
+    settings: scopedSettings,
+  };
+}
+
+globalThis.SillyTavern = {
+  vue: Vue,
+  registerExtension: (extensionName: string, initCallback: (extensionName: string, api: ExtensionAPI) => void) => {
+    try {
+      const api = createScopedApiProxy(extensionName);
+      initCallback(extensionName, api);
+    } catch (error) {
+      console.error(`[Extension] Failed to initialize extension "${extensionName}":`, error);
+    }
   },
 };
 
 // We freeze the API object and its top-level properties to prevent extensions from modifying them.
-Object.freeze(extensionAPI);
-Object.keys(extensionAPI).forEach((key) => Object.freeze(extensionAPI[key as keyof typeof extensionAPI]));
+Object.freeze(baseExtensionAPI);
+Object.keys(baseExtensionAPI).forEach((key) => Object.freeze(baseExtensionAPI[key as keyof typeof baseExtensionAPI]));
 
-// Export the type of the API for our own project's internal use.
-export type ExtensionAPI = typeof extensionAPI;
+// For our own project's internal use.
+export { baseExtensionAPI as extensionAPI };

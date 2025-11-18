@@ -1,72 +1,9 @@
 import { getRequestHeaders } from '../utils/api';
-import type { ChatCompletionSource, MessageRole, SamplerSettings, Settings, ReasoningEffort, ApiModel } from '../types';
-import { chat_completion_sources, ReasoningEffort as ReasoningEffortEnum } from '../types';
-import type { OpenrouterMiddleoutType } from '../constants';
+import type { ChatCompletionPayload, ChatCompletionSource, GenerationResponse, StreamedChunk } from '../types';
+import { ReasoningEffort } from '../constants';
+import { chat_completion_sources } from '../types';
+import type { BuildChatCompletionPayloadOptions } from '../types/generation';
 
-export interface ApiChatMessage {
-  role: MessageRole;
-  content: string;
-}
-
-export type ChatCompletionPayload = Partial<{
-  stream: boolean;
-  messages: ApiChatMessage[];
-  model: string;
-  chat_completion_source: string;
-  max_tokens: number;
-  temperature?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
-  repetition_penalty?: number;
-  top_p?: number;
-  top_k?: number;
-  top_a?: number;
-  min_p?: number;
-  stop?: string[];
-  // TODO: logit_bias?: Record<string, number>;
-  n?: number;
-  include_reasoning?: boolean;
-  seed?: number;
-  max_completion_tokens?: number;
-  reasoning_effort?: ReasoningEffort | string;
-
-  // Claude-specific
-  claude_use_sysprompt: boolean;
-  assistant_prefill: string;
-
-  // OpenRouter-specific
-  use_fallback?: boolean;
-  provider?: string[];
-  allow_fallbacks?: boolean;
-  middleout?: OpenrouterMiddleoutType;
-
-  // Google-specific
-  use_makersuite_sysprompt?: boolean;
-
-  // Mistral-specific
-  safe_prompt?: boolean;
-}>;
-
-export interface GenerationResponse {
-  content: string;
-  reasoning?: string;
-}
-
-export interface StreamedChunk {
-  delta: string;
-  reasoning?: string; // Full reasoning
-}
-
-export type BuildChatCompletionPayloadOptions = {
-  samplerSettings: SamplerSettings;
-  messages: ApiChatMessage[];
-  model: string;
-  source: ChatCompletionSource;
-  providerSpecific: Settings['api']['provider_specific'];
-  playerName: string;
-  characterName: string;
-  modelList: ApiModel[];
-};
 export function buildChatCompletionPayload({
   samplerSettings,
   messages,
@@ -110,19 +47,19 @@ export function buildChatCompletionPayload({
 
     if (reasoningEffortSources.includes(source)) {
       switch (samplerSettings.reasoning_effort) {
-        case ReasoningEffortEnum.AUTO:
+        case ReasoningEffort.AUTO:
           reasoningEffort = undefined;
           break;
-        case ReasoningEffortEnum.MIN:
+        case ReasoningEffort.MIN:
           reasoningEffort =
             // @ts-ignore
             [chat_completion_sources.OPENAI, chat_completion_sources.AZURE_OPENAI].includes(source) &&
             /^gpt-5/.test(model)
-              ? ReasoningEffortEnum.MIN
-              : ReasoningEffortEnum.LOW;
+              ? ReasoningEffort.MIN
+              : ReasoningEffort.LOW;
           break;
-        case ReasoningEffortEnum.MAX:
-          reasoningEffort = ReasoningEffortEnum.HIGH;
+        case ReasoningEffort.MAX:
+          reasoningEffort = ReasoningEffort.HIGH;
           break;
         default:
           reasoningEffort = samplerSettings.reasoning_effort;

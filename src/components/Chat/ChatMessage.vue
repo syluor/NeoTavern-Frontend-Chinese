@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
 import type { PropType } from 'vue';
-import type { ChatMessage } from '../../types';
+import type { ChatMessage, PopupShowOptions } from '../../types';
 import { POPUP_TYPE, POPUP_RESULT } from '../../types';
 import { useCharacterStore } from '../../stores/character.store';
 import { useUiStore } from '../../stores/ui.store';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import { usePopupStore, type PopupShowOptions } from '../../stores/popup.store';
+import { usePopupStore } from '../../stores/popup.store';
 import { resolveAvatarUrls } from '../../utils/image';
 import { formatTimeStamp } from '../../utils/date';
 import { formatMessage, formatReasoning } from '../../utils/markdown';

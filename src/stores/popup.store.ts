@@ -1,25 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { PopupOptions } from '../types';
-import { POPUP_TYPE, POPUP_RESULT } from '../types';
+import { POPUP_TYPE, POPUP_RESULT, type PopupShowOptions, type PopupState } from '../types';
 import { uuidv4 } from '../utils/common';
-
-interface PopupState extends PopupOptions {
-  id: string;
-  visible: boolean;
-  title: string;
-  content: string;
-  type: POPUP_TYPE;
-  inputValue?: string;
-}
 
 interface PopupPromise {
   resolve: (payload: { result: number; value: any }) => void;
   reject: (reason?: any) => void;
 }
-
-export type PopupShowOptions = Partial<Omit<PopupState, 'id' | 'visible'>>;
-
 export const usePopupStore = defineStore('popup', () => {
   const popups = ref<PopupState[]>([]);
   const promises = ref<Record<string, PopupPromise>>({});

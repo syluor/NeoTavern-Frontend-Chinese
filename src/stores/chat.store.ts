@@ -215,6 +215,13 @@ export const useChatStore = defineStore('chat', () => {
   async function generateResponse(mode: GenerationMode) {
     if (isGenerating.value) return;
 
+    const startController = new AbortController();
+    await eventEmitter.emit('generation:started', startController);
+    if (startController.signal.aborted) {
+      console.log(`Generation aborted by extension (generation:started). Reason: ${startController.signal.reason}`);
+      return;
+    }
+
     if (generationController.value) {
       generationController.value.abort();
     }
@@ -233,7 +240,6 @@ export const useChatStore = defineStore('chat', () => {
     let generationError: Error | undefined;
 
     try {
-      await eventEmitter.emit('generation:started');
       isGenerating.value = true;
       const genStarted = new Date().toISOString();
       let lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
@@ -276,9 +282,16 @@ export const useChatStore = defineStore('chat', () => {
         },
         playerName: uiStore.activePlayerName || 'User',
         characterName: activeCharacter.name,
+        controller: new AbortController(),
       };
 
       await eventEmitter.emit('process:generation-context', context);
+      if (context.controller.signal.aborted) {
+        console.log(
+          `Generation aborted by extension (process:generation-context). Reason: ${context.controller.signal.reason}`,
+        );
+        return;
+      }
 
       const promptBuilder = new PromptBuilder({
         character: context.character,
@@ -303,7 +316,14 @@ export const useChatStore = defineStore('chat', () => {
         modelList: apiStore.modelList,
       });
 
-      await eventEmitter.emit('process:request-payload', payload);
+      const payloadController = new AbortController();
+      await eventEmitter.emit('process:request-payload', payload, payloadController);
+      if (payloadController.signal.aborted) {
+        console.log(
+          `Generation aborted by extension (process:request-payload). Reason: ${payloadController.signal.reason}`,
+        );
+        return;
+      }
 
       const handleGenerationResult = async (content: string, reasoning?: string) => {
         const genFinished = new Date().toISOString();
@@ -341,6 +361,16 @@ export const useChatStore = defineStore('chat', () => {
             swipe_id: 0,
             extra: { reasoning, token_count },
           };
+
+          const createController = new AbortController();
+          await eventEmitter.emit('generation:before-message-create', botMessage, createController);
+          if (createController.signal.aborted) {
+            console.log(
+              `Generation aborted by extension (generation:before-message-create). Reason: ${createController.signal.reason}`,
+            );
+            return;
+          }
+
           chat.value.push(botMessage);
           generatedMessage = botMessage;
           await eventEmitter.emit('message:created', botMessage);
@@ -352,7 +382,16 @@ export const useChatStore = defineStore('chat', () => {
           payload,
           generationController.value.signal,
         )) as GenerationResponse;
-        await eventEmitter.emit('process:response', response, payload);
+
+        const responseController = new AbortController();
+        await eventEmitter.emit('process:response', response, payload, responseController);
+        if (responseController.signal.aborted) {
+          console.log(
+            `Generation aborted by extension (process:response). Reason: ${responseController.signal.reason}`,
+          );
+          return;
+        }
+
         await handleGenerationResult(response.content, response.reasoning);
       } else {
         const streamGenerator = (await ChatCompletionService.generate(
@@ -386,6 +425,16 @@ export const useChatStore = defineStore('chat', () => {
             swipe_info: [],
             extra: { reasoning: '' },
           };
+
+          const createController = new AbortController();
+          await eventEmitter.emit('generation:before-message-create', botMessage, createController);
+          if (createController.signal.aborted) {
+            console.log(
+              `Generation aborted by extension (generation:before-message-create). Reason: ${createController.signal.reason}`,
+            );
+            return;
+          }
+
           chat.value.push(botMessage);
           generatedMessage = botMessage;
           targetMessageIndex = chat.value.length - 1;
@@ -394,7 +443,15 @@ export const useChatStore = defineStore('chat', () => {
 
         try {
           for await (const chunk of streamGenerator()) {
-            await eventEmitter.emit('process:stream-chunk', chunk, payload);
+            const chunkController = new AbortController();
+            await eventEmitter.emit('process:stream-chunk', chunk, payload, chunkController);
+            if (chunkController.signal.aborted) {
+              console.log(
+                `Generation aborted by extension (process:stream-chunk). Reason: ${chunkController.signal.reason}`,
+              );
+              generationController.value?.abort();
+              break;
+            }
             streamedContent += chunk.delta;
             if (chunk.reasoning) streamedReasoning += chunk.reasoning;
 
@@ -461,6 +518,14 @@ export const useChatStore = defineStore('chat', () => {
       extra: {},
     };
 
+    const createController = new AbortController();
+    await eventEmitter.emit('chat:before-message-create', userMessage, createController);
+    if (createController.signal.aborted) {
+      console.log(
+        `Message creation aborted by extension (chat:before-message-create). Reason: ${createController.signal.reason}`,
+      );
+      return;
+    }
     chat.value.push(userMessage);
     await eventEmitter.emit('message:created', userMessage);
 

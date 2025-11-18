@@ -476,7 +476,7 @@ export const useCharacterStore = defineStore('character', () => {
     draftCharacter.value = null;
   }
 
-  async function createNewCharacter(character: Character, file: File) {
+  async function createNewCharacter(character: Character, file?: File) {
     const uiStore = useUiStore();
     const groupStore = useGroupStore();
 
@@ -488,7 +488,9 @@ export const useCharacterStore = defineStore('character', () => {
     const formData = new FormData();
     // Basic fields
     formData.append('ch_name', character.name);
-    formData.append('avatar', file);
+    if (file) {
+      formData.append('avatar', file);
+    }
     formData.append('fav', String(character.fav || false));
     formData.append('description', character.description || '');
     formData.append('first_mes', character.first_mes || '');
@@ -607,5 +609,6 @@ export const useCharacterStore = defineStore('character', () => {
     cancelCreating,
     createNewCharacter,
     deleteCharacter,
+    updateAndSaveCharacter,
   };
 });

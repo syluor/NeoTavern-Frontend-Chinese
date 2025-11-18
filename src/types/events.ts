@@ -12,6 +12,8 @@ import type { Persona } from './persona';
 import type { SettingsPath } from './settings';
 import type { ProcessedWorldInfo, WorldInfoBook, WorldInfoEntry, WorldInfoOptions } from './world-info';
 
+// TODO: We should have generation-id for each LLL request.
+
 export interface ExtensionEventMap {
   // General Application Events
   'app:loaded': [];
@@ -21,6 +23,7 @@ export interface ExtensionEventMap {
   'setting:changed': [path: SettingsPath, value: any, oldValue: any];
 
   // Message Events
+  'chat:before-message-create': [message: ChatMessage, controller: AbortController];
   'message:created': [message: ChatMessage];
   'message:updated': [index: number, message: ChatMessage];
   'message:deleted': [index: number];
@@ -48,8 +51,10 @@ export interface ExtensionEventMap {
   'world-info:entry-deleted': [bookName: string, uid: number];
 
   // Generation Flow Events
-  'generation:started': [];
+  'generation:started': [controller: AbortController];
   'generation:finished': [message: ChatMessage | null, error?: Error];
+  'generation:before-message-create': [message: ChatMessage, controller: AbortController];
+
   'prompt:building-started': [options: PromptBuilderOptions];
   'prompt:built': [messages: ApiChatMessage[]];
   'world-info:processing-started': [options: WorldInfoOptions];
@@ -62,7 +67,7 @@ export interface ExtensionEventMap {
    * They are fired sequentially and awaited by the core application.
    */
   'process:generation-context': [context: GenerationContext];
-  'process:request-payload': [payload: ChatCompletionPayload];
-  'process:response': [response: GenerationResponse, payload: ChatCompletionPayload];
-  'process:stream-chunk': [chunk: StreamedChunk, payload: ChatCompletionPayload];
+  'process:request-payload': [payload: ChatCompletionPayload, controller: AbortController];
+  'process:response': [response: GenerationResponse, payload: ChatCompletionPayload, controller: AbortController];
+  'process:stream-chunk': [chunk: StreamedChunk, payload: ChatCompletionPayload, controller: AbortController];
 }

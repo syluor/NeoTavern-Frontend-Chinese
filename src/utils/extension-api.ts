@@ -26,6 +26,8 @@ import {
   type GenerationResponse,
   type StreamedChunk,
   type ExtensionAPI,
+  type ChatMetadata,
+  type ExtensionEventMap,
 } from '../types';
 import type { ValueForPath } from '../types/utils';
 import { eventEmitter } from './event-emitter';
@@ -34,11 +36,24 @@ import { PromptBuilder } from './prompt-builder';
 import { WorldInfoProcessor } from './world-info-processor';
 import { useApiStore } from '../stores/api.store';
 import { useWorldInfoStore } from '../stores/world-info.store';
+import { default_avatar, GenerationMode } from '../constants';
 
 import * as Vue from 'vue';
 import i18n from '../i18n';
 import pinia from '../stores';
-import { GenerationMode } from '../constants';
+
+/**
+ * Helper to deep clone an object to prevent accidental mutation of state.
+ */
+function deepClone<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  return JSON.parse(JSON.stringify(obj));
+}
 
 /**
  * A registry of standard, mountable Vue components that can be used by extensions.
@@ -66,27 +81,24 @@ const baseExtensionAPI: ExtensionAPI = {
      * @returns A promise that resolves when the message is sent (and generation begins, if applicable).
      */
     sendMessage: async (messageText: string, options?: { triggerGeneration?: boolean }): Promise<void> => {
-      // We get the store instance inside the function call to ensure Pinia is initialized.
       const shouldTriggerGeneration = options?.triggerGeneration ?? true;
       await useChatStore().sendMessage(messageText, shouldTriggerGeneration);
     },
 
     /**
      * Gets the entire chat history for the active chat.
-     * @returns A deep copy of the chat messages array to prevent direct state mutation.
      */
-    getHistory: (): ChatMessage[] => {
-      return JSON.parse(JSON.stringify(useChatStore().chat));
+    getHistory: (): readonly ChatMessage[] => {
+      return deepClone(useChatStore().chat);
     },
 
     /**
      * Gets the last message in the chat history.
-     * @returns A deep copy of the last ChatMessage, or null if the chat is empty.
      */
-    getLastMessage: (): ChatMessage | null => {
+    getLastMessage: (): Readonly<ChatMessage> | null => {
       const store = useChatStore();
       const lastMessage = store.chat.length > 0 ? store.chat[store.chat.length - 1] : null;
-      return lastMessage ? JSON.parse(JSON.stringify(lastMessage)) : null;
+      return lastMessage ? deepClone(lastMessage) : null;
     },
 
     /**
@@ -214,9 +226,20 @@ const baseExtensionAPI: ExtensionAPI = {
       });
     },
 
-    /** The PromptBuilder class, for advanced prompt construction. */
+    metadata: {
+      get: (): Readonly<ChatMetadata> => {
+        return deepClone(useChatStore().chatMetadata);
+      },
+      set: (metadata: ChatMetadata): void => {
+        useChatStore().chatMetadata = metadata;
+      },
+      update: (updates: Partial<ChatMetadata>): void => {
+        const store = useChatStore();
+        store.chatMetadata = { ...store.chatMetadata, ...updates };
+      },
+    },
+
     PromptBuilder: PromptBuilder,
-    /** The WorldInfoProcessor class, for advanced lorebook processing. */
     WorldInfoProcessor: WorldInfoProcessor,
   },
 
@@ -230,7 +253,6 @@ const baseExtensionAPI: ExtensionAPI = {
      * @returns The value of the setting.
      */
     get: (path: string): any => {
-      // This is a placeholder; it will be replaced by the scoped proxy.
       console.warn('[ExtensionAPI] settings.get called outside of a registered extension scope.');
       return undefined;
     },
@@ -240,12 +262,9 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param path The dot-notation path to the global setting (e.g., 'chat.sendOnEnter').
      * @returns The value of the setting.
      */
-    getGlobal: <P extends SettingsPath>(path: P): ValueForPath<Settings, P> => {
+    getGlobal: <P extends SettingsPath>(path: P): Readonly<ValueForPath<Settings, P>> => {
       const value = useSettingsStore().getSetting(path);
-      if (typeof value === 'object') {
-        return JSON.parse(JSON.stringify(value));
-      }
-      return value;
+      return deepClone(value) as Readonly<ValueForPath<Settings, P>>;
     },
 
     /**
@@ -254,7 +273,6 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param value The new value to set.
      */
     set: (path: string, value: any): void => {
-      // This is a placeholder; it will be replaced by the scoped proxy.
       console.warn('[ExtensionAPI] settings.set called outside of a registered extension scope.');
     },
 
@@ -283,17 +301,22 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets the currently active character object.
      * @returns A deep copy of the active character, or null if none is active.
      */
-    getActive: (): Character | null => {
+    getActive: (): Readonly<Character> | null => {
       const character = useCharacterStore().activeCharacter;
-      return character ? JSON.parse(JSON.stringify(character)) : null;
+      return deepClone(character);
     },
 
     /**
      * Gets a list of all available characters.
      * @returns A deep copy of the characters array.
      */
-    getAll: (): Character[] => {
-      return JSON.parse(JSON.stringify(useCharacterStore().characters));
+    getAll: (): readonly Character[] => {
+      return deepClone(useCharacterStore().characters);
+    },
+
+    get: (avatar: string): Readonly<Character> | null => {
+      const char = useCharacterStore().characters.find((c) => c.avatar === avatar);
+      return char ? deepClone(char) : null;
     },
 
     /**
@@ -324,6 +347,28 @@ const baseExtensionAPI: ExtensionAPI = {
         console.warn('[ExtensionAPI] No active character to update.');
       }
     },
+
+    create: async (character: Character, avatarImage?: File): Promise<void> => {
+      const store = useCharacterStore();
+      if (!avatarImage) {
+        try {
+          const res = await fetch(default_avatar);
+          const blob = await res.blob();
+          avatarImage = new File([blob], 'avatar.png', { type: 'image/png' });
+        } catch {
+          throw new Error('Default avatar could not be loaded, and no file provided.');
+        }
+      }
+      await store.createNewCharacter(character, avatarImage);
+    },
+
+    delete: async (avatar: string, deleteChats = false): Promise<void> => {
+      await useCharacterStore().deleteCharacter(avatar, deleteChats);
+    },
+
+    update: async (avatar: string, data: Partial<Character>): Promise<void> => {
+      await useCharacterStore().updateAndSaveCharacter(avatar, data);
+    },
   },
 
   /**
@@ -334,17 +379,17 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets the currently active persona object.
      * @returns A deep copy of the active persona, or null if none is active.
      */
-    getActive: (): Persona | null => {
+    getActive: (): Readonly<Persona> | null => {
       const persona = usePersonaStore().activePersona;
-      return persona ? JSON.parse(JSON.stringify(persona)) : null;
+      return deepClone(persona);
     },
 
     /**
      * Gets a list of all available personas.
      * @returns A deep copy of the personas array.
      */
-    getAll: (): Persona[] => {
-      return JSON.parse(JSON.stringify(usePersonaStore().personas));
+    getAll: (): readonly Persona[] => {
+      return deepClone(usePersonaStore().personas);
     },
 
     /**
@@ -386,8 +431,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets the global settings for World Info.
      * @returns A deep copy of the World Info settings object.
      */
-    getSettings: (): WorldInfoSettings => {
-      return JSON.parse(JSON.stringify(useWorldInfoStore().settings));
+    getSettings: (): Readonly<WorldInfoSettings> => {
+      return deepClone(useWorldInfoStore().settings);
     },
 
     /**
@@ -403,8 +448,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets a list of all lorebook names.
      * @returns An array of lorebook names.
      */
-    getAllBookNames: (): string[] => {
-      return useWorldInfoStore().bookNames;
+    getAllBookNames: (): readonly string[] => {
+      return deepClone(useWorldInfoStore().bookNames);
     },
 
     /**
@@ -413,22 +458,22 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param name The name of the lorebook.
      * @returns A promise that resolves with a deep copy of the lorebook, or null if not found.
      */
-    getBook: async (name: string): Promise<WorldInfoBook | null> => {
+    getBook: async (name: string): Promise<Readonly<WorldInfoBook> | null> => {
       const store = useWorldInfoStore();
       let book = store.getBookFromCache(name);
       if (!book) {
         await store.fetchBook(name);
         book = store.getBookFromCache(name);
       }
-      return book ? JSON.parse(JSON.stringify(book)) : null;
+      return book ? deepClone(book) : null;
     },
 
     /**
      * Gets the names of all currently active lorebooks.
      * @returns An array of active lorebook names.
      */
-    getActiveBookNames: (): string[] => {
-      return useWorldInfoStore().activeBookNames;
+    getActiveBookNames: (): readonly string[] => {
+      return deepClone(useWorldInfoStore().activeBookNames);
     },
 
     /**
@@ -534,11 +579,7 @@ const baseExtensionAPI: ExtensionAPI = {
   },
 
   /**
-   * Application-level event bus for extensions. Use this to listen for events
-   * and interact with data processing pipelines.
-   *
-   * Events prefixed with `process:` are part of a data pipeline. Listeners
-   * can modify the first argument (e.g., the `payload` object) directly.
+   * Application-level event bus for extensions.
    */
   events: {
     on: eventEmitter.on.bind(eventEmitter),
@@ -615,10 +656,7 @@ function createScopedApiProxy(extensionName: string): ExtensionAPI {
     get: (path: string): any => {
       const fullPath = `extensionSettings.${extensionName}.${path}`;
       const value = settingsStore.getSetting(fullPath as SettingsPath);
-      if (typeof value === 'object') {
-        return JSON.parse(JSON.stringify(value));
-      }
-      return value;
+      return deepClone(value);
     },
     set: (path: string, value: any): void => {
       const fullPath = `extensionSettings.${extensionName}.${path}`;
@@ -629,9 +667,83 @@ function createScopedApiProxy(extensionName: string): ExtensionAPI {
     save: baseExtensionAPI.settings.save,
   };
 
+  const listenerMap = new Map<Function, Function>();
+
+  // Helper to wrap AbortController to inject extension identity on abort
+  const createIdentifiableAbortController = (controller: AbortController): AbortController => {
+    return new Proxy(controller, {
+      get(target, prop) {
+        if (prop === 'abort') {
+          return (reason?: any) => {
+            const taggedReason = reason
+              ? `[Extension: ${extensionName}] ${typeof reason === 'string' ? reason : JSON.stringify(reason)}`
+              : `[Extension: ${extensionName}] Aborted by extension`;
+            return target.abort(taggedReason);
+          };
+        }
+        const value = Reflect.get(target, prop);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+  };
+
+  const scopedEvents = {
+    on: <E extends keyof ExtensionEventMap>(
+      eventName: E,
+      listener: (...args: ExtensionEventMap[E]) => Promise<void> | void,
+      priority?: number,
+    ): (() => void) => {
+      // Wrap the listener to intercept arguments
+      const wrappedListener = async (...args: any[]) => {
+        const proxiedArgs = args.map((arg) => {
+          // Detect AbortController and wrap it
+          if (arg instanceof AbortController) {
+            return createIdentifiableAbortController(arg);
+          }
+          // Detect GenerationContext (which has a controller property) and wrap the controller within it
+          if (arg && typeof arg === 'object' && arg.controller instanceof AbortController) {
+            // We need to proxy the context object to intercept access to the controller
+            return new Proxy(arg, {
+              get(target, prop) {
+                if (prop === 'controller') {
+                  return createIdentifiableAbortController(Reflect.get(target, prop));
+                }
+                return Reflect.get(target, prop);
+              },
+              set(target, prop, value) {
+                return Reflect.set(target, prop, value);
+              },
+            });
+          }
+          return arg;
+        });
+
+        // @ts-ignore
+        return listener(...proxiedArgs);
+      };
+
+      listenerMap.set(listener, wrappedListener);
+      return baseExtensionAPI.events.on(eventName, wrappedListener as any, priority);
+    },
+    off: <E extends keyof ExtensionEventMap>(
+      eventName: E,
+      listener: (...args: ExtensionEventMap[E]) => Promise<void> | void,
+    ): void => {
+      const wrapped = listenerMap.get(listener);
+      if (wrapped) {
+        baseExtensionAPI.events.off(eventName, wrapped as any);
+        listenerMap.delete(listener);
+      } else {
+        baseExtensionAPI.events.off(eventName, listener);
+      }
+    },
+    emit: baseExtensionAPI.events.emit,
+  };
+
   return {
     ...baseExtensionAPI,
     settings: scopedSettings,
+    events: scopedEvents,
   };
 }
 
@@ -647,9 +759,7 @@ globalThis.SillyTavern = {
   },
 };
 
-// We freeze the API object and its top-level properties to prevent extensions from modifying them.
 Object.freeze(baseExtensionAPI);
 Object.keys(baseExtensionAPI).forEach((key) => Object.freeze(baseExtensionAPI[key as keyof typeof baseExtensionAPI]));
 
-// For our own project's internal use.
 export { baseExtensionAPI as extensionAPI };

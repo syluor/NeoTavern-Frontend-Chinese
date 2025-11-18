@@ -2,7 +2,7 @@ import type { ValueForPath } from './utils';
 import type { PromptBuilder } from '../utils/prompt-builder';
 import type { WorldInfoProcessor } from '../utils/world-info-processor';
 import type { EventPriority } from '../constants';
-import type { ChatMessage } from './chat';
+import type { ChatMessage, ChatMetadata } from './chat';
 import type { SamplerSettings, Settings, SettingsPath } from './settings';
 import type { ApiChatMessage, ChatCompletionPayload, GenerationResponse, StreamedChunk } from './generation';
 import type { Character } from './character';
@@ -21,8 +21,8 @@ export interface LlmGenerationOptions {
 export interface ExtensionAPI {
   chat: {
     sendMessage: (messageText: string, options?: { triggerGeneration?: boolean }) => Promise<void>;
-    getHistory: () => ChatMessage[];
-    getLastMessage: () => ChatMessage | null;
+    getHistory: () => readonly ChatMessage[];
+    getLastMessage: () => Readonly<ChatMessage> | null;
     insertMessage: (message: Omit<ChatMessage, 'send_date'> & { send_date?: string }, index?: number) => void;
     updateMessage: (index: number, newContent: string, newReasoning?: string) => Promise<void>;
     updateMessageObject: (index: number, updates: Partial<ChatMessage>) => Promise<void>;
@@ -36,35 +36,46 @@ export interface ExtensionAPI {
       signal?: AbortSignal,
     ) => Promise<GenerationResponse | (() => AsyncGenerator<StreamedChunk>)>;
     buildPayload: (messages: ApiChatMessage[], samplerOverrides?: Partial<SamplerSettings>) => ChatCompletionPayload;
+
+    metadata: {
+      get: () => Readonly<ChatMetadata>;
+      set: (metadata: ChatMetadata) => void;
+      update: (updates: Partial<ChatMetadata>) => void;
+    };
+
     PromptBuilder: typeof PromptBuilder;
     WorldInfoProcessor: typeof WorldInfoProcessor;
   };
   settings: {
     get: (path: string) => any;
-    getGlobal: <P extends SettingsPath>(path: P) => ValueForPath<Settings, P>;
+    getGlobal: <P extends SettingsPath>(path: P) => Readonly<ValueForPath<Settings, P>>;
     set: (path: string, value: any) => void;
     setGlobal: <P extends SettingsPath>(path: P, value: ValueForPath<Settings, P>) => void;
     save: () => void;
   };
   character: {
-    getActive: () => Character | null;
-    getAll: () => Character[];
+    getActive: () => Readonly<Character> | null;
+    getAll: () => readonly Character[];
+    get: (avatar: string) => Readonly<Character> | null;
     setActive: (avatar: string) => Promise<void>;
     updateActive: (data: Partial<Character>) => void;
+    create: (character: Character, avatarImage?: File) => Promise<void>;
+    delete: (avatar: string, deleteChats?: boolean) => Promise<void>;
+    update: (avatar: string, data: Partial<Character>) => Promise<void>;
   };
   persona: {
-    getActive: () => Persona | null;
-    getAll: () => Persona[];
+    getActive: () => Readonly<Persona> | null;
+    getAll: () => readonly Persona[];
     setActive: (avatarId: string) => void;
     updateActiveField: <K extends keyof PersonaDescription>(field: K, value: PersonaDescription[K]) => Promise<void>;
     delete: (avatarId: string) => Promise<void>;
   };
   worldInfo: {
-    getSettings: () => WorldInfoSettings;
+    getSettings: () => Readonly<WorldInfoSettings>;
     updateSettings: (settings: Partial<WorldInfoSettings>) => void;
-    getAllBookNames: () => string[];
-    getBook: (name: string) => Promise<WorldInfoBook | null>;
-    getActiveBookNames: () => string[];
+    getAllBookNames: () => readonly string[];
+    getBook: (name: string) => Promise<Readonly<WorldInfoBook> | null>;
+    getActiveBookNames: () => readonly string[];
     setActiveBookNames: (names: string[]) => void;
     updateEntry: (bookName: string, entry: WorldInfoEntry) => void;
   };

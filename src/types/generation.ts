@@ -73,7 +73,7 @@ export type BuildChatCompletionPayloadOptions = {
   modelList?: ApiModel[];
 };
 
-export interface GenerationContext {
+export type GenerationContext = {
   mode: GenerationMode;
   character: Character;
   history: ChatMessage[];
@@ -87,7 +87,7 @@ export interface GenerationContext {
   // Other relevant data available to the interceptor for read-only purposes or modification
   playerName: string;
   characterName: string;
-}
+} & { controller: AbortController };
 
 export type PromptBuilderOptions = {
   character: Character;

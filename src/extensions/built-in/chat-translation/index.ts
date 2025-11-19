@@ -2,11 +2,11 @@ import type { ExtensionAPI, ChatMessage } from '@/types';
 import { manifest } from './manifest';
 import SettingsPanel from './SettingsPanel.vue';
 import { Translator } from './translator';
-import { AutoTranslateMode } from './types';
+import { AutoTranslateMode, type ChatTranslationSettings } from './types';
 
 export { manifest };
 
-export function activate(api: ExtensionAPI) {
+export function activate(api: ExtensionAPI<ChatTranslationSettings>) {
   const translator = new Translator(api);
   let settingsApp: any = null;
 
@@ -46,6 +46,22 @@ export function activate(api: ExtensionAPI) {
     });
   };
 
+  const shouldTranslate = (message: ChatMessage, autoMode: AutoTranslateMode): boolean => {
+    const isSystem = message.is_system;
+    const isUser = message.is_user;
+
+    switch (autoMode) {
+      case AutoTranslateMode.RESPONSES:
+        return !isSystem && !isUser;
+      case AutoTranslateMode.INPUTS:
+        return !isSystem && !!isUser;
+      case AutoTranslateMode.BOTH:
+        return !isSystem;
+      default:
+        return false;
+    }
+  };
+
   const unbinds: Array<() => void> = [];
 
   unbinds.push(api.events.on('chat:entered', injectButtons));
@@ -61,27 +77,9 @@ export function activate(api: ExtensionAPI) {
         api.ui.showToast('Translation button injection failed: Message element not found', 'error');
       }
 
-      const settings = api.settings.get('settings');
-      if (!settings || settings.autoMode === AutoTranslateMode.NONE) return;
+      const settings = api.settings.get();
 
-      const isSystem = message.is_system;
-      const isUser = message.is_user;
-
-      let shouldTranslate = false;
-
-      switch (settings.autoMode) {
-        case AutoTranslateMode.RESPONSES:
-          shouldTranslate = !isSystem && !isUser;
-          break;
-        case AutoTranslateMode.INPUTS:
-          shouldTranslate = !isSystem && !!isUser;
-          break;
-        case AutoTranslateMode.BOTH:
-          shouldTranslate = !isSystem;
-          break;
-      }
-
-      if (shouldTranslate) {
+      if (settings && shouldTranslate(message, settings.autoMode)) {
         translator.translateMessage(messageIndex); // fire and forget
       }
     }),

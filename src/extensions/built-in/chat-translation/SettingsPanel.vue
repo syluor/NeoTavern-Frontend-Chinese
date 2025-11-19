@@ -11,8 +11,6 @@ const props = defineProps<{
 
 const { t } = useStrictI18n();
 
-const SETTING_KEY = 'settings';
-
 const settings = ref<ChatTranslationSettings>({
   connectionProfile: undefined,
   sourceLang: 'Auto',
@@ -22,7 +20,7 @@ const settings = ref<ChatTranslationSettings>({
 });
 
 onMounted(() => {
-  const saved = props.api.settings.get(SETTING_KEY);
+  const saved = props.api.settings.get();
   if (saved) {
     settings.value = { ...settings.value, ...saved };
   }
@@ -31,7 +29,7 @@ onMounted(() => {
 watch(
   settings,
   (newSettings) => {
-    props.api.settings.set(SETTING_KEY, newSettings);
+    props.api.settings.set(undefined, newSettings);
     props.api.settings.save();
   },
   { deep: true },

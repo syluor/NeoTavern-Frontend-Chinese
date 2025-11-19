@@ -1,4 +1,4 @@
-import type { ValueForPath } from './utils';
+import type { ValueForPath, Path } from './utils';
 import type { PromptBuilder } from '../utils/prompt-builder';
 import type { WorldInfoProcessor } from '../utils/world-info-processor';
 import type { EventPriority } from '../constants';
@@ -41,7 +41,7 @@ export interface ExtensionMetadata {
   containerId: string;
 }
 
-export interface ExtensionAPI {
+export interface ExtensionAPI<TSettings = Record<string, any>> {
   /**
    * Metadata about the current extension instance.
    */
@@ -75,9 +75,37 @@ export interface ExtensionAPI {
     WorldInfoProcessor: typeof WorldInfoProcessor;
   };
   settings: {
-    get: (path: string) => any;
+    /**
+     * (SCOPED) Retrieves a setting value from this extension's dedicated storage.
+     * @param path The key for the setting within the extension's scope. If it's undefined, returns the entire settings object.
+     * @returns The value of the setting.
+     */
+    get: <P extends Path<TSettings> | undefined = undefined>(
+      path?: P,
+    ) => P extends undefined ? TSettings : ValueForPath<TSettings, P & string>;
+
+    /**
+     * (GLOBAL, READ-ONLY) Retrieves a setting value from the main application settings.
+     * @param path The dot-notation path to the global setting (e.g., 'chat.sendOnEnter').
+     * @returns The value of the setting.
+     */
     getGlobal: <P extends SettingsPath>(path: P) => Readonly<ValueForPath<Settings, P>>;
-    set: (path: string, value: any) => void;
+
+    /**
+     * (SCOPED) Updates a single setting value in this extension's dedicated storage.
+     * @param path The key for the setting within the extension's scope. If it's undefined, replaces the entire settings object.
+     * @param value The new value to set.
+     */
+    set: <P extends Path<TSettings> | undefined = undefined>(
+      path: P,
+      value: P extends undefined ? TSettings : ValueForPath<TSettings, P & string>,
+    ) => void;
+
+    /**
+     * Sets a global setting value in the main application settings.
+     * @param path The dot-notation path to the global setting (e.g., 'chat.sendOnEnter').
+     * @param value The new value.
+     */
     setGlobal: <P extends SettingsPath>(path: P, value: ValueForPath<Settings, P>) => void;
     save: () => void;
   };

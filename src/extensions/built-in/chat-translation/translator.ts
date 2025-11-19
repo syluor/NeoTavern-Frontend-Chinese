@@ -13,11 +13,11 @@ Handlebars.registerHelper('add', (a, b) => {
 });
 
 export class Translator {
-  constructor(private api: ExtensionAPI) {}
+  constructor(private api: ExtensionAPI<ChatTranslationSettings>) {}
 
   private getSettings(): ChatTranslationSettings {
     return (
-      this.api.settings.get('settings') || {
+      this.api.settings.get() || {
         connectionProfile: undefined,
         sourceLang: 'Auto',
         targetLang: 'English',

@@ -258,10 +258,10 @@ const baseExtensionAPI: ExtensionAPI = {
   settings: {
     /**
      * (SCOPED) Retrieves a setting value from this extension's dedicated storage.
-     * @param path The key for the setting within the extension's scope.
+     * @param path The key for the setting within the extension's scope. If it's undefined, returns the entire settings object.
      * @returns The value of the setting.
      */
-    get: (path: string): any => {
+    get: (path?: string): any => {
       console.warn('[ExtensionAPI] settings.get called outside of a registered extension scope.');
       return undefined;
     },
@@ -278,10 +278,10 @@ const baseExtensionAPI: ExtensionAPI = {
 
     /**
      * (SCOPED) Updates a single setting value in this extension's dedicated storage.
-     * @param path The key for the setting within the extension's scope.
+     * @param path The key for the setting within the extension's scope. If it's undefined, replaces the entire settings object.
      * @param value The new value to set.
      */
-    set: (path: string, value: any): void => {
+    set: (path: string | undefined, value: any): void => {
       console.warn('[ExtensionAPI] settings.set called outside of a registered extension scope.');
     },
 
@@ -680,12 +680,22 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
   };
 
   const scopedSettings = {
-    get: (path: string): any => {
+    get: (path?: string): any => {
+      if (!path) {
+        const fullPath = `extensionSettings.${extensionId}`;
+        const value = settingsStore.getSetting(fullPath as SettingsPath);
+        return deepClone(value);
+      }
       const fullPath = `extensionSettings.${extensionId}.${path}`;
       const value = settingsStore.getSetting(fullPath as SettingsPath);
       return deepClone(value);
     },
-    set: (path: string, value: any): void => {
+    set: (path: string | undefined, value: any): void => {
+      if (!path) {
+        const fullPath = `extensionSettings.${extensionId}`;
+        settingsStore.setSetting(fullPath as SettingsPath, value);
+        return;
+      }
       const fullPath = `extensionSettings.${extensionId}.${path}`;
       settingsStore.setSetting(fullPath as SettingsPath, value);
     },

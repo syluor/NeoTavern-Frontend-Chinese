@@ -6,6 +6,7 @@ import type {
   ApiChatMessage,
   PromptBuilderOptions,
   Tokenizer,
+  ProcessedWorldInfo,
 } from '../types';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
@@ -25,6 +26,7 @@ export class PromptBuilder {
   private persona: Persona;
   private maxContext: number;
   private tokenizer: Tokenizer;
+  public processedWorldInfo: ProcessedWorldInfo | null = null;
 
   constructor({ character, chatHistory, samplerSettings, persona, tokenizer }: PromptBuilderOptions) {
     this.character = character;
@@ -63,7 +65,9 @@ export class PromptBuilder {
       maxContext: this.maxContext,
       tokenizer: this.tokenizer,
     });
-    const { worldInfoBefore, worldInfoAfter } = await processor.process();
+
+    this.processedWorldInfo = await processor.process();
+    const { worldInfoBefore, worldInfoAfter } = this.processedWorldInfo;
 
     // 2. Build non-history prompts and count their tokens
     const fixedPrompts: ApiChatMessage[] = [];

@@ -9,6 +9,8 @@ import {
   type GenerationContext,
   type GenerationResponse,
   type StreamedChunk,
+  type ItemizedPrompt,
+  type PromptTokenBreakdown,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -61,7 +63,13 @@ export const useChatStore = defineStore('chat', () => {
         ...chat.value,
       ];
       await apiSaveChat(activeCharacter, activeChatFile.value, chatToSave);
-      // TODO: Save token cache and itemized prompts
+
+      // Save itemized prompts
+      const promptStore = usePromptStore();
+      const currentChatId = getCurrentChatId();
+      if (currentChatId) {
+        await promptStore.saveItemizedPrompts(currentChatId);
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to save chat:', error);
@@ -225,6 +233,8 @@ export const useChatStore = defineStore('chat', () => {
     const characterStore = useCharacterStore();
     const apiStore = useApiStore();
     const settingsStore = useSettingsStore();
+    const promptStore = usePromptStore();
+
     const activeCharacter = characterStore.activeCharacter;
     if (!activeCharacter) {
       console.error('generateResponse called without an active character.');
@@ -303,6 +313,73 @@ export const useChatStore = defineStore('chat', () => {
       if (messages.length === 0) {
         throw new Error(t('chat.generate.noPrompts'));
       }
+
+      const processedWorldInfo = promptBuilder.processedWorldInfo;
+
+      const maxContext = context.settings.sampler.max_context;
+      const maxResponse = context.settings.sampler.max_tokens;
+      let promptTotal = 0;
+      for (const m of messages) {
+        promptTotal += await tokenizer.getTokenCount(m.content);
+      }
+
+      let wiTokens = 0;
+      if (processedWorldInfo) {
+        const parts = [
+          processedWorldInfo.worldInfoBefore,
+          processedWorldInfo.worldInfoAfter,
+          ...processedWorldInfo.anBefore,
+          ...processedWorldInfo.anAfter,
+          ...processedWorldInfo.emBefore,
+          ...processedWorldInfo.emAfter,
+          ...processedWorldInfo.depthEntries.flatMap((d) => d.entries),
+          ...Object.values(processedWorldInfo.outletEntries).flat(),
+        ];
+        const fullWiText = parts.filter(Boolean).join('\n');
+        if (fullWiText) {
+          wiTokens = await tokenizer.getTokenCount(fullWiText);
+        }
+      }
+
+      const breakdown: PromptTokenBreakdown = {
+        systemTotal: 0,
+        description: await tokenizer.getTokenCount(activeCharacter.description || ''),
+        personality: await tokenizer.getTokenCount(activeCharacter.personality || ''),
+        scenario: await tokenizer.getTokenCount(activeCharacter.scenario || ''),
+        examples: await tokenizer.getTokenCount(activeCharacter.mes_example || ''),
+        persona: await tokenizer.getTokenCount(activePersona.description || ''),
+        worldInfo: wiTokens,
+        chatHistory: 0,
+        extensions: 0,
+        bias: 0,
+        promptTotal: promptTotal,
+        maxContext: maxContext,
+        padding: maxContext - promptTotal - maxResponse,
+      };
+
+      // Estimate System vs History from final messages
+      for (const m of messages) {
+        const count = await tokenizer.getTokenCount(m.content);
+        if (m.role === 'system') {
+          breakdown.systemTotal += count;
+        } else {
+          breakdown.chatHistory += count;
+        }
+      }
+
+      const targetMessageIndex = mode === GenerationMode.CONTINUE ? chat.value.length - 1 : chat.value.length;
+
+      const itemizedPrompt: ItemizedPrompt = {
+        messageIndex: targetMessageIndex,
+        model: context.settings.model,
+        api: context.settings.source,
+        tokenizer: settings.api.tokenizer,
+        presetName: settings.api.selectedSampler || 'Default',
+        messages: messages,
+        breakdown: breakdown,
+        timestamp: Date.now(),
+      };
+      promptStore.addItemizedPrompt(itemizedPrompt);
 
       const payload = buildChatCompletionPayload({
         messages,

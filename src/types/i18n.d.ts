@@ -379,6 +379,7 @@ export interface MessageSchema {
     confirmDelete: string;
     by: string;
     reset: string;
+    copied: string;
   };
   popup: {
     cropAvatar: {
@@ -414,6 +415,7 @@ export interface MessageSchema {
       moveDown: string;
       swipeLeft: string;
       swipeRight: string;
+      itemization: string;
     };
     delete: {
       confirmTitle: string;
@@ -436,6 +438,27 @@ export interface MessageSchema {
     abort: string;
     reasoning: {
       title: string;
+    };
+    itemization: {
+      title: string;
+      apiModel: string;
+      preset: string;
+      tokenizer: string;
+      disclaimer: string;
+      systemInfo: string;
+      description: string;
+      personality: string;
+      scenario: string;
+      examples: string;
+      persona: string;
+      worldInfo: string;
+      chatHistory: string;
+      extensions: string;
+      bias: string;
+      totalTokens: string;
+      maxContext: string;
+      showRaw: string;
+      copy: string;
     };
   };
   character: {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted, markRaw } from 'vue';
 import type { PropType } from 'vue';
 import type { ChatMessage, PopupShowOptions } from '../../types';
 import { POPUP_TYPE, POPUP_RESULT } from '../../types';
@@ -8,11 +8,13 @@ import { useUiStore } from '../../stores/ui.store';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { usePopupStore } from '../../stores/popup.store';
+import { usePromptStore } from '../../stores/prompt.store';
 import { resolveAvatarUrls } from '../../utils/image';
 import { formatTimeStamp } from '../../utils/date';
 import { formatMessage, formatReasoning } from '../../utils/markdown';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
+import PromptItemizationPopup from './PromptItemizationPopup.vue';
 
 const props = defineProps({
   message: {
@@ -31,6 +33,7 @@ const uiStore = useUiStore();
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
+const promptStore = usePromptStore();
 
 const editedContent = ref('');
 const editedReasoning = ref('');
@@ -39,6 +42,7 @@ const isReasoningCollapsed = ref(false);
 
 const isEditing = computed(() => chatStore.activeMessageEditIndex === props.index);
 const hasReasoning = computed(() => props.message.extra?.reasoning && props.message.extra.reasoning.trim().length > 0);
+const hasItemizedPrompt = computed(() => !!promptStore.getItemizedPrompt(props.index));
 
 onMounted(() => {
   isReasoningCollapsed.value = settingsStore.settings.ui?.chat?.reasoningCollapsed ?? false;
@@ -194,6 +198,21 @@ function moveUp() {
 function moveDown() {
   chatStore.moveMessage(props.index, 'down');
 }
+
+async function showPromptItemization() {
+  const data = promptStore.getItemizedPrompt(props.index);
+  if (!data) return;
+
+  await popupStore.show({
+    title: t('chat.itemization.title'),
+    type: POPUP_TYPE.DISPLAY,
+    wide: true,
+    large: true,
+    component: markRaw(PromptItemizationPopup),
+    componentProps: { data },
+    okButton: true,
+  });
+}
 </script>
 
 <template>
@@ -218,6 +237,12 @@ function moveDown() {
 
         <!-- Buttons for Normal Mode -->
         <div v-show="!isEditing" class="message-buttons">
+          <i
+            v-if="hasItemizedPrompt"
+            class="message-button fa-solid fa-square-poll-horizontal"
+            :title="t('chat.buttons.itemization')"
+            @click="showPromptItemization"
+          ></i>
           <!-- TODO: Implement extra buttons dropdown -->
           <i class="message-button fa-solid fa-ellipsis" title="Message Actions"></i>
           <!-- TODO: Implement bookmark button -->

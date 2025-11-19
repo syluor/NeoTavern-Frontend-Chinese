@@ -375,7 +375,8 @@
     "resetToDefaults": "Reset to Defaults",
     "confirmDelete": "Confirm Deletion",
     "by": "by",
-    "reset": "Reset"
+    "reset": "Reset",
+    "copied": "Copied!"
   },
   "popup": {
     "cropAvatar": {
@@ -410,7 +411,8 @@
       "moveUp": "Move message up",
       "moveDown": "Move message down",
       "swipeLeft": "Previous swipe",
-      "swipeRight": "Next swipe"
+      "swipeRight": "Next swipe",
+      "itemization": "Prompt Itemization"
     },
     "delete": {
       "confirmTitle": "Confirm Deletion",
@@ -433,6 +435,27 @@
     "abort": "Abort generation",
     "reasoning": {
       "title": "Thinking"
+    },
+    "itemization": {
+      "title": "Prompt Itemization",
+      "apiModel": "API/Model",
+      "preset": "Preset",
+      "tokenizer": "Tokenizer",
+      "disclaimer": "Only the white numbers really matter. All numbers are estimates. Grey color items may not have been included in the context due to certain prompt format settings.",
+      "systemInfo": "System Info",
+      "description": "Description",
+      "personality": "Personality",
+      "scenario": "Scenario",
+      "examples": "Examples",
+      "persona": "Persona",
+      "worldInfo": "World Info",
+      "chatHistory": "Chat History",
+      "extensions": "Extensions",
+      "bias": "Bias",
+      "totalTokens": "Total Tokens",
+      "maxContext": "Max Context",
+      "showRaw": "Show Raw Prompt",
+      "copy": "Copy Prompt"
     }
   },
   "character": {

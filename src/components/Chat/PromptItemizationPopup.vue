@@ -1,0 +1,176 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import type { ItemizedPrompt, PromptTokenBreakdown } from '../../types';
+import { useStrictI18n } from '../../composables/useStrictI18n';
+import { toast } from '../../composables/useToast';
+
+const props = defineProps<{
+  data: ItemizedPrompt;
+}>();
+
+const { t } = useStrictI18n();
+const showRaw = ref(false);
+
+const bd = computed<PromptTokenBreakdown>(() => props.data.breakdown);
+
+const rawMessages = computed(() => {
+  return props.data.messages.map((m) => `${m.role.toUpperCase()}:\n${m.content}`).join('\n\n');
+});
+
+// Calculate Percentages for the Bar Chart
+const percentages = computed(() => {
+  const total = bd.value.promptTotal || 1;
+  return {
+    system: ((bd.value.systemTotal / total) * 100).toFixed(2),
+    history: ((bd.value.chatHistory / total) * 100).toFixed(2),
+    // Using system parts for coloring if available, but usually systemTotal covers description/personality/etc.
+    // For the bar chart, we often want to visualize: System (Start) | World Info | History | Etc.
+    // Since we might not have exact granular separation in the final prompt string, we use estimates.
+    description: ((bd.value.description / total) * 100).toFixed(2),
+    personality: ((bd.value.personality / total) * 100).toFixed(2),
+    scenario: ((bd.value.scenario / total) * 100).toFixed(2),
+    worldInfo: ((bd.value.worldInfo / total) * 100).toFixed(2),
+    examples: ((bd.value.examples / total) * 100).toFixed(2),
+    // Helper for the main buckets used in the graph
+    graphSystem: ((bd.value.systemTotal / total) * 100).toFixed(2), // Basic System
+    graphWI: ((bd.value.worldInfo / total) * 100).toFixed(2),
+    graphHistory: ((bd.value.chatHistory / total) * 100).toFixed(2),
+
+    // Remaining (Extensions, etc)
+    graphOther: (((bd.value.extensions + bd.value.bias) / total) * 100).toFixed(2),
+  };
+});
+
+function copyPrompt() {
+  navigator.clipboard.writeText(rawMessages.value).then(() => {
+    toast.success(t('common.copied'));
+  });
+}
+
+function toggleRaw() {
+  showRaw.value = !showRaw.value;
+}
+
+// Helper to format token count
+const fmt = (n: number) => n.toLocaleString();
+</script>
+
+<template>
+  <div class="prompt-itemization">
+    <div class="pi-header">
+      <div>
+        <strong>{{ t('chat.itemization.apiModel') }}:</strong> {{ data.api }} / {{ data.model }}
+      </div>
+      <div>
+        <small
+          ><strong>{{ t('chat.itemization.preset') }}:</strong> {{ data.presetName }}</small
+        >
+        <span class="separator">|</span>
+        <small
+          ><strong>{{ t('chat.itemization.tokenizer') }}:</strong> {{ data.tokenizer }}</small
+        >
+      </div>
+    </div>
+
+    <p class="pi-disclaimer">{{ t('chat.itemization.disclaimer') }}</p>
+
+    <hr />
+
+    <div class="pi-content">
+      <!-- Bar Chart -->
+      <div class="pi-graph-section">
+        <div class="pi-graph-bar">
+          <div class="pi-bar-segment system" :style="{ height: percentages.graphSystem + '%' }" title="System"></div>
+          <div class="pi-bar-segment wi" :style="{ height: percentages.graphWI + '%' }" title="World Info"></div>
+          <div
+            class="pi-bar-segment history"
+            :style="{ height: percentages.graphHistory + '%' }"
+            title="Chat History"
+          ></div>
+          <div class="pi-bar-segment other" :style="{ height: percentages.graphOther + '%' }" title="Other"></div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="pi-details-section">
+        <!-- System Column -->
+        <div class="pi-column">
+          <div class="pi-row header system">
+            <span>{{ t('chat.itemization.systemInfo') }}</span>
+            <span>{{ fmt(bd.systemTotal) }}</span>
+          </div>
+          <div class="pi-row sub">
+            <span>-- {{ t('chat.itemization.description') }}</span>
+            <span>{{ fmt(bd.description) }}</span>
+          </div>
+          <div class="pi-row sub">
+            <span>-- {{ t('chat.itemization.personality') }}</span>
+            <span>{{ fmt(bd.personality) }}</span>
+          </div>
+          <div class="pi-row sub">
+            <span>-- {{ t('chat.itemization.scenario') }}</span>
+            <span>{{ fmt(bd.scenario) }}</span>
+          </div>
+          <div class="pi-row sub">
+            <span>-- {{ t('chat.itemization.examples') }}</span>
+            <span>{{ fmt(bd.examples) }}</span>
+          </div>
+          <div class="pi-row sub">
+            <span>-- {{ t('chat.itemization.persona') }}</span>
+            <span>{{ fmt(bd.persona) }}</span>
+          </div>
+        </div>
+
+        <!-- Middle Column -->
+        <div class="pi-column">
+          <div class="pi-row header wi">
+            <span>{{ t('chat.itemization.worldInfo') }}</span>
+            <span>{{ fmt(bd.worldInfo) }}</span>
+          </div>
+          <div class="pi-row header history">
+            <span>{{ t('chat.itemization.chatHistory') }}</span>
+            <span>{{ fmt(bd.chatHistory) }}</span>
+          </div>
+          <div class="pi-row header other">
+            <span>{{ t('chat.itemization.extensions') }}</span>
+            <span>{{ fmt(bd.extensions) }}</span>
+          </div>
+          <div class="pi-row header bias">
+            <span>{{ t('chat.itemization.bias') }}</span>
+            <span>{{ fmt(bd.bias) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="pi-footer">
+      <div class="pi-stat">
+        <span>{{ t('chat.itemization.totalTokens') }}:</span>
+        <strong>{{ fmt(bd.promptTotal) }}</strong>
+      </div>
+      <div class="pi-stat">
+        <span>{{ t('chat.itemization.maxContext') }}:</span>
+        <strong>{{ fmt(bd.maxContext) }}</strong>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="pi-actions">
+      <button class="menu-button" @click="toggleRaw">
+        <i class="fa-solid fa-square-poll-horizontal"></i>
+        {{ t('chat.itemization.showRaw') }}
+      </button>
+      <button class="menu-button" @click="copyPrompt">
+        <i class="fa-solid fa-copy"></i>
+        {{ t('chat.itemization.copy') }}
+      </button>
+    </div>
+
+    <!-- Raw Prompt Viewer -->
+    <div v-if="showRaw" class="pi-raw-viewer">
+      <pre>{{ rawMessages }}</pre>
+    </div>
+  </div>
+</template>

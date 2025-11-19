@@ -98,3 +98,39 @@ export type PromptBuilderOptions = {
   persona: Persona;
   tokenizer: Tokenizer;
 };
+
+export interface PromptTokenBreakdown {
+  // System / Character / Persona
+  systemTotal: number; // Total tokens in system message(s)
+  description: number; // Estimated
+  personality: number; // Estimated
+  scenario: number; // Estimated
+  examples: number; // Estimated
+  persona: number; // Estimated
+  worldInfo: number; // Estimated or Calculated
+
+  // Conversation
+  chatHistory: number;
+
+  // Misc
+  extensions: number;
+  bias: number;
+
+  // Totals
+  promptTotal: number; // Grand total
+  maxContext: number; // Context Limit
+  padding: number; // Max context - max response tokens
+}
+
+export interface ItemizedPrompt {
+  messageIndex: number; // Map to chat message index (the bot response)
+  model: string;
+  api: string;
+  tokenizer: string;
+  presetName: string;
+
+  messages: ApiChatMessage[];
+  breakdown: PromptTokenBreakdown;
+
+  timestamp: number;
+}

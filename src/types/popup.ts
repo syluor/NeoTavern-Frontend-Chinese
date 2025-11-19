@@ -1,3 +1,4 @@
+import type { Component } from 'vue';
 import type { I18nKey } from './i18n';
 
 export enum POPUP_TYPE {
@@ -30,6 +31,10 @@ export interface PopupOptions {
   customButtons?: CustomPopupButton[];
   defaultResult?: number;
   cropImage?: string;
+  component?: Component;
+  // TODO: Is there way to make type-safe...?
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  componentProps?: Record<string, any>;
 }
 export interface PopupState extends PopupOptions {
   id: string;

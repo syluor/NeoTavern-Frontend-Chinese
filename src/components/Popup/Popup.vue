@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import type { PropType } from 'vue';
+import type { PropType, Component } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type CustomPopupButton } from '../../types';
@@ -31,6 +31,10 @@ const props = defineProps({
   customButtons: { type: Array as PropType<CustomPopupButton[]>, default: undefined },
   defaultResult: { type: Number, default: undefined },
   cropImage: { type: String, default: '' },
+
+  component: { type: Object as PropType<Component>, default: undefined },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  componentProps: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
 });
 
 const emit = defineEmits(['close', 'submit']);
@@ -83,6 +87,11 @@ function resolveOptions() {
       }
       if (showCancel) {
         buttons.push({ text: getButtonText(cancelButton, 'common.cancel'), result: POPUP_RESULT.CANCELLED });
+      }
+      break;
+    case POPUP_TYPE.DISPLAY:
+      if (showOk) {
+        buttons.push({ text: getButtonText(okButton, 'common.ok'), result: POPUP_RESULT.AFFIRMATIVE, isDefault: true });
       }
       break;
     default: // TEXT
@@ -180,6 +189,9 @@ function handleEnter(evt: KeyboardEvent) {
         :class="{ 'is-input': type === POPUP_TYPE.INPUT, 'is-crop': type === POPUP_TYPE.CROP }"
       >
         <div v-if="content" class="popup-message" v-html="content"></div>
+
+        <component :is="component" v-if="component" v-bind="componentProps" />
+
         <textarea
           v-if="type === POPUP_TYPE.INPUT"
           ref="mainInput"

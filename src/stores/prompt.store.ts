@@ -1,22 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import localforage from 'localforage';
-import type { ExtensionPrompt } from '../types';
+import type { ExtensionPrompt, ItemizedPrompt } from '../types';
 
 const promptStorage = localforage.createInstance({ name: 'SillyTavern_Prompts' });
 
 export const usePromptStore = defineStore('prompt', () => {
   const extensionPrompts = ref<Record<string, ExtensionPrompt>>({});
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const itemizedPrompts = ref<Array<any>>([]); // TODO: When we implement this, we should type it properly
+  const itemizedPrompts = ref<ItemizedPrompt[]>([]);
 
   async function saveItemizedPrompts(chatId?: string) {
     try {
       if (!chatId) {
         return;
       }
-      // localforage can store arrays directly
-      await promptStorage.setItem(chatId, itemizedPrompts.value);
+      await promptStorage.setItem(chatId, JSON.parse(JSON.stringify(itemizedPrompts.value)));
     } catch {
       console.log('Error saving itemized prompts for chat', chatId);
     }
@@ -28,8 +26,7 @@ export const usePromptStore = defineStore('prompt', () => {
         itemizedPrompts.value = [];
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const prompts = (await promptStorage.getItem(chatId)) as any[] | null;
+      const prompts = (await promptStorage.getItem(chatId)) as ItemizedPrompt[] | null;
       itemizedPrompts.value = prompts ?? [];
     } catch {
       console.log('Error loading itemized prompts for chat', chatId);
@@ -37,5 +34,25 @@ export const usePromptStore = defineStore('prompt', () => {
     }
   }
 
-  return { extensionPrompts, itemizedPrompts, saveItemizedPrompts, loadItemizedPrompts };
+  function addItemizedPrompt(prompt: ItemizedPrompt) {
+    const existingIndex = itemizedPrompts.value.findIndex((p) => p.messageIndex === prompt.messageIndex);
+    if (existingIndex > -1) {
+      itemizedPrompts.value[existingIndex] = prompt;
+    } else {
+      itemizedPrompts.value.push(prompt);
+    }
+  }
+
+  function getItemizedPrompt(messageIndex: number): ItemizedPrompt | undefined {
+    return itemizedPrompts.value.find((p) => p.messageIndex === messageIndex);
+  }
+
+  return {
+    extensionPrompts,
+    itemizedPrompts,
+    saveItemizedPrompts,
+    loadItemizedPrompts,
+    addItemizedPrompt,
+    getItemizedPrompt,
+  };
 });

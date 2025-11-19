@@ -23,7 +23,7 @@ export const usePersonaStore = defineStore('persona', () => {
   const personas = computed<Persona[]>({
     get: () => settingsStore.settings.persona.personas,
     set: (value) => {
-      settingsStore.setSetting('persona.personas', value);
+      settingsStore.settings.persona.personas = value;
     },
   });
 
@@ -171,7 +171,7 @@ export const usePersonaStore = defineStore('persona', () => {
       personas.value = personas.value.filter((p) => p.avatarId !== avatarId);
 
       if (settingsStore.settings.persona.defaultPersonaId === avatarId) {
-        settingsStore.setSetting('persona.defaultPersonaId', null);
+        settingsStore.settings.persona.defaultPersonaId = null;
       }
       // TODO: Handle chat and character locks
 

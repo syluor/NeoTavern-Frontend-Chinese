@@ -278,6 +278,7 @@ export const useSettingsStore = defineStore('settings', () => {
           await eventEmitter.emit('setting:changed', path, newVal, oldVal);
         }
       });
+      saveSettingsDebounced();
     },
     { deep: true },
   );

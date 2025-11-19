@@ -35,7 +35,7 @@ const openrouterProvidersString = computed({
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    settingsStore.setSetting('api.providerSpecific.openrouter.providers', newProviders);
+    settingsStore.settings.api.providerSpecific.openrouter.providers = newProviders;
   },
 });
 
@@ -86,7 +86,7 @@ onMounted(() => {
         <select
           class="text-pole"
           :value="settingsStore.settings.api.main"
-          @change="settingsStore.setSetting('api.main', ($event.target as HTMLSelectElement).value)"
+          @change="settingsStore.settings.api.main = ($event.target as HTMLSelectElement).value"
         >
           <option value="openai">{{ t('apiConnections.chatCompletion') }}</option>
           <option value="textgenerationwebui" disabled>{{ t('apiConnections.textCompletion') }}</option>
@@ -103,7 +103,7 @@ onMounted(() => {
             class="text-pole"
             :value="settingsStore.settings.api.chatCompletionSource"
             @change="
-              settingsStore.setSetting('api.chatCompletionSource', ($event.target as HTMLSelectElement).value as any)
+              settingsStore.settings.api.chatCompletionSource = ($event.target as HTMLSelectElement).value as any
             "
           >
             <optgroup>
@@ -350,7 +350,7 @@ onMounted(() => {
               class="text-pole"
               :value="settingsStore.settings.api.selectedProviderModels.groq"
               @change="
-                settingsStore.setSetting('api.selectedProviderModels.groq', ($event.target as HTMLSelectElement).value)
+                settingsStore.settings.api.selectedProviderModels.groq = ($event.target as HTMLSelectElement).value
               "
             >
               <option value="llama3-70b-8192">llama3-70b-8192</option>
@@ -370,7 +370,7 @@ onMounted(() => {
               class="text-pole"
               :value="settingsStore.settings.api.providerSpecific.custom.url"
               @input="
-                settingsStore.setSetting('api.providerSpecific.custom.url', ($event.target as HTMLInputElement).value)
+                settingsStore.settings.api.providerSpecific.custom.url = ($event.target as HTMLInputElement).value
               "
             />
           </div>
@@ -381,7 +381,7 @@ onMounted(() => {
               class="text-pole"
               :value="settingsStore.settings.api.selectedProviderModels.custom"
               @input="
-                settingsStore.setSetting('api.selectedProviderModels.custom', ($event.target as HTMLInputElement).value)
+                settingsStore.settings.api.selectedProviderModels.custom = ($event.target as HTMLInputElement).value
               "
             />
           </div>
@@ -470,7 +470,7 @@ onMounted(() => {
           <select
             class="text-pole"
             :value="settingsStore.settings.api.tokenizer"
-            @change="settingsStore.setSetting('api.tokenizer', ($event.target as HTMLSelectElement).value as any)"
+            @change="settingsStore.settings.api.tokenizer = ($event.target as HTMLSelectElement).value as any"
           >
             <option :value="TokenizerType.AUTO">{{ t('apiConnections.tokenizers.auto') }}</option>
             <option :value="TokenizerType.NONE">{{ t('apiConnections.tokenizers.none') }}</option>

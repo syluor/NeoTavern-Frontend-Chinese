@@ -61,7 +61,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const settings = computed({
     get: () => settingsStore.settings.worldInfo,
     set: (value) => {
-      settingsStore.setSetting('worldInfo', { ...value });
+      settingsStore.settings.worldInfo = { ...value };
     },
   });
 

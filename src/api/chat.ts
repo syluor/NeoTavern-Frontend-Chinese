@@ -1,12 +1,7 @@
 import { getRequestHeaders } from '../utils/api';
-import type { Character, ChatMessage } from '../types';
+import type { Character, ChatInfo, FullChat } from '../types';
 
-// TODO: Define chat header type. Also update this return values to understand first item is header. (which i don't know how to type yet)
-
-export async function fetchChat(
-  character: Character,
-  chatFile: string,
-): Promise<({ character_name: string; chat_metadata: object } | ChatMessage)[]> {
+export async function fetchChat(character: Character, chatFile: string): Promise<FullChat> {
   const response = await fetch('/api/chats/get', {
     method: 'POST',
     headers: getRequestHeaders(),
@@ -24,18 +19,14 @@ export async function fetchChat(
   return await response.json();
 }
 
-export async function saveChat(
-  character: Character,
-  chatFile: string,
-  chatToSave: ({ character_name: string; chat_metadata: object } | ChatMessage)[],
-): Promise<void> {
+export async function saveChat(character: Character, chatFile: string, chatToSave?: FullChat): Promise<void> {
   const response = await fetch('/api/chats/save', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
       ch_name: character.name,
       file_name: chatFile,
-      chat: chatToSave,
+      chat: chatToSave || [],
       avatar_url: character.avatar,
       force: false, // For now, we won't handle the integrity check failure popup
     }),
@@ -51,24 +42,63 @@ export async function saveChat(
   }
 }
 
-// TODO: Implement this on the backend
-export async function listChatsForCharacter(character: Character): Promise<string[]> {
-  console.log(`[TODO] Fetching chat list for ${character.name}`);
-  // This is a mocked response. A real implementation would make an API call.
-  // The backend would list files in the `chats/{character.avatar}/` directory.
-  return Promise.resolve(character.chat ? [character.chat] : []); // For now, return the default chat
+export async function listChatsForCharacter(character: Character): Promise<ChatInfo[]> {
+  const response = await fetch('/api/characters/chats', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({
+      avatar_url: character.avatar,
+      metadata: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to list chat histories');
+  }
+
+  return await response.json();
 }
 
-// TODO: Implement this on the backend
 export async function deleteChat(character: Character, chatFile: string): Promise<void> {
-  console.log(`[TODO] Deleting chat file ${chatFile} for ${character.name}`);
-  // This would make a call like POST /api/chats/delete
-  Promise.resolve();
-}
+  const response = await fetch('/api/chats/delete', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({
+      chatfile: chatFile,
+      avatar_url: character.avatar,
+    }),
+  });
 
-// TODO: Implement this on the backend
-export async function renameChat(character: Character, oldFile: string, newFile: string): Promise<void> {
-  console.log(`[TODO] Renaming chat file ${oldFile} to ${newFile} for ${character.name}`);
-  // This would make a call like POST /api/chats/rename
-  Promise.resolve();
+  if (!response.ok) {
+    throw new Error('Failed to delete chat history');
+  }
+}
+export async function renameChat(
+  character: Character,
+  oldFile: string,
+  newFile: string,
+  isGroup: boolean,
+): Promise<{ newFileName: string }> {
+  const response = await fetch('/api/chats/rename', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({
+      avatar_url: character.avatar,
+      original_file: oldFile,
+      renamed_file: newFile,
+      is_group: isGroup,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to rename chat history');
+  }
+
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error('Server returned an error.');
+  }
+
+  return { newFileName: data.sanitizedFileName || newFile };
 }

@@ -11,6 +11,8 @@ import {
   type StreamedChunk,
   type ItemizedPrompt,
   type PromptTokenBreakdown,
+  type FullChat,
+  type ChatHeader,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -55,7 +57,7 @@ export const useChatStore = defineStore('chat', () => {
 
     try {
       uiStore.isChatSaving = true;
-      const chatToSave = [
+      const chatToSave: FullChat = [
         {
           character_name: activeCharacter.name,
           chat_metadata: chatMetadata.value,
@@ -168,8 +170,8 @@ export const useChatStore = defineStore('chat', () => {
       const response = await fetchChat(activeCharacter, activeChatFile.value);
       if (response.length > 0) {
         // Chat exists, load it
-        const metadataItem = response.shift() as { character_name: string; chat_metadata: ChatMetadata } | undefined;
-        chatMetadata.value = metadataItem?.chat_metadata ?? {};
+        const metadataItem = response.shift() as ChatHeader;
+        chatMetadata.value = metadataItem.chat_metadata ?? {};
         chat.value = response as ChatMessage[];
       } else {
         // No chat exists, create a new one

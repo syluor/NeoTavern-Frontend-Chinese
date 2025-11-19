@@ -21,12 +21,12 @@ export const useBackgroundStore = defineStore('background', () => {
 
   const thumbnailColumns = computed({
     get: () => settingsStore.settings.ui.background.thumbnailColumns,
-    set: (value) => settingsStore.setSetting('ui.background.thumbnailColumns', value),
+    set: (value) => (settingsStore.settings.ui.background.thumbnailColumns = value),
   });
 
   const fitting = computed({
     get: () => settingsStore.settings.ui.background.fitting,
-    set: (value) => settingsStore.setSetting('ui.background.fitting', value),
+    set: (value) => (settingsStore.settings.ui.background.fitting = value),
   });
 
   const currentBackgroundUrl = computed(() => {
@@ -61,9 +61,9 @@ export const useBackgroundStore = defineStore('background', () => {
   }
 
   function setBackground(fileName: string, fileUrl: string, fittingMode: BackgroundFitting) {
-    settingsStore.setSetting('ui.background.name', fileName);
-    settingsStore.setSetting('ui.background.url', fileUrl);
-    settingsStore.setSetting('ui.background.fitting', fittingMode);
+    settingsStore.settings.ui.background.name = fileName;
+    settingsStore.settings.ui.background.url = fileUrl;
+    settingsStore.settings.ui.background.fitting = fittingMode;
   }
 
   function selectBackground(fileName: string) {
@@ -72,8 +72,8 @@ export const useBackgroundStore = defineStore('background', () => {
       // If locked, clicking a new background updates the lock
       lockBackground(fileUrl);
     } else {
-      settingsStore.setSetting('ui.background.name', fileName);
-      settingsStore.setSetting('ui.background.url', fileUrl);
+      settingsStore.settings.ui.background.name = fileName;
+      settingsStore.settings.ui.background.url = fileUrl;
     }
   }
 

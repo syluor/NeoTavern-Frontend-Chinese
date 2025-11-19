@@ -40,3 +40,19 @@ export interface ChatMessage {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any>;
 }
+
+export type ChatHeader = {
+  character_name: string;
+  chat_metadata: ChatMetadata;
+};
+
+export type FullChat = [ChatHeader, ...ChatMessage[]];
+
+export type ChatInfo = {
+  file_name: string;
+  file_size: number;
+  chat_items: number;
+  mes: string;
+  last_mes: number; // Unix timestamp
+  chat_metadata: ChatMetadata;
+};

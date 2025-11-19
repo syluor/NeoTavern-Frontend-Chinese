@@ -30,12 +30,12 @@ export const useApiStore = defineStore('api', () => {
   // --- Connection Profiles ---
   const connectionProfiles = computed({
     get: () => settingsStore.settings.api.connectionProfiles,
-    set: (value) => settingsStore.setSetting('api.connectionProfiles', value),
+    set: (value) => (settingsStore.settings.api.connectionProfiles = value),
   });
 
   const selectedConnectionProfileName = computed({
     get: () => settingsStore.settings.api.selectedConnectionProfile,
-    set: (value) => settingsStore.setSetting('api.selectedConnectionProfile', value),
+    set: (value) => (settingsStore.settings.api.selectedConnectionProfile = value),
   });
 
   const activeModel = computed(() => {

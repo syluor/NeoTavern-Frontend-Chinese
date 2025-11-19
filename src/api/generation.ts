@@ -52,7 +52,7 @@ export function buildChatCompletionPayload({
           break;
         case ReasoningEffort.MIN:
           reasoningEffort =
-            // @ts-ignore
+            // @ts-expect-error not assignable
             [chat_completion_sources.OPENAI, chat_completion_sources.AZURE_OPENAI].includes(source) &&
             /^gpt-5/.test(model)
               ? ReasoningEffort.MIN
@@ -217,6 +217,7 @@ export function buildChatCompletionPayload({
   return payload;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleApiError(data: any): void {
   if (data?.error) {
     const errorMessage = data.error.message || data.error.type || 'An unknown API error occurred.';
@@ -227,6 +228,7 @@ function handleApiError(data: any): void {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractMessage(data: any, source: ChatCompletionSource): string {
   if (typeof data === 'string') {
     return data;
@@ -234,6 +236,7 @@ function extractMessage(data: any, source: ChatCompletionSource): string {
 
   switch (source) {
     case chat_completion_sources.CLAUDE:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data?.content?.find((p: any) => p.type === 'text')?.text ?? '';
     case chat_completion_sources.OPENAI:
     case chat_completion_sources.OPENROUTER:
@@ -249,22 +252,28 @@ function extractMessage(data: any, source: ChatCompletionSource): string {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractReasoning(data: any, source: ChatCompletionSource): string | undefined {
   switch (source) {
     case chat_completion_sources.CLAUDE:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data?.content?.find((p: any) => p.type === 'thinking')?.thinking;
     case chat_completion_sources.MAKERSUITE:
     case chat_completion_sources.VERTEXAI:
       return (
         data?.responseContent?.parts
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ?.filter((p: any) => p.thought)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ?.map((p: any) => p.text)
           ?.join('\n\n') ?? ''
       );
     case chat_completion_sources.MISTRALAI:
       return (
         data?.choices?.[0]?.message?.content?.[0]?.thinking
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ?.map((p: any) => p.text)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ?.filter((x: any) => x)
           ?.join('\n\n') ?? ''
       );
@@ -285,6 +294,7 @@ function extractReasoning(data: any, source: ChatCompletionSource): string | und
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getStreamingReply(data: any, source: ChatCompletionSource): { delta: string; reasoning?: string } {
   switch (source) {
     case chat_completion_sources.CLAUDE:
@@ -296,18 +306,23 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
     case chat_completion_sources.VERTEXAI:
       return {
         delta:
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data?.candidates?.[0]?.content?.parts?.filter((x: any) => !x.thought)?.map((x: any) => x.text)?.[0] || '',
         reasoning:
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data?.candidates?.[0]?.content?.parts?.filter((x: any) => x.thought)?.map((x: any) => x.text)?.[0] || '',
       };
     case chat_completion_sources.MISTRALAI:
       return {
         delta:
           data.choices?.[0]?.delta?.content
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((x: any) => x.text)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((x: any) => x)
             .join('') || '',
         reasoning:
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data.choices?.filter((x: any) => x?.delta?.content?.[0]?.thinking)?.[0]?.delta?.content?.[0]?.thinking?.[0]
             ?.text || '',
       };
@@ -315,6 +330,7 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
       return {
         delta:
           data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reasoning: data.choices?.filter((x: any) => x?.delta?.reasoning)?.[0]?.delta?.reasoning || '',
       };
     case chat_completion_sources.DEEPSEEK:
@@ -331,7 +347,9 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
         delta:
           data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
         reasoning:
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data.choices?.filter((x: any) => x?.delta?.reasoning_content)?.[0]?.delta?.reasoning_content ??
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data.choices?.filter((x: any) => x?.delta?.reasoning)?.[0]?.delta?.reasoning ??
           '',
       };
@@ -386,8 +404,8 @@ export class ChatCompletionService {
         const errorText = await response.text();
         const errorJson = JSON.parse(errorText);
         errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
-      } catch (e) {
-        // Not a JSON error, use the status text
+      } catch {
+        // TODO: Not a JSON error, use the status text
       }
       throw new Error(errorMessage);
     }
@@ -441,6 +459,7 @@ export class ChatCompletionService {
             }
           }
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error.name === 'AbortError') {
           console.debug('Stream aborted by user.');

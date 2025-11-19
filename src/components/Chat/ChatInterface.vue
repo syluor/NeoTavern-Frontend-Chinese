@@ -126,7 +126,7 @@ watch(
               :title="t('chat.abort')"
               @click="chatStore.abortGeneration"
             ></button>
-            <template v-show="!chatStore.isGenerating">
+            <div v-show="!chatStore.isGenerating">
               <button
                 type="button"
                 class="chat-form__button fa-fw fa-solid fa-arrow-right"
@@ -140,7 +140,7 @@ watch(
                 :title="t('chat.send')"
                 :disabled="chatStore.isGenerating"
               ></button>
-            </template>
+            </div>
           </div>
         </div>
 

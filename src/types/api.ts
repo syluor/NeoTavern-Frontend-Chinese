@@ -40,6 +40,7 @@ export interface ConnectionProfile {
 export interface ApiModel {
   id: string;
   name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -83,12 +84,14 @@ export interface AiConfigItem {
   options?: { value: string | number; label: I18nKey }[]; // TODO: Implement
 
   // for custom components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component?: any; // TODO: Implement
 
   // For layout
   cssClass?: string; // TODO: Implement
 
   // For info-display
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   valueGetter?: (apiStore: any) => string; // TODO: Implement
 }
 

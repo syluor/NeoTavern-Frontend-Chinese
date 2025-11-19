@@ -16,7 +16,6 @@ import { toast } from '../composables/useToast';
 import { useChatStore } from './chat.store';
 import { useGroupStore } from './group.store';
 import { useUiStore } from './ui.store';
-import { debounce } from '../utils/common';
 import {
   CHARACTER_FIELD_MAPPINGS,
   DEFAULT_CHARACTER,
@@ -31,7 +30,7 @@ import { useSettingsStore } from './settings.store';
 import { onlyUnique } from '../utils/array';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { getFirstMessage } from '../utils/chat';
-import { get, set, defaultsDeep } from 'lodash-es';
+import { get, set, defaultsDeep, debounce } from 'lodash-es';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 
@@ -213,6 +212,7 @@ export const useCharacterStore = defineStore('character', () => {
         }
       }
       // TODO: refreshGroups()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to fetch characters:', error);
       if (error.message === 'overflow') {
@@ -288,6 +288,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
 
     const oldCharacter = activeCharacter.value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const changes: Record<string, any> = {};
 
     // 1. Map specific fields based on CHARACTER_FIELD_MAPPINGS

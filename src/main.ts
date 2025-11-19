@@ -17,7 +17,7 @@ async function initializeApp() {
   // Dynamically import and initialize the extension API
   await import('./utils/extension-api');
 
-  // @ts-ignore
+  // @ts-expect-error 'i18n.global' is of type 'unknown'
   const t = i18n.global.t as StrictT;
 
   // Fetch CSRF token before mounting

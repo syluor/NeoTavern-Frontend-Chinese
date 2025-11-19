@@ -25,7 +25,7 @@ import {
 } from '../api/settings';
 import { settingsDefinition } from '../settings-definition';
 import { toast } from '../composables/useToast';
-import { set, get, defaultsDeep, debounce, type DebouncedFunc, cloneDeep } from 'lodash-es';
+import { set, get, defaultsDeep, debounce, cloneDeep } from 'lodash-es';
 import { useUiStore } from './ui.store';
 import type { ValueForPath } from '../types/utils';
 import { defaultWorldInfoSettings } from './world-info.store';
@@ -36,7 +36,7 @@ type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
 
 // TODO: We should simply define all default settings, then override with settingsDefinition defaults.
 function createDefaultSettings(): Settings {
-  // @ts-ignore
+  // @ts-expect-error Missing properties
   const defaultSettings: Settings = {};
   for (const def of settingsDefinition) {
     set(defaultSettings, def.id, def.defaultValue);
@@ -114,8 +114,9 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     userSettingsResponse.openai_setting_names.forEach(async (name: string, i: number) => {
       try {
         await saveExperimentalPreset(name, migratePreset(userSettingsResponse.openai_settings[i]));
-      } catch (e) {
+      } catch (e: unknown) {
         console.error(`Failed to parse legacy preset "${name}":`, userSettingsResponse.openai_settings[i]);
+        console.error(e);
       }
     });
   }
@@ -304,14 +305,6 @@ export const useSettingsStore = defineStore('settings', () => {
     saveSettingsDebounced();
   }
 
-  // Provides a way to modify legacy settings that haven't been migrated yet (e.g., complex persona objects)
-  function setLegacySetting(path: string, value: any) {
-    if (fullLegacySettings.value) {
-      set(fullLegacySettings.value, path, value);
-      saveSettingsDebounced();
-    }
-  }
-
   function getAccountItem(key: AccountStorageKey): string | null {
     return settings.value.account?.[key] ?? null;
   }
@@ -363,7 +356,7 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  const saveSettingsDebounced: DebouncedFunc<() => Promise<void>> = debounce(async () => {
+  const saveSettingsDebounced = debounce(async () => {
     // TODO: Should we remove our debounce and use lodash's debounce directly?
     if (settingsInitializing.value || !fullLegacySettings.value) return;
 
@@ -382,7 +375,6 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsInitializing,
     getSetting,
     setSetting,
-    setLegacySetting,
     getAccountItem,
     setAccountItem,
   };

@@ -1,16 +1,4 @@
 /**
- * Checks if the given control has an animation applied to it
- *
- * @param {HTMLElement} control - The control element to check for animation
- * @returns {boolean} Whether the control has an animation applied
- */
-export function hasAnimation(control: HTMLElement): boolean {
-  // @ts-ignore
-  const animationName = getComputedStyle(control, null)['animation-name'];
-  return animationName != 'none';
-}
-
-/**
  * Sanitizes a string to be used as a DOM selector.
  * Replaces characters that are not alphanumeric, underscore, or hyphen with an underscore.
  * @param {string} selector - The string to sanitize.

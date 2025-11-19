@@ -41,6 +41,7 @@ export interface ExtensionMetadata {
   containerId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ExtensionAPI<TSettings = Record<string, any>> {
   /**
    * Metadata about the current extension instance.
@@ -139,6 +140,7 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
     showToast: (message: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
     openPanel: (panelName: MenuType) => void;
     closePanel: () => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPopup: (options: PopupShowOptions) => Promise<{ result: number; value: any }>;
 
     /**
@@ -158,6 +160,7 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
      * @param props Props to pass to the component.
      * @returns The Vue Application instance (useful for unmounting later).
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mount: (container: HTMLElement, component: Component, props?: Record<string, any>) => App;
   };
   events: {

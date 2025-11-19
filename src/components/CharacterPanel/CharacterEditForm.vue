@@ -220,8 +220,8 @@ async function handleCreate() {
       const res = await fetch(default_avatar);
       const blob = await res.blob();
       selectedAvatarFile.value = new File([blob], 'avatar.png', { type: 'image/png' });
-    } catch (e) {
-      alert('Please select an avatar.');
+    } catch {
+      alert('Please select an avatar.'); // TODO: Add i18n, use toast, show error
       return;
     }
   }
@@ -438,7 +438,7 @@ const displayAvatarUrl = computed(() => {
         >
           <div v-show="isCreatorNotesOpen">
             <div class="inline-drawer-content">
-              <!-- TODO: We should make sure this is sanitized when we loading the character -->
+              <!-- TODO: We should make sure this is sanitized when we loading the character eslint-disable-next-line vue/no-v-html -->
               <div v-show="formData.data.creator_notes" v-html="formData.data.creator_notes"></div>
               <div v-show="!formData.data.creator_notes">{{ t('characterEditor.noCreatorNotes') }}</div>
             </div>

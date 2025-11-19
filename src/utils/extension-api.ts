@@ -62,7 +62,7 @@ function deepClone<T>(obj: T): T {
  * A registry of standard, mountable Vue components that can be used by extensions.
  * We use dynamic imports to avoid circular dependencies and load components on demand.
  */
-const mountableComponents: Record<MountableComponent, () => Promise<any>> = {
+const mountableComponents: Record<MountableComponent, () => Promise<{ default: Vue.Component }>> = {
   ConnectionProfileSelector: () => import('../components/Common/ConnectionProfileSelector.vue'),
 };
 
@@ -261,7 +261,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param path The key for the setting within the extension's scope. If it's undefined, returns the entire settings object.
      * @returns The value of the setting.
      */
-    get: (path?: string): any => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    get: (_path?: string): any => {
       console.warn('[ExtensionAPI] settings.get called outside of a registered extension scope.');
       return undefined;
     },
@@ -278,10 +279,11 @@ const baseExtensionAPI: ExtensionAPI = {
 
     /**
      * (SCOPED) Updates a single setting value in this extension's dedicated storage.
-     * @param path The key for the setting within the extension's scope. If it's undefined, replaces the entire settings object.
+     * @param _path The key for the setting within the extension's scope. If it's undefined, replaces the entire settings object.
      * @param value The new value to set.
      */
-    set: (path: string | undefined, value: any): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    set: (_path: string | undefined, value: unknown): void => {
       console.warn('[ExtensionAPI] settings.set called outside of a registered extension scope.');
     },
 
@@ -549,6 +551,7 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param options The configuration for the popup.
      * @returns A promise that resolves with the popup result.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showPopup: (options: PopupShowOptions): Promise<{ result: number; value: any }> => {
       return usePopupStore().show(options);
     },
@@ -586,6 +589,7 @@ const baseExtensionAPI: ExtensionAPI = {
       }
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mount: (container: HTMLElement, component: Vue.Component, props: Record<string, any> = {}): Vue.App => {
       if (!container) {
         throw new Error('[ExtensionAPI] Target container is null.');
@@ -680,6 +684,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
   };
 
   const scopedSettings = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get: (path?: string): any => {
       if (!path) {
         const fullPath = `extensionSettings.${extensionId}`;
@@ -690,6 +695,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
       const value = settingsStore.getSetting(fullPath as SettingsPath);
       return deepClone(value);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set: (path: string | undefined, value: any): void => {
       if (!path) {
         const fullPath = `extensionSettings.${extensionId}`;
@@ -704,6 +710,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
     save: baseExtensionAPI.settings.save,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const listenerMap = new Map<Function, Function>();
 
   // Helper to wrap AbortController to inject extension identity on abort
@@ -711,6 +718,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
     return new Proxy(controller, {
       get(target, prop) {
         if (prop === 'abort') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return (reason?: any) => {
             const taggedReason = reason
               ? `[Extension: ${extensionId}] ${typeof reason === 'string' ? reason : JSON.stringify(reason)}`
@@ -731,6 +739,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
       priority?: number,
     ): (() => void) => {
       // Wrap the listener to intercept arguments
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const wrappedListener = async (...args: any[]) => {
         const proxiedArgs = args.map((arg) => {
           // Detect AbortController and wrap it
@@ -755,12 +764,11 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
           return arg;
         });
 
-        // @ts-ignore
-        return listener(...proxiedArgs);
+        return listener(...(proxiedArgs as ExtensionEventMap[E]));
       };
 
       listenerMap.set(listener, wrappedListener);
-      return baseExtensionAPI.events.on(eventName, wrappedListener as any, priority);
+      return baseExtensionAPI.events.on(eventName, wrappedListener, priority);
     },
     off: <E extends keyof ExtensionEventMap>(
       eventName: E,
@@ -768,7 +776,7 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
     ): void => {
       const wrapped = listenerMap.get(listener);
       if (wrapped) {
-        baseExtensionAPI.events.off(eventName, wrapped as any);
+        baseExtensionAPI.events.off(eventName, wrapped as (...args: ExtensionEventMap[E]) => Promise<void> | void);
         listenerMap.delete(listener);
       } else {
         baseExtensionAPI.events.off(eventName, listener);

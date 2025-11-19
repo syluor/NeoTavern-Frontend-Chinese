@@ -9,6 +9,7 @@ const props = defineProps({
   modelValue: {
     type: Object as PropType<WorldInfoEntry>,
     required: false,
+    default: null,
   },
 });
 

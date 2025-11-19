@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import type { PropType } from 'vue';
@@ -24,12 +25,12 @@ const props = defineProps({
 
   okButton: { type: [String, Boolean] as PropType<I18nKey | boolean>, default: undefined },
   cancelButton: { type: [String, Boolean] as PropType<I18nKey | boolean>, default: undefined },
-  rows: { type: Number },
+  rows: { type: Number, default: 4 },
   wide: { type: Boolean, default: false },
   large: { type: Boolean, default: false },
   customButtons: { type: Array as PropType<CustomPopupButton[]>, default: undefined },
-  defaultResult: { type: Number },
-  cropImage: { type: String },
+  defaultResult: { type: Number, default: undefined },
+  cropImage: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close', 'submit']);
@@ -127,6 +128,7 @@ onMounted(() => {
 });
 
 function handleResult(result: number) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payload: { result: number; value: any } = { result, value: null };
   if (result !== POPUP_RESULT.CANCELLED) {
     if (props.type === POPUP_TYPE.INPUT) {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { nextTick, ref, watch } from 'vue';
-import { debounce, type DebouncedFunc } from 'lodash-es';
+import { debounce } from 'lodash-es';
 import {
   type ChatMessage,
   type ChatMetadata,
@@ -15,7 +15,7 @@ import { useCharacterStore } from './character.store';
 import { useUiStore } from './ui.store';
 import { useApiStore } from './api.store';
 import { fetchChat, saveChat as apiSaveChat } from '../api/chat';
-import { getMessageTimeStamp, humanizedDateTime } from '../utils/date';
+import { getMessageTimeStamp } from '../utils/date';
 import { uuidv4 } from '../utils/common';
 import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
@@ -33,7 +33,6 @@ export const useChatStore = defineStore('chat', () => {
   const { t } = useStrictI18n();
   const chat = ref<Array<ChatMessage>>([]);
   const chatMetadata = ref<ChatMetadata>({});
-  const chatCreateDate = ref<string | null>(null);
   const activeMessageEditIndex = ref<number | null>(null);
   const originalMessageContent = ref<string | null>(null);
   const isGenerating = ref(false);
@@ -44,7 +43,7 @@ export const useChatStore = defineStore('chat', () => {
   const uiStore = useUiStore();
   const personaStore = usePersonaStore();
 
-  const saveChatDebounced: DebouncedFunc<() => Promise<void>> = debounce(async () => {
+  const saveChatDebounced = debounce(async () => {
     const characterStore = useCharacterStore();
     const activeCharacter = characterStore.activeCharacter;
     if (!activeCharacter || !activeChatFile.value) {
@@ -63,6 +62,7 @@ export const useChatStore = defineStore('chat', () => {
       ];
       await apiSaveChat(activeCharacter, activeChatFile.value, chatToSave);
       // TODO: Save token cache and itemized prompts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to save chat:', error);
       toast.error(error.message || 'An unknown error occurred while saving the chat.');
@@ -98,7 +98,6 @@ export const useChatStore = defineStore('chat', () => {
     saveChatDebounced.cancel();
     chat.value = [];
     chatMetadata.value = {};
-    chatCreateDate.value = null;
     activeMessageEditIndex.value = null;
 
     if (!recreateFirstMessage) {
@@ -161,14 +160,12 @@ export const useChatStore = defineStore('chat', () => {
       const response = await fetchChat(activeCharacter, activeChatFile.value);
       if (response.length > 0) {
         // Chat exists, load it
-        const metadataItem = response.shift();
-        chatCreateDate.value = metadataItem?.create_date ?? null;
+        const metadataItem = response.shift() as { character_name: string; chat_metadata: ChatMetadata } | undefined;
         chatMetadata.value = metadataItem?.chat_metadata ?? {};
-        chat.value = response;
+        chat.value = response as ChatMessage[];
       } else {
         // No chat exists, create a new one
         wasNewChatCreated = true;
-        chatCreateDate.value = humanizedDateTime();
         chatMetadata.value = {};
         chat.value = [];
 
@@ -399,11 +396,10 @@ export const useChatStore = defineStore('chat', () => {
         await handleGenerationResult(response.content, response.reasoning);
       } else {
         const streamGenerator = (await ChatCompletionService.generate(
-          payload as any,
+          payload,
           generationController.value.signal,
         )) as unknown as () => AsyncGenerator<StreamedChunk>;
 
-        let streamedContent = '';
         let streamedReasoning = '';
         let targetMessageIndex = -1;
 
@@ -457,7 +453,6 @@ export const useChatStore = defineStore('chat', () => {
               generationController.value?.abort();
               break;
             }
-            streamedContent += chunk.delta;
             if (chunk.reasoning) streamedReasoning += chunk.reasoning;
 
             const targetMessage = chat.value[targetMessageIndex];
@@ -494,6 +489,7 @@ export const useChatStore = defineStore('chat', () => {
           }
         }
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       generationError = error;
       if (error.name === 'AbortError') {
@@ -708,7 +704,6 @@ export const useChatStore = defineStore('chat', () => {
   return {
     chat,
     chatMetadata,
-    chatCreateDate,
     activeMessageEditIndex,
     isGenerating,
     activeChatFile,

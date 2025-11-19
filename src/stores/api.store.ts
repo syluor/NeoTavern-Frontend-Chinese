@@ -163,6 +163,7 @@ export const useApiStore = defineStore('api', () => {
 
       onlineStatus.value = response.bypass ? t('api.status.bypassed') : t('api.status.valid');
       toast.success(t('api.connectSuccess'));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       onlineStatus.value = t('api.status.noConnection');
       toast.error(error.message || t('api.connectFailed'));
@@ -190,8 +191,9 @@ export const useApiStore = defineStore('api', () => {
       await loadPresetsForApi();
       settingsStore.settings.api.selected_sampler = name;
       toast.success(`Preset "${name}" saved.`);
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error(`Failed to save preset "${name}".`);
+      console.error('Failed to save preset:', error);
     }
   }
 
@@ -252,8 +254,9 @@ export const useApiStore = defineStore('api', () => {
           settingsStore.settings.api.selected_sampler = 'Default';
         }
         await loadPresetsForApi();
-      } catch (error) {
+      } catch (error: unknown) {
         toast.error(`Failed to delete preset "${name}".`);
+        console.error('Failed to delete preset:', error);
       }
     }
   }

@@ -3,12 +3,13 @@ import { manifest } from './manifest';
 import SettingsPanel from './SettingsPanel.vue';
 import { Translator } from './translator';
 import { AutoTranslateMode, type ChatTranslationSettings } from './types';
+import type { App } from 'vue';
 
 export { manifest };
 
 export function activate(api: ExtensionAPI<ChatTranslationSettings>) {
   const translator = new Translator(api);
-  let settingsApp: any = null;
+  let settingsApp: App | null = null;
 
   const settingsContainer = document.getElementById(api.meta.containerId);
   if (settingsContainer) {

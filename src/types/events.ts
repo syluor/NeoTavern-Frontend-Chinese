@@ -20,6 +20,7 @@ export interface ExtensionEventMap {
   'chat:cleared': [];
   'chat:updated': [];
   'chat:entered': [character: Character, chatFile: string];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'setting:changed': [path: SettingsPath, value: any, oldValue: any];
 
   // Message Events

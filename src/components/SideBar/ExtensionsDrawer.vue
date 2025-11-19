@@ -15,13 +15,11 @@ useResizable(browserPane, dividerEl, { storageKey: 'extensions_browser_width', i
 
 const notifyOnUpdates = ref(false); // TODO: Connect this to settings
 
-// @ts-ignore
 function manageExtensions() {
   // TODO: Open manage extensions popup
   alert(t('extensions.managePopupNotImplemented'));
 }
 
-// @ts-ignore
 function installExtension() {
   // TODO: Open install extension popup
   alert(t('extensions.installPopupNotImplemented'));
@@ -41,10 +39,10 @@ onMounted(() => {
     <div id="extensions-browser" ref="browserPane" class="extensions-panel__browser">
       <div class="extensions-panel__browser-header">
         <div style="display: flex; gap: 5px">
-          <div class="menu-button" :title="t('extensions.manage')">
+          <div class="menu-button" :title="t('extensions.manage')" @click="manageExtensions">
             <i class="fa-solid fa-cubes"></i>
           </div>
-          <div class="menu-button" :title="t('extensions.install')">
+          <div class="menu-button" :title="t('extensions.install')" @click="installExtension">
             <i class="fa-solid fa-cloud-arrow-down"></i>
           </div>
           <label class="checkbox-label" style="margin-left: auto; font-size: 0.9em; cursor: pointer">

@@ -66,7 +66,7 @@ export const useBackgroundStore = defineStore('background', () => {
     settingsStore.setSetting('ui.background.fitting', fittingMode);
   }
 
-  function selectBackground(fileName: string, isCustom: boolean) {
+  function selectBackground(fileName: string) {
     const fileUrl = `url("/backgrounds/${encodeURIComponent(fileName)}")`;
     if (chatStore.chatMetadata[BG_METADATA_KEY]) {
       // If locked, clicking a new background updates the lock
@@ -97,7 +97,7 @@ export const useBackgroundStore = defineStore('background', () => {
     try {
       const newBg = await uploadBackground(formData);
       await initialize();
-      selectBackground(newBg, false);
+      selectBackground(newBg);
       // TODO: Highlight new background
     } catch (error) {
       console.error('Error uploading background:', error);

@@ -7,7 +7,8 @@ const promptStorage = localforage.createInstance({ name: 'SillyTavern_Prompts' }
 
 export const usePromptStore = defineStore('prompt', () => {
   const extensionPrompts = ref<Record<string, ExtensionPrompt>>({});
-  const itemizedPrompts = ref<Array<any>>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const itemizedPrompts = ref<Array<any>>([]); // TODO: When we implement this, we should type it properly
 
   async function saveItemizedPrompts(chatId?: string) {
     try {
@@ -27,6 +28,7 @@ export const usePromptStore = defineStore('prompt', () => {
         itemizedPrompts.value = [];
         return;
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prompts = (await promptStorage.getItem(chatId)) as any[] | null;
       itemizedPrompts.value = prompts ?? [];
     } catch {

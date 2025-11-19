@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from '@/types';
+import type { ApiChatMessage, ExtensionAPI } from '@/types';
 import Handlebars from 'handlebars';
 import { type ChatTranslationSettings, DEFAULT_PROMPT } from './types';
 
@@ -64,12 +64,12 @@ export class Translator {
       });
 
       // Call LLM
-      const messages = [{ role: 'user', content: prompt }];
+      const messages: ApiChatMessage[] = [{ role: 'user', content: prompt }];
 
       // Use type assertion if 'system' isn't strictly allowed in ApiChatMessage yet,
       // but usually translation is a direct instruction.
 
-      const response = await this.api.llm.generate(messages as any, {
+      const response = await this.api.llm.generate(messages, {
         connectionProfileName: settings.connectionProfile,
       });
 

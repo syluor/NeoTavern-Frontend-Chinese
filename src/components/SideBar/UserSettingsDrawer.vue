@@ -18,13 +18,8 @@ const filteredDefinitions = computed(() => {
   const lowerCaseSearch = searchTerm.value.toLowerCase();
   return settingsStore.definitions.filter(
     (def) =>
-      t(def.label as any)
-        .toLowerCase()
-        .includes(lowerCaseSearch) ||
-      (def.description &&
-        t(def.description as any)
-          .toLowerCase()
-          .includes(lowerCaseSearch)) ||
+      t(def.label).toLowerCase().includes(lowerCaseSearch) ||
+      (def.description && t(def.description).toLowerCase().includes(lowerCaseSearch)) ||
       def.category.toLowerCase().includes(lowerCaseSearch),
   );
 });
@@ -49,8 +44,7 @@ const groupedSettings = computed(() => {
 });
 
 function getSettingValue(id: string) {
-  // @ts-ignore
-  return settingsStore.getSetting(id);
+  return settingsStore.getSetting(id as SettingsPath);
 }
 
 function updateSetting<P extends SettingsPath>(id: P, event: Event) {
@@ -64,7 +58,6 @@ function updateSetting<P extends SettingsPath>(id: P, event: Event) {
     value = parseFloat(value as unknown as string) as ValueForPath<Settings, P>;
   }
 
-  // @ts-ignore
   settingsStore.setSetting(id, value);
 }
 

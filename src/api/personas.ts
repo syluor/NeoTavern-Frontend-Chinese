@@ -25,7 +25,9 @@ export async function deletePersonaAvatar(avatarId: string): Promise<void> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function uploadPersonaAvatar(formData: FormData, cropData?: any): Promise<{ path: string }> {
+  // TODO: Proper type
   let url = '/api/avatars/upload';
   if (cropData) {
     url += `?crop=${encodeURIComponent(JSON.stringify(cropData))}`;

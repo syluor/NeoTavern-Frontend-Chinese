@@ -1,3 +1,5 @@
+// TODO: Use ISO timestamps for message timestamps.
+
 export function humanizedDateTime() {
   const now = new Date(Date.now());
   const dt = {
@@ -9,7 +11,7 @@ export function humanizedDateTime() {
     second: now.getSeconds(),
   };
   for (const key in dt) {
-    dt[key as keyof typeof dt] = dt[key as keyof typeof dt].toString().padStart(2, '0') as any;
+    dt[key as keyof typeof dt] = dt[key as keyof typeof dt].toString().padStart(2, '0') as string & number;
   }
   return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s`;
 }
@@ -80,7 +82,7 @@ export function formatTimeStamp(dateString?: string): string {
       hours = 12;
     }
     return `${month} ${day}, ${year} ${hours}:${minutes}${meridiem}`;
-  } catch (e) {
-    return dateString; // Return original string if parsing fails
+  } catch {
+    return dateString; // TODO: Really? How in the world we have try/catch in date formatting?
   }
 }

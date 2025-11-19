@@ -163,7 +163,7 @@ onMounted(() => {
             'is-locked': lockedBackgroundUrl === `url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`,
           }"
           :title="bg"
-          @click="backgroundStore.selectBackground(bg, false)"
+          @click="backgroundStore.selectBackground(bg)"
         >
           <div class="background-item__thumbnail" :style="{ backgroundImage: `url(${getThumbnailUrl('bg', bg)})` }">
             <div class="background-item__title">{{ getBgFileName(bg) }}</div>

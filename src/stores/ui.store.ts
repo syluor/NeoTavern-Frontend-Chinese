@@ -8,7 +8,8 @@ export const useUiStore = defineStore('ui', () => {
   const isSendPress = ref<boolean>(false);
   const selectedButton = ref<MenuType | null>(null);
   const menuType = ref<MenuType | null>(null);
-  const cropData = ref<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cropData = ref<any>(null); // TODO: Proper type
   const activePlayerName = ref<string | null>(null);
   const activePlayerAvatar = ref<string | null>(null);
   const zoomedAvatars = ref<ZoomedAvatar[]>([]);

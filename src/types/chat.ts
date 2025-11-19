@@ -2,6 +2,7 @@ export interface ChatMetadata {
   integrity?: string;
   custom_background?: string;
   chat_backgrounds?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -12,6 +13,7 @@ export interface SwipeInfo {
   extra: {
     reasoning?: string;
     token_count?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any>;
 }
 
@@ -35,5 +37,6 @@ export interface ChatMessage {
     display_text?: string;
     reasoning_display_text?: string;
     token_count?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any>;
 }

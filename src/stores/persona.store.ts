@@ -93,9 +93,6 @@ export const usePersonaStore = defineStore('persona', () => {
       activePersonaId.value = avatarId;
       uiStore.activePlayerName = persona.name;
       uiStore.activePlayerAvatar = persona.avatarId;
-      // Sync back to legacy fields for compatibility with other parts of the app
-      settingsStore.setLegacySetting('username', persona.name);
-      settingsStore.setLegacySetting('user_avatar', persona.avatarId);
       await nextTick();
       await eventEmitter.emit('persona:activated', persona);
     }
@@ -130,7 +127,6 @@ export const usePersonaStore = defineStore('persona', () => {
         personas.value.splice(index, 1, updatedPersona);
         // also update the main username if this is the active persona
         uiStore.activePlayerName = newName;
-        settingsStore.setLegacySetting('username', newName);
         await nextTick();
         await eventEmitter.emit('persona:updated', updatedPersona);
       }

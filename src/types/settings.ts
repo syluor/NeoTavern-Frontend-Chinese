@@ -255,7 +255,7 @@ export interface Settings {
   worldInfo: WorldInfoSettings;
   account: AccountStorageState;
   disabledExtensions: string[];
-  extensionSettings: Record<string, Record<string, any>>;
+  extensionSettings: Record<string, Record<string, never>>;
 }
 
 export interface LegacySettings {
@@ -316,6 +316,7 @@ export interface SettingDefinition {
   category: string;
   type: SettingType;
   widget: SettingWidget;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue: any;
   min?: number;
   max?: number;

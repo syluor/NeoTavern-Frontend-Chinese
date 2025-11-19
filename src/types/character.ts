@@ -28,6 +28,7 @@ export interface Character {
       depth: number;
       role: MessageRole;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any>;
 }
 
@@ -35,6 +36,7 @@ export interface Group {
   disabled_members?: Array<string>;
   chats: string[];
   members: Array<Character['name']>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   past_metadata?: Record<string, any>;
   id: string;
   chat_id: string;
@@ -50,6 +52,7 @@ export interface Tag {
   color2?: string;
   create_date?: number;
   is_hidden_on_character_card?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   action?: Function;
   class?: string;
   icon?: string;
@@ -63,28 +66,4 @@ export interface Entity {
   entities?: Entity[];
   hidden?: number;
   isUseless?: boolean;
-}
-
-export interface CreateSave {
-  name: string;
-  description: string;
-  creator_notes: string;
-  post_history_instructions: string;
-  character_version: string;
-  system_prompt: string;
-  tags: string;
-  creator: string;
-  personality: string;
-  first_message: string;
-  avatar: FileList | null;
-  scenario: string;
-  mes_example: string;
-  world: string;
-  talkativeness: number;
-  alternate_greetings: any[];
-  depth_prompt_prompt: string;
-  depth_prompt_depth: number;
-  depth_prompt_role: string;
-  extensions: Record<string, any>;
-  extra_books: any[];
 }

@@ -60,8 +60,9 @@ export async function fetchAllExperimentalPresets(): Promise<Preset[]> {
           name,
           preset: settingsData[i],
         });
-      } catch (e) {
+      } catch (e: unknown) {
         console.error(`Failed to parse preset "${name}":`, settingsData[i]);
+        console.error(e);
       }
     });
   }
@@ -69,7 +70,7 @@ export async function fetchAllExperimentalPresets(): Promise<Preset[]> {
   return presets;
 }
 
-export async function saveExperimentalPreset(name: string, preset: SamplerSettings): Promise<any> {
+export async function saveExperimentalPreset(name: string, preset: SamplerSettings): Promise<void> {
   const response = await fetch('/api/presets/save', {
     method: 'POST',
     headers: getRequestHeaders(),
@@ -84,10 +85,10 @@ export async function saveExperimentalPreset(name: string, preset: SamplerSettin
     throw new Error('Failed to save preset');
   }
 
-  return await response.json();
+  await response.json();
 }
 
-export async function deletePreset(name: string): Promise<any> {
+export async function deletePreset(name: string): Promise<void> {
   const response = await fetch('/api/presets/delete', {
     method: 'POST',
     headers: getRequestHeaders(),
@@ -98,5 +99,5 @@ export async function deletePreset(name: string): Promise<any> {
     throw new Error('Failed to delete preset');
   }
 
-  return await response.json();
+  await response.json();
 }

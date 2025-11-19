@@ -86,7 +86,8 @@ export interface WorldInfoBook {
 }
 
 export interface WorldInfoSettings {
-  world_info: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  world_info: Record<string, any>; // TODO: I don't remember why is this any
   world_info_depth: number;
   world_info_min_activations: number;
   world_info_min_activations_depth_max: number;

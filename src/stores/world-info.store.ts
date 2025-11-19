@@ -13,8 +13,7 @@ import {
 } from '../types';
 import * as api from '../api/world-info';
 import { toast } from '../composables/useToast';
-import { debounce } from '../utils/common';
-import { defaultsDeep } from 'lodash-es';
+import { debounce, defaultsDeep } from 'lodash-es';
 import { usePopupStore } from './popup.store';
 import { downloadFile } from '../utils/file';
 import { useStrictI18n } from '../composables/useStrictI18n';
@@ -103,8 +102,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     // Sort the (potentially filtered) entries
     const [field, direction] = sortOrder.value.split(':');
     entries.sort((a, b) => {
-      let valA = (a as any)[field];
-      let valB = (b as any)[field];
+      let valA = (a as never)[field] as string;
+      let valB = (b as never)[field] as string;
       if (typeof valA === 'string') valA = valA.toLowerCase();
       if (typeof valB === 'string') valB = valB.toLowerCase();
 
@@ -238,8 +237,9 @@ export const useWorldInfoStore = defineStore('world-info', () => {
         toggleBookExpansion(newName);
         toast.success(`Created lorebook: ${newName}`);
         await eventEmitter.emit('world-info:book-created', newName);
-      } catch (error) {
+      } catch (error: unknown) {
         toast.error(`Failed to create lorebook.`);
+        console.error('Failed to create lorebook:', error);
       }
     }
   }
@@ -321,7 +321,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
         await initialize();
         toast.success(`Deleted lorebook: ${name}`);
         await eventEmitter.emit('world-info:book-deleted', name);
-      } catch (error) {
+      } catch (error: unknown) {
+        console.error('Failed to delete lorebook:', error);
         toast.error('Failed to delete lorebook.');
       }
     }
@@ -344,7 +345,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
         }
         await initialize();
         await eventEmitter.emit('world-info:book-renamed', oldName, newName);
-      } catch (error) {
+      } catch (error: unknown) {
+        console.error('Failed to rename lorebook:', error);
         toast.error('Failed to rename lorebook.');
       }
     }
@@ -361,7 +363,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
         await api.duplicateWorldInfoBook(sourceName, newName);
         toast.success(`Lorebook "${sourceName}" duplicated as "${newName}".`);
         await initialize();
-      } catch (error) {
+      } catch (error: unknown) {
+        console.error('Failed to duplicate lorebook:', error);
         toast.error('Failed to duplicate lorebook.');
       }
     }
@@ -413,7 +416,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
       toggleBookExpansion(name);
       toast.success(`Imported lorebook: ${name}`);
       await eventEmitter.emit('world-info:book-imported', name);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Failed to import lorebook:', error);
       toast.error('Failed to import lorebook.');
     }
   }
@@ -423,7 +427,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
       const book = await api.exportWorldInfoBook(name);
       const content = JSON.stringify(book, null, 2);
       downloadFile(content, `${book.name}.json`, 'application/json');
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Failed to export lorebook:', error);
       toast.error('Failed to export lorebook.');
     }
   }

@@ -67,7 +67,7 @@ async function handleFileImport(event: Event) {
       if (avatarFileName) {
         importedAvatars.push(avatarFileName);
       }
-    } catch (error: any) {
+    } catch {
       // Toast is handled in the store action
     }
   }

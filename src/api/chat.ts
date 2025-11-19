@@ -1,7 +1,12 @@
 import { getRequestHeaders } from '../utils/api';
-import type { Character } from '../types';
+import type { Character, ChatMessage } from '../types';
 
-export async function fetchChat(character: Character, chatFile: string): Promise<any[]> {
+// TODO: Define chat header type. Also update this return values to understand first item is header. (which i don't know how to type yet)
+
+export async function fetchChat(
+  character: Character,
+  chatFile: string,
+): Promise<({ character_name: string; chat_metadata: object } | ChatMessage)[]> {
   const response = await fetch('/api/chats/get', {
     method: 'POST',
     headers: getRequestHeaders(),
@@ -19,7 +24,11 @@ export async function fetchChat(character: Character, chatFile: string): Promise
   return await response.json();
 }
 
-export async function saveChat(character: Character, chatFile: string, chatToSave: any[]): Promise<void> {
+export async function saveChat(
+  character: Character,
+  chatFile: string,
+  chatToSave: ({ character_name: string; chat_metadata: object } | ChatMessage)[],
+): Promise<void> {
   const response = await fetch('/api/chats/save', {
     method: 'POST',
     headers: getRequestHeaders(),

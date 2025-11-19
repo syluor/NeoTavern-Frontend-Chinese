@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import {
   SendOnEnterOptions,
   DEFAULT_SAVE_EDIT_TIMEOUT,
@@ -273,6 +273,7 @@ export const useSettingsStore = defineStore('settings', () => {
         const newVal = get(newCloned, path);
         const oldVal = get(oldCloned, path);
         if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+          await nextTick();
           await eventEmitter.emit('setting:changed', path, newVal, oldVal);
         }
       });
@@ -356,6 +357,7 @@ export const useSettingsStore = defineStore('settings', () => {
     } finally {
       Promise.resolve().then(async () => {
         settingsInitializing.value = false;
+        await nextTick();
         await eventEmitter.emit('app:loaded');
       });
     }

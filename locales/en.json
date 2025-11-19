@@ -374,7 +374,8 @@
     "search": "Search",
     "resetToDefaults": "Reset to Defaults",
     "confirmDelete": "Confirm Deletion",
-    "by": "by"
+    "by": "by",
+    "reset": "Reset"
   },
   "popup": {
     "cropAvatar": {
@@ -779,6 +780,23 @@
           "description": "If enabled, the reasoning (thinking) block on messages will be collapsed by default."
         }
       }
+    }
+  },
+  "extensionsBuiltin": {
+    "chat_translation": {
+      "connection_profile": "Connection Profile",
+      "connection_profile_hint": "Select the API connection profile to use for generating translations.",
+      "source_lang": "Source Language",
+      "target_lang": "Target Language",
+      "auto_mode": {
+        "label": "Auto-Translate Mode",
+        "none": "None (Manual)",
+        "responses": "Responses Only (Bot)",
+        "inputs": "Inputs Only (User)",
+        "both": "All Messages"
+      },
+      "prompt_template": "Translation Prompt Template",
+      "prompt_hint": "Customize how the LLM translates text. Supports Handlebars variables: {'{{prompt}}'}, {'{{sourceLang}}'}, {'{{targetLang}}'}, {'{{name}}'}."
     }
   }
 }

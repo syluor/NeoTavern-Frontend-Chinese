@@ -38,7 +38,7 @@ import { useApiStore } from '../stores/api.store';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { default_avatar, GenerationMode } from '../constants';
 import { getExtensionContainerId } from '../stores/extension.store';
-import type { ExtensionMetadata } from '../types/ExtensionAPI';
+import type { ExtensionMetadata, MountableComponentPropsMap } from '../types/ExtensionAPI';
 
 import * as Vue from 'vue';
 import i18n from '../i18n';
@@ -192,11 +192,11 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param signal An optional AbortSignal to cancel the request.
      * @returns A Promise that resolves to a GenerationResponse or a stream generator function.
      */
-    generate: (
+    generate: async (
       payload: ChatCompletionPayload,
       signal?: AbortSignal,
     ): Promise<GenerationResponse | (() => AsyncGenerator<StreamedChunk>)> => {
-      return ChatCompletionService.generate(payload, signal);
+      return await ChatCompletionService.generate(payload, signal);
     },
 
     /**
@@ -559,10 +559,10 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param componentName The name of the component to mount (e.g., 'ConnectionProfileSelector').
      * @param props An object of props to pass to the component.
      */
-    mountComponent: async (
+    mountComponent: async <T extends MountableComponent>(
       container: HTMLElement,
-      componentName: MountableComponent,
-      props: Record<string, any>,
+      componentName: T,
+      props: MountableComponentPropsMap[T],
     ): Promise<void> => {
       if (!container) {
         console.error(`[ExtensionAPI] mountComponent failed: container is null or undefined.`);
@@ -619,7 +619,7 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param messages The array of messages to send to the model.
      * @param options Configuration for the generation task.
      */
-    generate: (
+    generate: async (
       messages: ApiChatMessage[],
       options: LlmGenerationOptions = {},
     ): Promise<GenerationResponse | (() => AsyncGenerator<StreamedChunk>)> => {
@@ -662,7 +662,7 @@ const baseExtensionAPI: ExtensionAPI = {
         modelList: apiStore.modelList,
       });
 
-      return ChatCompletionService.generate(payload, options.signal);
+      return await ChatCompletionService.generate(payload, options.signal);
     },
   },
 };

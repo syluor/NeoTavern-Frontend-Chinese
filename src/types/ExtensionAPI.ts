@@ -23,6 +23,17 @@ export enum MountableComponent {
   ConnectionProfileSelector = 'ConnectionProfileSelector',
 }
 
+/**
+ * Mapping of mountable components to their required props.
+ * This ensures type safety when mounting built-in components via the Extension API.
+ */
+export interface MountableComponentPropsMap {
+  [MountableComponent.ConnectionProfileSelector]: {
+    modelValue?: string;
+    'onUpdate:modelValue'?: (value: string | undefined) => void;
+  };
+}
+
 export interface ExtensionMetadata {
   /** The unique ID of the extension (from manifest.name) */
   id: string;
@@ -101,10 +112,14 @@ export interface ExtensionAPI {
     openPanel: (panelName: MenuType) => void;
     closePanel: () => void;
     showPopup: (options: PopupShowOptions) => Promise<{ result: number; value: any }>;
-    mountComponent: (
+
+    /**
+     * Mounts a predefined system component to the DOM.
+     */
+    mountComponent: <T extends MountableComponent>(
       container: HTMLElement,
-      componentName: MountableComponent,
-      props: Record<string, any>,
+      componentName: T,
+      props: MountableComponentPropsMap[T],
     ) => Promise<void>;
     /**
      * Mounts a raw Vue component to a specific DOM element.

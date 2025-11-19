@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed, toRaw, nextTick } from 'vue';
 import { useSettingsStore } from './settings.store';
 import { useUiStore } from './ui.store';
 import { fetchAllPersonaAvatars, deletePersonaAvatar, uploadPersonaAvatar } from '../api/personas';
@@ -96,6 +96,7 @@ export const usePersonaStore = defineStore('persona', () => {
       // Sync back to legacy fields for compatibility with other parts of the app
       settingsStore.setLegacySetting('username', persona.name);
       settingsStore.setLegacySetting('user_avatar', persona.avatarId);
+      await nextTick();
       await eventEmitter.emit('persona:activated', persona);
     }
   }
@@ -107,6 +108,7 @@ export const usePersonaStore = defineStore('persona', () => {
       const updatedPersona = { ...personas.value[index], [field]: value };
       personas.value.splice(index, 1, updatedPersona);
       // The change will be saved by the settings store watcher
+      await nextTick();
       await eventEmitter.emit('persona:updated', updatedPersona);
     }
   }
@@ -129,6 +131,7 @@ export const usePersonaStore = defineStore('persona', () => {
         // also update the main username if this is the active persona
         uiStore.activePlayerName = newName;
         settingsStore.setLegacySetting('username', newName);
+        await nextTick();
         await eventEmitter.emit('persona:updated', updatedPersona);
       }
     }
@@ -181,6 +184,7 @@ export const usePersonaStore = defineStore('persona', () => {
         const nextPersona = personas.value.length > 0 ? personas.value[0].avatarId : null;
         await setActivePersona(nextPersona);
       }
+      await nextTick();
       await eventEmitter.emit('persona:deleted', avatarId);
     } catch (error) {
       console.error('Failed to delete persona:', error);

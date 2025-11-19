@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import type { Character, Entity } from '../types';
 import {
   fetchAllCharacters,
@@ -257,6 +257,7 @@ export const useCharacterStore = defineStore('character', () => {
       const index = characters.value.findIndex((c) => c.avatar === avatar);
       if (index !== -1) {
         characters.value[index] = updatedCharacter;
+        await nextTick();
         await eventEmitter.emit('character:updated', updatedCharacter, changes);
       } else {
         console.error(`Saved character with avatar ${avatar} not found in local list.`);
@@ -367,6 +368,7 @@ export const useCharacterStore = defineStore('character', () => {
         await refreshCharacters();
         const importedChar = characters.value.find((c) => c.avatar === avatarFileName);
         if (importedChar) {
+          await nextTick();
           await eventEmitter.emit('character:imported', importedChar);
         }
 
@@ -532,6 +534,7 @@ export const useCharacterStore = defineStore('character', () => {
           draftCharacter.value = null;
           await selectCharacterById(newCharIndex);
           const createdChar = characters.value[newCharIndex];
+          await nextTick();
           await eventEmitter.emit('character:created', createdChar);
           highlightCharacter(createdChar.avatar);
         }
@@ -567,6 +570,7 @@ export const useCharacterStore = defineStore('character', () => {
       activeCharacterIndex.value = null;
 
       toast.success(t('character.delete.success', { name: charName }));
+      await nextTick();
       await eventEmitter.emit('character:deleted', avatar);
     } catch (error) {
       console.error('Failed to delete character:', error);

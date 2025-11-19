@@ -112,6 +112,8 @@ export const useChatStore = defineStore('chat', () => {
       await promptStore.saveItemizedPrompts(currentChatId);
     }
     promptStore.itemizedPrompts = [];
+
+    await nextTick();
     await eventEmitter.emit('chat:cleared');
 
     if (recreateFirstMessage) {
@@ -121,6 +123,7 @@ export const useChatStore = defineStore('chat', () => {
         const firstMessage = getFirstMessage(activeCharacter);
         if (firstMessage.mes) {
           chat.value.push(firstMessage);
+          await nextTick();
           await eventEmitter.emit('message:created', firstMessage);
         }
       }
@@ -172,6 +175,7 @@ export const useChatStore = defineStore('chat', () => {
         const firstMessage = getFirstMessage(activeCharacter);
         if (firstMessage.mes) {
           chat.value.push(firstMessage);
+          await nextTick();
           await eventEmitter.emit('message:created', firstMessage);
         }
       }
@@ -185,9 +189,8 @@ export const useChatStore = defineStore('chat', () => {
         const promptStore = usePromptStore();
         await promptStore.loadItemizedPrompts(currentChatId);
       }
-      nextTick(async () => {
-        await eventEmitter.emit('chat:entered', activeCharacter as Character, activeChatFile.value as string);
-      });
+      await nextTick();
+      await eventEmitter.emit('chat:entered', activeCharacter as Character, activeChatFile.value as string);
     } catch (error) {
       console.error('Failed to refresh chat:', error);
       toast.error(t('chat.loadError'));
@@ -339,6 +342,7 @@ export const useChatStore = defineStore('chat', () => {
           lastMessage.gen_finished = genFinished;
           lastMessage.extra!.token_count = await tokenizer.getTokenCount(lastMessage.mes);
           generatedMessage = lastMessage;
+          await nextTick();
           await eventEmitter.emit('message:updated', chat.value.length - 1, lastMessage);
         } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
           if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
@@ -372,6 +376,7 @@ export const useChatStore = defineStore('chat', () => {
 
           chat.value.push(botMessage);
           generatedMessage = botMessage;
+          await nextTick();
           await eventEmitter.emit('message:created', botMessage);
         }
       };
@@ -437,6 +442,7 @@ export const useChatStore = defineStore('chat', () => {
           chat.value.push(botMessage);
           generatedMessage = botMessage;
           targetMessageIndex = chat.value.length - 1;
+          await nextTick();
           await eventEmitter.emit('message:created', botMessage);
         }
 
@@ -499,6 +505,7 @@ export const useChatStore = defineStore('chat', () => {
     } finally {
       isGenerating.value = false;
       generationController.value = null;
+      await nextTick();
       await eventEmitter.emit('generation:finished', generatedMessage, generationError);
     }
   }
@@ -526,6 +533,7 @@ export const useChatStore = defineStore('chat', () => {
       return;
     }
     chat.value.push(userMessage);
+    await nextTick();
     await eventEmitter.emit('message:created', userMessage);
 
     if (triggerGeneration) {
@@ -579,6 +587,7 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       cancelEditing();
+      await nextTick();
       await eventEmitter.emit('message:updated', index, message);
     }
   }
@@ -597,6 +606,7 @@ export const useChatStore = defineStore('chat', () => {
       }
     }
 
+    await nextTick();
     await eventEmitter.emit('message:updated', index, message);
   }
 
@@ -623,6 +633,7 @@ export const useChatStore = defineStore('chat', () => {
       delete message.extra.display_text;
       delete message.extra.reasoning_display_text;
     }
+    await nextTick();
     await eventEmitter.emit('message:updated', messageIndex, message);
   }
 
@@ -653,6 +664,7 @@ export const useChatStore = defineStore('chat', () => {
     if (activeMessageEditIndex.value === index) {
       cancelEditing();
     }
+    await nextTick();
     await eventEmitter.emit('message:deleted', index);
   }
 

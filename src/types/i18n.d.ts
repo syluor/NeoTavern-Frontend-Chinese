@@ -378,6 +378,7 @@ export interface MessageSchema {
     resetToDefaults: string;
     confirmDelete: string;
     by: string;
+    reset: string;
   };
   popup: {
     cropAvatar: {
@@ -782,6 +783,23 @@ export interface MessageSchema {
           description: string;
         };
       };
+    };
+  };
+  extensionsBuiltin: {
+    chat_translation: {
+      connection_profile: string;
+      connection_profile_hint: string;
+      source_lang: string;
+      target_lang: string;
+      auto_mode: {
+        label: string;
+        none: string;
+        responses: string;
+        inputs: string;
+        both: string;
+      };
+      prompt_template: string;
+      prompt_hint: string;
     };
   };
 }

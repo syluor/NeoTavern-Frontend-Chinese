@@ -7,7 +7,7 @@ import { getRequestHeaders } from '../utils/api';
 import { getStringHash } from '../utils/common';
 
 export class TokenCacheHelper {
-  private static cacheStorage = localforage.createInstance({ name: 'SillyTavern_TokenCache' });
+  private static readonly cacheStorage = localforage.createInstance({ name: 'SillyTavern_TokenCache' });
 
   static key(tokenizerType: TokenizerType, text: string): string {
     return `${tokenizerType}:${getStringHash(text)}`;
@@ -26,6 +26,10 @@ export class TokenCacheHelper {
 }
 
 export class DummyTokenizer implements Tokenizer {
+  static readonly instance = new DummyTokenizer();
+
+  private constructor() {}
+
   async getTokenCount(text: string): Promise<number> {
     if (!text || typeof text !== 'string') return 0;
     // This is a very rough approximation. The backend will have a proper tokenizer.
@@ -39,7 +43,7 @@ export type ApiTokenizerOptions = {
 };
 
 export class ApiTokenizer implements Tokenizer {
-  private tokenizerType: TokenizerType;
+  private readonly tokenizerType: TokenizerType;
 
   constructor({ tokenizerType, model }: ApiTokenizerOptions) {
     this.tokenizerType = ApiTokenizer.resolveTokenizerType(tokenizerType, model);
@@ -71,8 +75,7 @@ export class ApiTokenizer implements Tokenizer {
     if (!text || typeof text !== 'string') return 0;
 
     if (this.tokenizerType === TokenizerType.NONE) {
-      const dummyTokenizer = new DummyTokenizer();
-      return dummyTokenizer.getTokenCount(text);
+      return DummyTokenizer.instance.getTokenCount(text);
     }
 
     const cachedValue = await TokenCacheHelper.get(this.tokenizerType, text);
@@ -87,7 +90,8 @@ export class ApiTokenizer implements Tokenizer {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get token count');
+      console.warn(`[Tokenizer] Failed to get token count from API. Falling back to dummy tokenizer.`);
+      return DummyTokenizer.instance.getTokenCount(text);
     }
 
     const data = await response.json();

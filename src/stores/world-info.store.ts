@@ -51,11 +51,11 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const selectedItemId = ref<'global-settings' | string | null>('global-settings');
   const expandedBooks = ref<Set<string>>(new Set());
   const browserSearchTerm = ref('');
-  const sortOrder = ref(settingsStore.getAccountItem(WI_SORT_ORDER_KEY) ?? 'order:asc');
   const loadingBooks = ref<Set<string>>(new Set());
 
-  watch(sortOrder, (newOrder) => {
-    settingsStore.setAccountItem(WI_SORT_ORDER_KEY, newOrder);
+  const sortOrder = computed({
+    get: () => settingsStore.getAccountItem(WI_SORT_ORDER_KEY) ?? 'order:asc',
+    set: (value) => settingsStore.setAccountItem(WI_SORT_ORDER_KEY, value),
   });
 
   const settings = computed({
@@ -146,6 +146,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   }
 
   async function initialize() {
+    await settingsStore.waitForSettings();
     try {
       bookNames.value = (await api.fetchAllWorldInfoNames()).sort((a, b) => a.localeCompare(b));
     } catch (error) {

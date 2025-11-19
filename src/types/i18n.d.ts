@@ -714,16 +714,16 @@ export interface MessageSchema {
     };
   };
   settings: {
-    power_user: {
-      spoiler_free_mode: {
+    powerUser: {
+      spoilerFreeMode: {
         label: string;
         description: string;
       };
-      never_resize_avatars: {
+      neverResizeAvatars: {
         label: string;
         description: string;
       };
-      send_on_enter: {
+      sendOnEnter: {
         label: string;
         description: string;
         options: {
@@ -732,19 +732,19 @@ export interface MessageSchema {
           enabled: string;
         };
       };
-      world_import_dialog: {
+      worldImportDialog: {
         label: string;
         description: string;
       };
-      confirm_message_delete: {
+      confirmMessageDelete: {
         label: string;
         description: string;
       };
-      zoomed_avatar_magnification: {
+      zoomedAvatarMagnification: {
         label: string;
         description: string;
       };
-      tag_import_setting: {
+      tagImportSetting: {
         label: string;
         description: string;
         options: {
@@ -754,15 +754,15 @@ export interface MessageSchema {
           ask: string;
         };
       };
-      persona_show_notifications: {
+      personaShowNotifications: {
         label: string;
         description: string;
       };
-      persona_allow_multi_connections: {
+      personaAllowMultiConnections: {
         label: string;
         description: string;
       };
-      persona_auto_lock: {
+      personaAutoLock: {
         label: string;
         description: string;
       };
@@ -779,7 +779,7 @@ export interface MessageSchema {
     };
     ui: {
       chat: {
-        reasoning_collapsed: {
+        reasoningCollapsed: {
           label: string;
           description: string;
         };
@@ -787,20 +787,20 @@ export interface MessageSchema {
     };
   };
   extensionsBuiltin: {
-    chat_translation: {
-      connection_profile: string;
-      connection_profile_hint: string;
-      source_lang: string;
-      target_lang: string;
-      auto_mode: {
+    chatTranslation: {
+      connectionProfile: string;
+      connectionProfileHint: string;
+      sourceLang: string;
+      targetLang: string;
+      autoMode: {
         label: string;
         none: string;
         responses: string;
         inputs: string;
         both: string;
       };
-      prompt_template: string;
-      prompt_hint: string;
+      promptTemplate: string;
+      promptHint: string;
     };
   };
 }

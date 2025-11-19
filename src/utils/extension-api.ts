@@ -212,9 +212,9 @@ const baseExtensionAPI: ExtensionAPI = {
       const uiStore = useUiStore();
 
       const samplerSettings = { ...settingsStore.settings.api.samplers, ...samplerOverrides };
-      const source = settingsStore.settings.api.chat_completion_source;
+      const source = settingsStore.settings.api.chatCompletionSource;
       const model = apiStore.activeModel;
-      const providerSpecific = settingsStore.settings.api.provider_specific;
+      const providerSpecific = settingsStore.settings.api.providerSpecific;
       const playerName = uiStore.activePlayerName || 'User';
       const characterName = characterStore.activeCharacter?.name || '';
       const modelList = apiStore.modelList;
@@ -630,7 +630,7 @@ const baseExtensionAPI: ExtensionAPI = {
       const settingsStore = useSettingsStore();
       const apiStore = useApiStore();
 
-      let source = settingsStore.settings.api.chat_completion_source;
+      let source = settingsStore.settings.api.chatCompletionSource;
       let model: string | undefined = apiStore.activeModel;
       let samplerSettings = { ...settingsStore.settings.api.samplers, ...(options.samplerOverrides ?? {}) };
       const profileName = options.connectionProfileName;
@@ -662,7 +662,7 @@ const baseExtensionAPI: ExtensionAPI = {
         messages,
         model,
         source,
-        providerSpecific: settingsStore.settings.api.provider_specific,
+        providerSpecific: settingsStore.settings.api.providerSpecific,
         modelList: apiStore.modelList,
       });
 

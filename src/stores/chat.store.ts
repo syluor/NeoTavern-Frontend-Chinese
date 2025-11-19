@@ -273,9 +273,9 @@ export const useChatStore = defineStore('chat', () => {
         persona: activePersona,
         settings: {
           sampler: settings.api.samplers,
-          source: settings.api.chat_completion_source,
+          source: settings.api.chatCompletionSource,
           model: activeModel,
-          providerSpecific: settings.api.provider_specific,
+          providerSpecific: settings.api.providerSpecific,
         },
         playerName: uiStore.activePlayerName || 'User',
         characterName: activeCharacter.name,

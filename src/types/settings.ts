@@ -187,6 +187,7 @@ export type AccountStorageKey =
   | 'character_browser_width'
   | 'worldinfo_browser_width'
   | 'world_info_sort_order'
+  | 'character_sort_order'
   | 'extensions_browser_width';
 
 export type AccountStorageState = Partial<Record<AccountStorageKey, string>>;
@@ -226,29 +227,29 @@ export interface Settings {
   };
   api: {
     main: string;
-    chat_completion_source: ChatCompletionSource;
-    reverse_proxy: string;
-    proxy_password: string;
-    selected_sampler?: string;
+    chatCompletionSource: ChatCompletionSource;
+    reverseProxy: string;
+    proxyPassword: string;
+    selectedSampler?: string;
     samplers: SamplerSettings;
-    connection_profiles: ConnectionProfile[];
-    selected_connection_profile?: string;
-    selected_provider_models: Record<ChatCompletionSource, string>;
+    connectionProfiles: ConnectionProfile[];
+    selectedConnectionProfile?: string;
+    selectedProviderModels: Record<ChatCompletionSource, string>;
     tokenizer: TokenizerType;
-    provider_specific: {
+    providerSpecific: {
       openrouter: {
-        use_fallback: boolean;
+        useFallback: boolean;
         providers: string[];
-        allow_fallbacks: boolean;
+        allowFallbacks: boolean;
         middleout: OpenrouterMiddleoutType;
       };
       custom: {
         url: string;
       };
       azure_openai: {
-        base_url: string;
-        deployment_name: string;
-        api_version: string;
+        baseUrl: string;
+        deploymentName: string;
+        apiVersion: string;
       };
     };
   };

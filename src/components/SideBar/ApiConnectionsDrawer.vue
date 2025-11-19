@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useApiStore } from '../../stores/api.store';
 import { chat_completion_sources, type ConnectionProfile } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
@@ -29,14 +29,18 @@ function handleProfileSave(profile: Omit<ConnectionProfile, 'id'>) {
 }
 
 const openrouterProvidersString = computed({
-  get: () => settingsStore.settings.api.provider_specific.openrouter.providers.join(','),
+  get: () => settingsStore.settings.api.providerSpecific.openrouter.providers.join(','),
   set: (value) => {
     const newProviders = value
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    settingsStore.setSetting('api.provider_specific.openrouter.providers', newProviders);
+    settingsStore.setSetting('api.providerSpecific.openrouter.providers', newProviders);
   },
+});
+
+onMounted(() => {
+  apiStore.initialize();
 });
 </script>
 
@@ -97,9 +101,9 @@ const openrouterProvidersString = computed({
           <h4>{{ t('apiConnections.source') }}</h4>
           <select
             class="text-pole"
-            :value="settingsStore.settings.api.chat_completion_source"
+            :value="settingsStore.settings.api.chatCompletionSource"
             @change="
-              settingsStore.setSetting('api.chat_completion_source', ($event.target as HTMLSelectElement).value as any)
+              settingsStore.setSetting('api.chatCompletionSource', ($event.target as HTMLSelectElement).value as any)
             "
           >
             <optgroup>
@@ -137,7 +141,7 @@ const openrouterProvidersString = computed({
         </div>
 
         <!-- OpenAI Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.OPENAI">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.OPENAI">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openaiKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -152,10 +156,10 @@ const openrouterProvidersString = computed({
             <h4>{{ t('apiConnections.openaiModel') }}</h4>
             <select
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.openai"
+              :value="settingsStore.settings.api.selectedProviderModels.openai"
               @change="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.openai',
+                  'api.selectedProviderModels.openai',
                   ($event.target as HTMLSelectElement).value,
                 )
               "
@@ -177,7 +181,7 @@ const openrouterProvidersString = computed({
         </form>
 
         <!-- Claude Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.CLAUDE">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CLAUDE">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.claudeKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -192,10 +196,10 @@ const openrouterProvidersString = computed({
             <h4>{{ t('apiConnections.claudeModel') }}</h4>
             <select
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.claude"
+              :value="settingsStore.settings.api.selectedProviderModels.claude"
               @change="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.claude',
+                  'api.selectedProviderModels.claude',
                   ($event.target as HTMLSelectElement).value,
                 )
               "
@@ -208,7 +212,7 @@ const openrouterProvidersString = computed({
         </form>
 
         <!-- OpenRouter Form -->
-        <div v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.OPENROUTER">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.OPENROUTER">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.openrouterKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -224,10 +228,10 @@ const openrouterProvidersString = computed({
             <select
               v-show="hasOpenRouterGroupedModels"
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.openrouter"
+              :value="settingsStore.settings.api.selectedProviderModels.openrouter"
               @change="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.openrouter',
+                  'api.selectedProviderModels.openrouter',
                   ($event.target as HTMLSelectElement).value,
                 )
               "
@@ -242,10 +246,10 @@ const openrouterProvidersString = computed({
               type="text"
               class="text-pole"
               placeholder="google/gemini-pro-1.5"
-              :value="settingsStore.settings.api.selected_provider_models.openrouter"
+              :value="settingsStore.settings.api.selectedProviderModels.openrouter"
               @input="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.openrouter',
+                  'api.selectedProviderModels.openrouter',
                   ($event.target as HTMLInputElement).value,
                 )
               "
@@ -256,10 +260,10 @@ const openrouterProvidersString = computed({
             <label class="checkbox-label">
               <input
                 type="checkbox"
-                :checked="settingsStore.settings.api.provider_specific.openrouter.use_fallback"
+                :checked="settingsStore.settings.api.providerSpecific.openrouter.useFallback"
                 @change="
                   settingsStore.setSetting(
-                    'api.provider_specific.openrouter.use_fallback',
+                    'api.providerSpecific.openrouter.useFallback',
                     ($event.target as HTMLInputElement).checked,
                   )
                 "
@@ -269,10 +273,10 @@ const openrouterProvidersString = computed({
             <label class="checkbox-label">
               <input
                 type="checkbox"
-                :checked="settingsStore.settings.api.provider_specific.openrouter.allow_fallbacks"
+                :checked="settingsStore.settings.api.providerSpecific.openrouter.allowFallbacks"
                 @change="
                   settingsStore.setSetting(
-                    'api.provider_specific.openrouter.allow_fallbacks',
+                    'api.providerSpecific.openrouter.allowFallbacks',
                     ($event.target as HTMLInputElement).checked,
                   )
                 "
@@ -288,10 +292,10 @@ const openrouterProvidersString = computed({
               <div class="range-block-title">{{ t('apiConnections.openrouterMiddleout') }}</div>
               <select
                 class="text-pole"
-                :value="settingsStore.settings.api.provider_specific.openrouter.middleout"
+                :value="settingsStore.settings.api.providerSpecific.openrouter.middleout"
                 @change="
                   settingsStore.setSetting(
-                    'api.provider_specific.openrouter.middleout',
+                    'api.providerSpecific.openrouter.middleout',
                     ($event.target as HTMLSelectElement).value as any,
                   )
                 "
@@ -305,7 +309,7 @@ const openrouterProvidersString = computed({
         </div>
 
         <!-- MistralAI Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.MISTRALAI">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.MISTRALAI">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.mistralaiKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -317,10 +321,10 @@ const openrouterProvidersString = computed({
             <h4>{{ t('apiConnections.mistralaiModel') }}</h4>
             <select
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.mistralai"
+              :value="settingsStore.settings.api.selectedProviderModels.mistralai"
               @change="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.mistralai',
+                  'api.selectedProviderModels.mistralai',
                   ($event.target as HTMLSelectElement).value,
                 )
               "
@@ -332,7 +336,7 @@ const openrouterProvidersString = computed({
         </form>
 
         <!-- Groq Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.GROQ">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.GROQ">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.groqKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -344,12 +348,9 @@ const openrouterProvidersString = computed({
             <h4>{{ t('apiConnections.groqModel') }}</h4>
             <select
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.groq"
+              :value="settingsStore.settings.api.selectedProviderModels.groq"
               @change="
-                settingsStore.setSetting(
-                  'api.selected_provider_models.groq',
-                  ($event.target as HTMLSelectElement).value,
-                )
+                settingsStore.setSetting('api.selectedProviderModels.groq', ($event.target as HTMLSelectElement).value)
               "
             >
               <option value="llama3-70b-8192">llama3-70b-8192</option>
@@ -361,15 +362,15 @@ const openrouterProvidersString = computed({
         </form>
 
         <!-- Custom Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.CUSTOM">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CUSTOM">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.customUrl') }}</h4>
             <input
               type="text"
               class="text-pole"
-              :value="settingsStore.settings.api.provider_specific.custom.url"
+              :value="settingsStore.settings.api.providerSpecific.custom.url"
               @input="
-                settingsStore.setSetting('api.provider_specific.custom.url', ($event.target as HTMLInputElement).value)
+                settingsStore.setSetting('api.providerSpecific.custom.url', ($event.target as HTMLInputElement).value)
               "
             />
           </div>
@@ -378,12 +379,9 @@ const openrouterProvidersString = computed({
             <input
               type="text"
               class="text-pole"
-              :value="settingsStore.settings.api.selected_provider_models.custom"
+              :value="settingsStore.settings.api.selectedProviderModels.custom"
               @input="
-                settingsStore.setSetting(
-                  'api.selected_provider_models.custom',
-                  ($event.target as HTMLInputElement).value,
-                )
+                settingsStore.setSetting('api.selectedProviderModels.custom', ($event.target as HTMLInputElement).value)
               "
             />
           </div>
@@ -397,7 +395,7 @@ const openrouterProvidersString = computed({
         </form>
 
         <!-- Azure OpenAI Form -->
-        <form v-show="settingsStore.settings.api.chat_completion_source === chat_completion_sources.AZURE_OPENAI">
+        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.AZURE_OPENAI">
           <div class="api-connections-drawer__section">
             <h4>{{ t('apiConnections.azureKey') }}</h4>
             <div class="api-connections-drawer__input-group">
@@ -410,10 +408,10 @@ const openrouterProvidersString = computed({
             <input
               type="text"
               class="text-pole"
-              :value="settingsStore.settings.api.provider_specific.azure_openai.base_url"
+              :value="settingsStore.settings.api.providerSpecific.azure_openai.baseUrl"
               @input="
                 settingsStore.setSetting(
-                  'api.provider_specific.azure_openai.base_url',
+                  'api.providerSpecific.azure_openai.baseUrl',
                   ($event.target as HTMLInputElement).value,
                 )
               "
@@ -424,10 +422,10 @@ const openrouterProvidersString = computed({
             <input
               type="text"
               class="text-pole"
-              :value="settingsStore.settings.api.provider_specific.azure_openai.deployment_name"
+              :value="settingsStore.settings.api.providerSpecific.azure_openai.deploymentName"
               @input="
                 settingsStore.setSetting(
-                  'api.provider_specific.azure_openai.deployment_name',
+                  'api.providerSpecific.azure_openai.deploymentName',
                   ($event.target as HTMLInputElement).value,
                 )
               "
@@ -438,10 +436,10 @@ const openrouterProvidersString = computed({
             <input
               type="text"
               class="text-pole"
-              :value="settingsStore.settings.api.provider_specific.azure_openai.api_version"
+              :value="settingsStore.settings.api.providerSpecific.azure_openai.apiVersion"
               @input="
                 settingsStore.setSetting(
-                  'api.provider_specific.azure_openai.api_version',
+                  'api.providerSpecific.azure_openai.apiVersion',
                   ($event.target as HTMLInputElement).value,
                 )
               "
@@ -453,10 +451,10 @@ const openrouterProvidersString = computed({
               type="text"
               class="text-pole"
               placeholder="This is the model name inside your deployment"
-              :value="settingsStore.settings.api.selected_provider_models.azure_openai"
+              :value="settingsStore.settings.api.selectedProviderModels.azure_openai"
               @input="
                 settingsStore.setSetting(
-                  'api.selected_provider_models.azure_openai',
+                  'api.selectedProviderModels.azure_openai',
                   ($event.target as HTMLInputElement).value,
                 )
               "

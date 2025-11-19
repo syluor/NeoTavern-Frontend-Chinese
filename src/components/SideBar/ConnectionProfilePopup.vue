@@ -24,9 +24,9 @@ const includeModel = ref(true);
 const includeSampler = ref(true);
 
 const currentApi = computed(() => settingsStore.settings.api.main);
-const currentSource = computed(() => settingsStore.settings.api.chat_completion_source);
+const currentSource = computed(() => settingsStore.settings.api.chatCompletionSource);
 const currentModel = computed(() => apiStore.activeModel);
-const currentSampler = computed(() => settingsStore.settings.api.selected_sampler);
+const currentSampler = computed(() => settingsStore.settings.api.selectedSampler);
 
 const modelLabel = computed(() => {
   const source = currentSource.value;

@@ -29,23 +29,23 @@ export const useApiStore = defineStore('api', () => {
 
   // --- Connection Profiles ---
   const connectionProfiles = computed({
-    get: () => settingsStore.settings.api.connection_profiles,
-    set: (value) => settingsStore.setSetting('api.connection_profiles', value),
+    get: () => settingsStore.settings.api.connectionProfiles,
+    set: (value) => settingsStore.setSetting('api.connectionProfiles', value),
   });
 
   const selectedConnectionProfileName = computed({
-    get: () => settingsStore.settings.api.selected_connection_profile,
-    set: (value) => settingsStore.setSetting('api.selected_connection_profile', value),
+    get: () => settingsStore.settings.api.selectedConnectionProfile,
+    set: (value) => settingsStore.setSetting('api.selectedConnectionProfile', value),
   });
 
   const activeModel = computed(() => {
     const apiSettings = settingsStore.settings.api;
-    return apiSettings.selected_provider_models[apiSettings.chat_completion_source];
+    return apiSettings.selectedProviderModels[apiSettings.chatCompletionSource];
   });
 
   const groupedOpenRouterModels = computed<Record<string, ApiModel[]> | null>(() => {
     if (
-      settingsStore.settings.api.chat_completion_source !== chat_completion_sources.OPENROUTER ||
+      settingsStore.settings.api.chatCompletionSource !== chat_completion_sources.OPENROUTER ||
       modelList.value.length === 0
     ) {
       return null;
@@ -69,6 +69,13 @@ export const useApiStore = defineStore('api', () => {
     return vendors;
   });
 
+  async function initialize() {
+    await settingsStore.waitForSettings();
+
+    // Auto-connect on start
+    await connect();
+  }
+
   // When the user selects a different connection profile, apply its settings as a one-time action.
   watch(selectedConnectionProfileName, (profileName) => {
     if (settingsStore.settingsInitializing) return;
@@ -78,11 +85,11 @@ export const useApiStore = defineStore('api', () => {
       // Apply profile settings to the main settings state, only overriding defined fields.
       if (profile.api) settingsStore.settings.api.main = profile.api;
       if (profile.chat_completion_source)
-        settingsStore.settings.api.chat_completion_source = profile.chat_completion_source;
-      if (profile.sampler) settingsStore.settings.api.selected_sampler = profile.sampler;
+        settingsStore.settings.api.chatCompletionSource = profile.chat_completion_source;
+      if (profile.sampler) settingsStore.settings.api.selectedSampler = profile.sampler;
       if (profile.model) {
-        const source = profile.chat_completion_source ?? settingsStore.settings.api.chat_completion_source;
-        settingsStore.settings.api.selected_provider_models[source] = profile.model;
+        const source = profile.chat_completion_source ?? settingsStore.settings.api.chatCompletionSource;
+        settingsStore.settings.api.selectedProviderModels[source] = profile.model;
       }
       // After applying, reconnect to validate the new settings.
       connect();
@@ -91,7 +98,7 @@ export const useApiStore = defineStore('api', () => {
 
   // When the main API or source changes manually, try to reconnect
   watch(
-    () => [settingsStore.settings.api.main, settingsStore.settings.api.chat_completion_source],
+    () => [settingsStore.settings.api.main, settingsStore.settings.api.chatCompletionSource],
     ([newMainApi, newSource], [oldMainApi, oldSource]) => {
       if (settingsStore.settingsInitializing) return;
       // Only connect if the actual values have changed
@@ -103,7 +110,7 @@ export const useApiStore = defineStore('api', () => {
 
   // When the user selects a different preset, apply its settings
   watch(
-    () => settingsStore.settings.api.selected_sampler,
+    () => settingsStore.settings.api.selectedSampler,
     (newPresetName) => {
       if (settingsStore.settingsInitializing || !newPresetName) return;
 
@@ -131,7 +138,11 @@ export const useApiStore = defineStore('api', () => {
     try {
       // TODO: Implement secret management. For now, we pass the key directly.
       // TODO: Implement reverse proxy confirmation popup.
-      const response = await fetchChatCompletionStatus(apiSettings);
+      const response = await fetchChatCompletionStatus({
+        chat_completion_source: apiSettings.chatCompletionSource,
+        reverse_proxy: apiSettings.reverseProxy,
+        proxy_password: apiSettings.proxyPassword,
+      });
 
       if (response.error) {
         throw new Error(response.error);
@@ -141,21 +152,21 @@ export const useApiStore = defineStore('api', () => {
         modelList.value = response.data;
 
         // Check if current model selection is still valid
-        const source = apiSettings.chat_completion_source;
+        const source = apiSettings.chatCompletionSource;
         const availableModels = modelList.value.map((m) => m.id);
 
         // TODO: Add dynamic models for other providers
         if (source === chat_completion_sources.OPENAI) {
-          const openaiModel = apiSettings.selected_provider_models.openai;
+          const openaiModel = apiSettings.selectedProviderModels.openai;
           if (!availableModels.includes(openaiModel ?? '')) {
-            apiSettings.selected_provider_models.openai = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
+            apiSettings.selectedProviderModels.openai = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
           }
         } else if (source === chat_completion_sources.OPENROUTER) {
           if (
-            apiSettings.selected_provider_models.openrouter !== 'OR_Website' &&
-            !availableModels.includes(apiSettings.selected_provider_models.openrouter ?? '')
+            apiSettings.selectedProviderModels.openrouter !== 'OR_Website' &&
+            !availableModels.includes(apiSettings.selectedProviderModels.openrouter ?? '')
           ) {
-            apiSettings.selected_provider_models.openrouter =
+            apiSettings.selectedProviderModels.openrouter =
               availableModels.length > 0 ? availableModels[0] : 'OR_Website';
           }
         }
@@ -189,7 +200,7 @@ export const useApiStore = defineStore('api', () => {
 
       await saveExperimentalPreset(name, presetData);
       await loadPresetsForApi();
-      settingsStore.settings.api.selected_sampler = name;
+      settingsStore.settings.api.selectedSampler = name;
       toast.success(`Preset "${name}" saved.`);
     } catch (error: unknown) {
       toast.error(`Failed to save preset "${name}".`);
@@ -227,7 +238,7 @@ export const useApiStore = defineStore('api', () => {
 
         toast.success(`Preset renamed to "${newName}".`);
         await loadPresetsForApi();
-        settingsStore.settings.api.selected_sampler = newName;
+        settingsStore.settings.api.selectedSampler = newName;
       } catch (error) {
         toast.error('Failed to rename preset.');
         console.error(error);
@@ -250,8 +261,8 @@ export const useApiStore = defineStore('api', () => {
       try {
         await apiDeletePreset(name);
         toast.success(`Preset "${name}" deleted.`);
-        if (settingsStore.settings.api.selected_sampler === name) {
-          settingsStore.settings.api.selected_sampler = 'Default';
+        if (settingsStore.settings.api.selectedSampler === name) {
+          settingsStore.settings.api.selectedSampler = 'Default';
         }
         await loadPresetsForApi();
       } catch (error: unknown) {
@@ -277,7 +288,7 @@ export const useApiStore = defineStore('api', () => {
         await saveExperimentalPreset(name, presetData);
         toast.success(`Preset "${name}" imported.`);
         await loadPresetsForApi();
-        settingsStore.settings.api.selected_sampler = name;
+        settingsStore.settings.api.selectedSampler = name;
       } catch (error) {
         toast.error(t('aiConfig.presets.errors.importInvalid'));
         console.error(error);
@@ -421,6 +432,7 @@ export const useApiStore = defineStore('api', () => {
   }
 
   return {
+    initialize,
     onlineStatus,
     isConnecting,
     connect,

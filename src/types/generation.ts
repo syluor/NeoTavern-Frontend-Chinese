@@ -68,7 +68,7 @@ export type BuildChatCompletionPayloadOptions = {
   messages: ApiChatMessage[];
   model: string;
   source: ChatCompletionSource;
-  providerSpecific: Settings['api']['provider_specific'];
+  providerSpecific: Settings['api']['providerSpecific'];
   playerName?: string;
   characterName?: string;
   modelList?: ApiModel[];
@@ -84,7 +84,7 @@ export type GenerationContext = {
     sampler: SamplerSettings;
     source: ChatCompletionSource;
     model: string;
-    providerSpecific: Settings['api']['provider_specific'];
+    providerSpecific: Settings['api']['providerSpecific'];
   };
   // Other relevant data available to the interceptor for read-only purposes or modification
   playerName: string;

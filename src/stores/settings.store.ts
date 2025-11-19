@@ -45,29 +45,29 @@ function createDefaultSettings(): Settings {
   // Manually set complex default objects that aren't in settingsDefinition
   defaultSettings.api = {
     main: 'openai',
-    chat_completion_source: 'openai',
-    reverse_proxy: '',
-    proxy_password: '',
-    selected_sampler: 'Default',
+    chatCompletionSource: 'openai',
+    reverseProxy: '',
+    proxyPassword: '',
+    selectedSampler: 'Default',
     samplers: defaultSamplerSettings,
-    connection_profiles: [],
-    selected_connection_profile: undefined,
-    selected_provider_models: { ...defaultProviderModels },
+    connectionProfiles: [],
+    selectedConnectionProfile: undefined,
+    selectedProviderModels: { ...defaultProviderModels },
     tokenizer: TokenizerType.AUTO,
-    provider_specific: {
+    providerSpecific: {
       openrouter: {
-        allow_fallbacks: true,
+        allowFallbacks: true,
         middleout: OpenrouterMiddleoutType.ON,
-        use_fallback: false,
+        useFallback: false,
         providers: [],
       },
       custom: {
         url: '',
       },
       azure_openai: {
-        base_url: '',
-        deployment_name: '',
-        api_version: '',
+        baseUrl: '',
+        deploymentName: '',
+        apiVersion: '',
       },
     },
   };
@@ -167,11 +167,11 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     },
     api: {
       main: legacy.main_api || 'openai',
-      chat_completion_source: oai.chat_completion_source,
-      reverse_proxy: oai.reverse_proxy,
-      proxy_password: oai.proxy_password,
-      selected_sampler: oai.preset_settings_openai,
-      selected_provider_models: {
+      chatCompletionSource: oai.chat_completion_source,
+      reverseProxy: oai.reverse_proxy,
+      proxyPassword: oai.proxy_password,
+      selectedSampler: oai.preset_settings_openai,
+      selectedProviderModels: {
         openai: oai.openai_model || defaultProviderModels.openai,
         claude: oai.claude_model || defaultProviderModels.claude,
         openrouter: oai.openrouter_model || defaultProviderModels.openrouter,
@@ -195,20 +195,20 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
         xai: oai.xai_model || defaultProviderModels.xai,
         zai: oai.zai_model || defaultProviderModels.zai,
       },
-      provider_specific: {
+      providerSpecific: {
         openrouter: {
-          allow_fallbacks: oai.openrouter_allow_fallbacks ?? true,
+          allowFallbacks: oai.openrouter_allow_fallbacks ?? true,
           middleout: oai.openrouter_middleout ? OpenrouterMiddleoutType.ON : OpenrouterMiddleoutType.OFF,
-          use_fallback: oai.openrouter_use_fallback ?? false,
+          useFallback: oai.openrouter_use_fallback ?? false,
           providers: oai.openrouter_providers ?? [],
         },
         custom: {
           url: oai.custom_url ?? '',
         },
         azure_openai: {
-          base_url: oai.azure_base_url ?? '',
-          deployment_name: oai.azure_deployment_name ?? '',
-          api_version: oai.azure_api_version ?? '',
+          baseUrl: oai.azure_base_url ?? '',
+          deploymentName: oai.azure_deployment_name ?? '',
+          apiVersion: oai.azure_api_version ?? '',
         },
       },
       samplers: {
@@ -241,8 +241,8 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
         },
         reasoning_effort: oai.reasoning_effort ?? defaultSamplerSettings.reasoning_effort,
       },
-      connection_profiles: migratedConnectionProfiles,
-      selected_connection_profile: legacy.extension_settings?.connectionManager?.selected,
+      connectionProfiles: migratedConnectionProfiles,
+      selectedConnectionProfile: legacy.extension_settings?.connectionManager?.selected,
       tokenizer: TokenizerType.AUTO,
     },
     worldInfo: legacy.world_info_settings,
@@ -330,7 +330,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
       if (legacySettings.v2Experimental) {
         // If new structure exists, use it but merge with defaults to add any newly defined settings.
-        experimentalSettings = defaultsDeep({}, legacySettings.v2Experimental, defaultSettings);
+        experimentalSettings = defaultsDeep({}, defaultSettings, legacySettings.v2Experimental);
       } else {
         // If not, migrate from legacy structure.
         experimentalSettings = migrateLegacyToExperimental(userSettingsResponse);
@@ -356,8 +356,24 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  async function waitForSettings() {
+    if (!settingsInitializing.value) return;
+    await new Promise<void>((resolve) => {
+      const stop = watch(
+        settingsInitializing,
+        (val) => {
+          if (!val) {
+            stop();
+            resolve();
+          }
+        },
+        { immediate: true },
+      );
+      initializeSettings();
+    });
+  }
+
   const saveSettingsDebounced = debounce(async () => {
-    // TODO: Should we remove our debounce and use lodash's debounce directly?
     if (settingsInitializing.value || !fullLegacySettings.value) return;
 
     const settingsToSave: LegacySettings = { ...fullLegacySettings.value };
@@ -372,6 +388,7 @@ export const useSettingsStore = defineStore('settings', () => {
     shouldSendOnEnter,
     saveSettingsDebounced,
     initializeSettings,
+    waitForSettings,
     settingsInitializing,
     getSetting,
     setSetting,

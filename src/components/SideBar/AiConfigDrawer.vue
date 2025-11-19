@@ -27,8 +27,8 @@ function checkConditions(conditions?: AiConfigCondition): boolean {
   if (conditions.source) {
     const sources = Array.isArray(conditions.source) ? conditions.source : [conditions.source];
     if (
-      !settingsStore.settings.api.chat_completion_source ||
-      !sources.includes(settingsStore.settings.api.chat_completion_source)
+      !settingsStore.settings.api.chatCompletionSource ||
+      !sources.includes(settingsStore.settings.api.chatCompletionSource)
     )
       return false;
   }
@@ -48,7 +48,7 @@ async function handleNewPreset() {
   const { result, value } = await popupStore.show({
     title: t('aiConfig.presets.newName'),
     type: POPUP_TYPE.INPUT,
-    inputValue: settingsStore.settings.api.selected_sampler || 'New Preset',
+    inputValue: settingsStore.settings.api.selectedSampler || 'New Preset',
   });
 
   if (result === 1 && value) {

@@ -711,16 +711,16 @@
     }
   },
   "settings": {
-    "power_user": {
-      "spoiler_free_mode": {
+    "powerUser": {
+      "spoilerFreeMode": {
         "label": "Spoiler Free Mode",
         "description": "Hide character definitions from the editor panel behind a spoiler button."
       },
-      "never_resize_avatars": {
+      "neverResizeAvatars": {
         "label": "Never resize avatars",
         "description": "Avoid cropping and resizing imported character images. Disables the upload cropping popup."
       },
-      "send_on_enter": {
+      "sendOnEnter": {
         "label": "Enter to Send",
         "description": "Determines if the Enter key sends a message.",
         "options": {
@@ -729,19 +729,19 @@
           "enabled": "Enabled"
         }
       },
-      "world_import_dialog": {
+      "worldImportDialog": {
         "label": "Lorebook Import Dialog",
         "description": "Ask to import World Info for new characters. If unchecked, a brief message will be shown instead."
       },
-      "confirm_message_delete": {
+      "confirmMessageDelete": {
         "label": "Confirm Message Deletion",
         "description": "Show a confirmation dialog before deleting a chat message."
       },
-      "zoomed_avatar_magnification": {
+      "zoomedAvatarMagnification": {
         "label": "Magnify Zoomed Avatars",
         "description": "Enable magnification effect when hovering over a zoomed-in avatar."
       },
-      "tag_import_setting": {
+      "tagImportSetting": {
         "label": "Tag Import Behavior",
         "description": "How to handle tags when importing characters.",
         "options": {
@@ -751,15 +751,15 @@
           "ask": "Ask for each character"
         }
       },
-      "persona_show_notifications": {
+      "personaShowNotifications": {
         "label": "Show Persona Notifications",
         "description": "Display a notification when the active persona is switched."
       },
-      "persona_allow_multi_connections": {
+      "personaAllowMultiConnections": {
         "label": "Allow Multiple Persona Connections",
         "description": "Permit a single character to be connected to multiple personas."
       },
-      "persona_auto_lock": {
+      "personaAutoLock": {
         "label": "Auto-lock Persona to Chat",
         "description": "Automatically lock a chosen persona to a chat when it's selected."
       }
@@ -776,7 +776,7 @@
     },
     "ui": {
       "chat": {
-        "reasoning_collapsed": {
+        "reasoningCollapsed": {
           "label": "Collapse Reasoning by Default",
           "description": "If enabled, the reasoning (thinking) block on messages will be collapsed by default."
         }
@@ -784,20 +784,20 @@
     }
   },
   "extensionsBuiltin": {
-    "chat_translation": {
-      "connection_profile": "Connection Profile",
-      "connection_profile_hint": "Select the API connection profile to use for generating translations.",
-      "source_lang": "Source Language",
-      "target_lang": "Target Language",
-      "auto_mode": {
+    "chatTranslation": {
+      "connectionProfile": "Connection Profile",
+      "connectionProfileHint": "Select the API connection profile to use for generating translations.",
+      "sourceLang": "Source Language",
+      "targetLang": "Target Language",
+      "autoMode": {
         "label": "Auto-Translate Mode",
         "none": "None (Manual)",
         "responses": "Responses Only (Bot)",
         "inputs": "Inputs Only (User)",
         "both": "All Messages"
       },
-      "prompt_template": "Translation Prompt Template",
-      "prompt_hint": "Customize how the LLM translates text. Supports Handlebars variables: {'{{prompt}}'}, {'{{sourceLang}}'}, {'{{targetLang}}'}, {'{{name}}'}."
+      "promptTemplate": "Translation Prompt Template",
+      "promptHint": "Customize how the LLM translates text. Supports Handlebars variables: {'{{prompt}}'}, {'{{sourceLang}}'}, {'{{targetLang}}'}, {'{{name}}'}."
     }
   }
 }

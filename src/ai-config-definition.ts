@@ -6,7 +6,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
     items: [
       {
         widget: 'preset-manager',
-        id: 'api.selected_sampler',
+        id: 'api.selectedSampler',
         label: 'aiConfig.presets.chatCompletion.label',
       },
     ],

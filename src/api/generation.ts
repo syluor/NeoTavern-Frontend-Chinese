@@ -123,9 +123,9 @@ export function buildChatCompletionPayload({
       payload.assistant_prefill = providers.claude?.assistant_prefill;
       break;
     case chat_completion_sources.OPENROUTER:
-      payload.use_fallback = providerSpecific.openrouter.use_fallback;
+      payload.use_fallback = providerSpecific.openrouter.useFallback;
       payload.provider = providerSpecific.openrouter?.providers;
-      payload.allow_fallbacks = providerSpecific.openrouter.allow_fallbacks;
+      payload.allow_fallbacks = providerSpecific.openrouter.allowFallbacks;
       payload.middleout = providerSpecific.openrouter.middleout;
       break;
     case chat_completion_sources.MAKERSUITE:

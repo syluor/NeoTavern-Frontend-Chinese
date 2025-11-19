@@ -44,6 +44,7 @@ export const usePersonaStore = defineStore('persona', () => {
   }
 
   async function initialize() {
+    await settingsStore.waitForSettings();
     await refreshPersonas();
     const defaultPersonaId = settingsStore.settings.persona.defaultPersonaId;
     if (defaultPersonaId && personas.value.some((p) => p.avatarId === defaultPersonaId)) {

@@ -43,45 +43,45 @@ function resetPrompt() {
 <template>
   <div class="translation-settings">
     <div class="setting-item">
-      <label>{{ t('extensionsBuiltin.chat_translation.connection_profile') }}</label>
+      <label>{{ t('extensionsBuiltin.chatTranslation.connectionProfile') }}</label>
       <ConnectionProfileSelector v-model="settings.connectionProfile" />
-      <small>{{ t('extensionsBuiltin.chat_translation.connection_profile_hint') }}</small>
+      <small>{{ t('extensionsBuiltin.chatTranslation.connectionProfileHint') }}</small>
     </div>
 
     <div class="setting-row">
       <div class="setting-item">
-        <label>{{ t('extensionsBuiltin.chat_translation.source_lang') }}</label>
+        <label>{{ t('extensionsBuiltin.chatTranslation.sourceLang') }}</label>
         <input v-model="settings.sourceLang" type="text" class="text-pole" />
       </div>
       <div class="setting-item">
-        <label>{{ t('extensionsBuiltin.chat_translation.target_lang') }}</label>
+        <label>{{ t('extensionsBuiltin.chatTranslation.targetLang') }}</label>
         <input v-model="settings.targetLang" type="text" class="text-pole" />
       </div>
     </div>
 
     <div class="setting-item">
-      <label>{{ t('extensionsBuiltin.chat_translation.auto_mode.label') }}</label>
+      <label>{{ t('extensionsBuiltin.chatTranslation.autoMode.label') }}</label>
       <select v-model="settings.autoMode" class="text-pole">
-        <option :value="AutoTranslateMode.NONE">{{ t('extensionsBuiltin.chat_translation.auto_mode.none') }}</option>
+        <option :value="AutoTranslateMode.NONE">{{ t('extensionsBuiltin.chatTranslation.autoMode.none') }}</option>
         <option :value="AutoTranslateMode.RESPONSES">
-          {{ t('extensionsBuiltin.chat_translation.auto_mode.responses') }}
+          {{ t('extensionsBuiltin.chatTranslation.autoMode.responses') }}
         </option>
         <option :value="AutoTranslateMode.INPUTS">
-          {{ t('extensionsBuiltin.chat_translation.auto_mode.inputs') }}
+          {{ t('extensionsBuiltin.chatTranslation.autoMode.inputs') }}
         </option>
-        <option :value="AutoTranslateMode.BOTH">{{ t('extensionsBuiltin.chat_translation.auto_mode.both') }}</option>
+        <option :value="AutoTranslateMode.BOTH">{{ t('extensionsBuiltin.chatTranslation.autoMode.both') }}</option>
       </select>
     </div>
 
     <div class="setting-item">
       <div class="header-row">
-        <label>{{ t('extensionsBuiltin.chat_translation.prompt_template') }}</label>
+        <label>{{ t('extensionsBuiltin.chatTranslation.promptTemplate') }}</label>
         <button class="menu-button" @click="resetPrompt">
           <i class="fa-solid fa-rotate-left"></i> {{ t('common.reset') }}
         </button>
       </div>
       <textarea v-model="settings.prompt" class="text-pole prompt-area" rows="10"></textarea>
-      <small>{{ t('extensionsBuiltin.chat_translation.prompt_hint') }}</small>
+      <small>{{ t('extensionsBuiltin.chatTranslation.promptHint') }}</small>
     </div>
   </div>
 </template>

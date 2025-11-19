@@ -35,7 +35,6 @@ import { get, set, defaultsDeep } from 'lodash-es';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 
-
 const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
 

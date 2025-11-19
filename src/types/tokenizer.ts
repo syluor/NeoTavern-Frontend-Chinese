@@ -1,3 +1,3 @@
 export interface Tokenizer {
-    getTokenCount(text: string): Promise<number>;
+  getTokenCount(text: string): Promise<number>;
 }

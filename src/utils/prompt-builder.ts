@@ -1,4 +1,12 @@
-import type { Character, ChatMessage, Persona, SamplerSettings, ApiChatMessage, PromptBuilderOptions, Tokenizer } from '../types';
+import type {
+  Character,
+  ChatMessage,
+  Persona,
+  SamplerSettings,
+  ApiChatMessage,
+  PromptBuilderOptions,
+  Tokenizer,
+} from '../types';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
 import { defaultSamplerSettings } from '../constants';
@@ -17,7 +25,7 @@ export class PromptBuilder {
   private persona: Persona;
   private maxContext: number;
   private tokenizer: Tokenizer;
-    
+
   constructor({ character, chatHistory, samplerSettings, persona, tokenizer }: PromptBuilderOptions) {
     this.character = character;
     this.chatHistory = chatHistory;

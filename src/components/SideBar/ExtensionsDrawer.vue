@@ -38,7 +38,7 @@ onMounted(() => {
 <template>
   <div id="extensions-panel" class="extensions-panel" :class="{ 'is-collapsed': isBrowserCollapsed }">
     <!-- Left Pane: Extension Browser -->
-    <div ref="browserPane" id="extensions-browser" class="extensions-panel__browser">
+    <div id="extensions-browser" ref="browserPane" class="extensions-panel__browser">
       <div class="extensions-panel__browser-header">
         <div style="display: flex; gap: 5px">
           <div class="menu-button" :title="t('extensions.manage')">
@@ -48,11 +48,11 @@ onMounted(() => {
             <i class="fa-solid fa-cloud-arrow-down"></i>
           </div>
           <label class="checkbox-label" style="margin-left: auto; font-size: 0.9em; cursor: pointer">
-            <input type="checkbox" v-model="notifyOnUpdates" />
+            <input v-model="notifyOnUpdates" type="checkbox" />
             <span>{{ t('extensions.notifyUpdates') }}</span>
           </label>
         </div>
-        <input class="text-pole" type="search" :placeholder="t('common.search')" v-model="extensionStore.searchTerm" />
+        <input v-model="extensionStore.searchTerm" class="text-pole" type="search" :placeholder="t('common.search')" />
       </div>
 
       <div class="extensions-panel__list">

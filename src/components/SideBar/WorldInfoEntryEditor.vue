@@ -58,15 +58,15 @@ const entryState = computed({
         <i
           class="fa-solid"
           :class="modelValue?.disable ? 'fa-toggle-off' : 'fa-toggle-on'"
-          @click="updateValue('disable', !modelValue?.disable)"
           :title="t('worldInfo.entry.toggle')"
+          @click="updateValue('disable', !modelValue?.disable)"
         ></i>
         <textarea
           class="text-pole"
           rows="1"
           :value="modelValue?.comment"
-          @input="updateValue('comment', ($event.target as HTMLTextAreaElement).value)"
           :placeholder="t('worldInfo.entry.titlePlaceholder')"
+          @input="updateValue('comment', ($event.target as HTMLTextAreaElement).value)"
         ></textarea>
       </div>
       <div class="editor-header__actions">
@@ -85,7 +85,7 @@ const entryState = computed({
     </div>
     <form class="world-entry-editor__form">
       <div class="world-entry-editor__grid">
-        <select class="text-pole" :title="t('worldInfo.entry.entryState')" v-model="entryState">
+        <select v-model="entryState" class="text-pole" :title="t('worldInfo.entry.entryState')">
           <option value="constant">{{ t('worldInfo.entry.entryStates.constant') }}</option>
           <option value="normal">{{ t('worldInfo.entry.entryStates.normal') }}</option>
           <option value="vectorized">{{ t('worldInfo.entry.entryStates.vectorized') }}</option>
@@ -126,9 +126,9 @@ const entryState = computed({
           class="text-pole"
           :title="t('worldInfo.entry.trigger')"
           :value="modelValue?.probability"
-          @input="updateValue('probability', Number(($event.target as HTMLInputElement).value))"
           min="0"
           max="100"
+          @input="updateValue('probability', Number(($event.target as HTMLInputElement).value))"
         />
       </div>
 
@@ -139,13 +139,13 @@ const entryState = computed({
             class="text-pole"
             rows="1"
             :value="modelValue?.key.join(', ')"
+            :placeholder="t('worldInfo.entry.keywordsPlaceholder')"
             @input="
               updateValue(
                 'key',
                 ($event.target as HTMLTextAreaElement).value.split(',').map((k) => k.trim()),
               )
             "
-            :placeholder="t('worldInfo.entry.keywordsPlaceholder')"
           ></textarea>
         </div>
         <div class="control-group">
@@ -167,13 +167,13 @@ const entryState = computed({
             class="text-pole"
             rows="1"
             :value="modelValue?.keysecondary.join(', ')"
+            :placeholder="t('worldInfo.entry.filterPlaceholder')"
             @input="
               updateValue(
                 'keysecondary',
                 ($event.target as HTMLTextAreaElement).value.split(',').map((k) => k.trim()),
               )
             "
-            :placeholder="t('worldInfo.entry.filterPlaceholder')"
           ></textarea>
         </div>
       </div>
@@ -187,8 +187,8 @@ const entryState = computed({
           class="text-pole"
           rows="8"
           :value="modelValue?.content"
-          @input="updateValue('content', ($event.target as HTMLTextAreaElement).value)"
           :placeholder="t('worldInfo.entry.contentPlaceholder')"
+          @input="updateValue('content', ($event.target as HTMLTextAreaElement).value)"
         ></textarea>
       </div>
 

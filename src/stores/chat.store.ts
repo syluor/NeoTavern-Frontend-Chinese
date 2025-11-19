@@ -241,7 +241,7 @@ export const useChatStore = defineStore('chat', () => {
       isGenerating.value = true;
       const genStarted = new Date().toISOString();
       let lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
-      let chatHistoryForPrompt = [...chat.value];
+      const chatHistoryForPrompt = [...chat.value];
 
       if (mode === GenerationMode.REGENERATE) {
         if (lastMessage && !lastMessage.is_user) {

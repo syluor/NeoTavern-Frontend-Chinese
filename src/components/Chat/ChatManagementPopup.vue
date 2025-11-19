@@ -129,7 +129,7 @@ async function deleteChat(chatFile: string) {
 </script>
 
 <template>
-  <dialog ref="dialog" id="chat-management-popup" class="popup wide" @cancel="close">
+  <dialog id="chat-management-popup" ref="dialog" class="popup wide" @cancel="close">
     <div class="popup-body">
       <h3>
         {{ t('chatManagement.title', { characterName: characterStore.activeCharacterName }) }}
@@ -150,19 +150,19 @@ async function deleteChat(chatFile: string) {
               <td class="chat-file-actions">
                 <button
                   class="menu-button"
-                  @click="selectChat(file)"
                   :disabled="chatStore.activeChatFile === file"
                   :title="t('chatManagement.actions.select')"
+                  @click="selectChat(file)"
                 >
                   <i class="fa-solid fa-check"></i>
                 </button>
-                <button class="menu-button" @click="renameChat(file)" :title="t('chatManagement.actions.rename')">
+                <button class="menu-button" :title="t('chatManagement.actions.rename')" @click="renameChat(file)">
                   <i class="fa-solid fa-pencil"></i>
                 </button>
                 <button
                   class="menu-button menu-button--danger"
-                  @click="deleteChat(file)"
                   :title="t('chatManagement.actions.delete')"
+                  @click="deleteChat(file)"
                 >
                   <i class="fa-solid fa-trash-can"></i>
                 </button>

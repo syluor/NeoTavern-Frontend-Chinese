@@ -340,9 +340,9 @@ const displayAvatarUrl = computed(() => {
               class="character-edit-form__avatar-img"
             />
             <input
+              id="add_avatar_button"
               hidden
               type="file"
-              id="add_avatar_button"
               name="avatar"
               accept="image/*"
               @change="handleAvatarFileChange"
@@ -352,11 +352,11 @@ const displayAvatarUrl = computed(() => {
         <div class="character-edit-form__controls">
           <!-- Creation Controls -->
           <div v-show="isCreating" class="character-edit-form__buttons">
-            <button class="menu-button menu-button--confirm" @click="handleCreate" :disabled="isSubmitting">
+            <button class="menu-button menu-button--confirm" :disabled="isSubmitting" @click="handleCreate">
               <i v-show="isSubmitting" class="fa-solid fa-spinner fa-spin"></i>
               {{ t('common.save') }}
             </button>
-            <button class="menu-button" @click="characterStore.cancelCreating" :disabled="isSubmitting">
+            <button class="menu-button" :disabled="isSubmitting" @click="characterStore.cancelCreating">
               {{ t('common.cancel') }}
             </button>
           </div>
@@ -364,10 +364,10 @@ const displayAvatarUrl = computed(() => {
           <!-- Existing Character Controls -->
           <div v-show="!isCreating" class="character-edit-form__buttons">
             <div
-              @click="toggleFavorite"
               class="menu-button fa-solid fa-star"
               :class="{ 'is-favorite': formData.fav }"
               :title="t('characterEditor.favorite')"
+              @click="toggleFavorite"
             ></div>
             <div class="menu-button fa-solid fa-globe" :title="t('characterEditor.lore')"></div>
             <div class="menu-button fa-solid fa-passport" :title="t('characterEditor.chatLore')"></div>
@@ -463,8 +463,8 @@ const displayAvatarUrl = computed(() => {
             class="text-pole"
             rows="12"
             :value="formData.description"
-            @input="updateValue('description', ($event.target as HTMLTextAreaElement).value)"
             :placeholder="t('characterEditor.descriptionPlaceholder')"
+            @input="updateValue('description', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['description'] || 0 }}</span>
@@ -485,8 +485,8 @@ const displayAvatarUrl = computed(() => {
             class="text-pole"
             rows="10"
             :value="formData.first_mes"
-            @input="updateValue('first_mes', ($event.target as HTMLTextAreaElement).value)"
             :placeholder="t('characterEditor.firstMessagePlaceholder')"
+            @input="updateValue('first_mes', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['first_mes'] || 0 }}</span>
@@ -504,10 +504,10 @@ const displayAvatarUrl = computed(() => {
           </label>
           <textarea
             :value="formData.personality"
-            @input="updateValue('personality', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="4"
             :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
+            @input="updateValue('personality', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
@@ -524,10 +524,10 @@ const displayAvatarUrl = computed(() => {
           </label>
           <textarea
             :value="formData.scenario"
-            @input="updateValue('scenario', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="4"
             :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
+            @input="updateValue('scenario', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
@@ -546,10 +546,10 @@ const displayAvatarUrl = computed(() => {
             <!-- @vue-ignore -->
             <textarea
               :value="formData.data.depth_prompt?.prompt"
-              @input="updateValue('data.depth_prompt.prompt', ($event.target as HTMLTextAreaElement).value)"
               class="text-pole"
               rows="5"
               :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
+              @input="updateValue('data.depth_prompt.prompt', ($event.target as HTMLTextAreaElement).value)"
             ></textarea>
           </div>
           <div class="character-note__controls">
@@ -557,18 +557,18 @@ const displayAvatarUrl = computed(() => {
             <!-- @vue-ignore -->
             <input
               :value="formData.data.depth_prompt?.depth"
-              @input="updateValue('data.depth_prompt.depth', ($event.target as HTMLInputElement).valueAsNumber)"
               type="number"
               min="0"
               max="9999"
               class="text-pole"
+              @input="updateValue('data.depth_prompt.depth', ($event.target as HTMLInputElement).valueAsNumber)"
             />
             <label>{{ t('characterEditor.advanced.role') }}</label>
             <!-- @vue-ignore -->
             <select
               :value="formData.data.depth_prompt?.role"
-              @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
               class="text-pole"
+              @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
             >
               <option value="system">{{ t('characterEditor.advanced.roles.system') }}</option>
               <option value="user">{{ t('characterEditor.advanced.roles.user') }}</option>
@@ -581,11 +581,11 @@ const displayAvatarUrl = computed(() => {
           <small>{{ t('characterEditor.advanced.talkativenessHint') }}</small>
           <input
             :value="formData.talkativeness"
-            @input="updateValue('talkativeness', ($event.target as HTMLInputElement).valueAsNumber)"
             type="range"
             min="0"
             max="1"
             step="0.05"
+            @input="updateValue('talkativeness', ($event.target as HTMLInputElement).valueAsNumber)"
           />
           <div class="slider-hint">
             <span>{{ t('characterEditor.advanced.talkativenessShy') }}</span>
@@ -606,10 +606,10 @@ const displayAvatarUrl = computed(() => {
           <small>{{ t('characterEditor.advanced.dialogueExamplesHint') }}</small>
           <textarea
             :value="formData.mes_example"
-            @input="updateValue('mes_example', ($event.target as HTMLTextAreaElement).value)"
             class="text-pole"
             rows="6"
             :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
+            @input="updateValue('mes_example', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
@@ -650,10 +650,10 @@ const displayAvatarUrl = computed(() => {
                   </label>
                   <textarea
                     :value="formData.data.system_prompt"
-                    @input="updateValue('data.system_prompt', ($event.target as HTMLTextAreaElement).value)"
                     class="text-pole"
                     rows="3"
                     :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
+                    @input="updateValue('data.system_prompt', ($event.target as HTMLTextAreaElement).value)"
                   ></textarea>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
@@ -675,10 +675,10 @@ const displayAvatarUrl = computed(() => {
                   </label>
                   <textarea
                     :value="formData.data.post_history_instructions"
-                    @input="updateValue('data.post_history_instructions', ($event.target as HTMLTextAreaElement).value)"
                     class="text-pole"
                     rows="3"
                     :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
+                    @input="updateValue('data.post_history_instructions', ($event.target as HTMLTextAreaElement).value)"
                   ></textarea>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
@@ -717,20 +717,20 @@ const displayAvatarUrl = computed(() => {
                     <label>{{ t('characterEditor.advanced.createdBy') }}</label>
                     <textarea
                       :value="formData.data.creator"
-                      @input="updateValue('data.creator', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="2"
                       :placeholder="t('characterEditor.advanced.createdByPlaceholder')"
+                      @input="updateValue('data.creator', ($event.target as HTMLTextAreaElement).value)"
                     ></textarea>
                   </div>
                   <div class="form-column">
                     <label>{{ t('characterEditor.advanced.characterVersion') }}</label>
                     <textarea
                       :value="formData.data.character_version"
-                      @input="updateValue('data.character_version', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="2"
                       :placeholder="t('characterEditor.advanced.characterVersionPlaceholder')"
+                      @input="updateValue('data.character_version', ($event.target as HTMLTextAreaElement).value)"
                     ></textarea>
                   </div>
                 </div>
@@ -746,10 +746,10 @@ const displayAvatarUrl = computed(() => {
                     </label>
                     <textarea
                       :value="formData.data.creator_notes"
-                      @input="updateValue('data.creator_notes', ($event.target as HTMLTextAreaElement).value)"
                       class="text-pole"
                       rows="4"
                       :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
+                      @input="updateValue('data.creator_notes', ($event.target as HTMLTextAreaElement).value)"
                     ></textarea>
                   </div>
                   <div class="form-column">
@@ -774,7 +774,7 @@ const displayAvatarUrl = computed(() => {
       :visible="isEditorPopupVisible"
       :title="editorPopupTitle"
       :type="POPUP_TYPE.INPUT"
-      :inputValue="editorPopupValue"
+      :input-value="editorPopupValue"
       :options="editorPopupOptions"
       @submit="handleEditorSubmit"
       @close="isEditorPopupVisible = false"

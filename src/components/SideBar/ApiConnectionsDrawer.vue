@@ -282,7 +282,7 @@ const openrouterProvidersString = computed({
             <!-- TODO: Provider list -->
             <div class="range-block">
               <div class="range-block-title">{{ t('apiConnections.openrouterFallbackProviders') }}</div>
-              <input type="text" class="text-pole" v-model="openrouterProvidersString" />
+              <input v-model="openrouterProvidersString" type="text" class="text-pole" />
             </div>
             <div class="range-block">
               <div class="range-block-title">{{ t('apiConnections.openrouterMiddleout') }}</div>
@@ -497,10 +497,10 @@ const openrouterProvidersString = computed({
         <div class="api-connections-drawer__section">
           <div class="api-connections-drawer__actions">
             <button
-              @click.prevent="apiStore.connect"
               class="menu-button"
               :disabled="apiStore.isConnecting"
               :class="{ disabled: apiStore.isConnecting }"
+              @click.prevent="apiStore.connect"
             >
               <i v-show="apiStore.isConnecting" class="fa-solid fa-spinner fa-spin"></i>
               <span v-show="!apiStore.isConnecting">{{

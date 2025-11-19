@@ -102,13 +102,13 @@ onMounted(() => {
   <div class="backgrounds-drawer">
     <div class="backgrounds-drawer__header">
       <div class="backgrounds-drawer__header-row">
-        <label @click="triggerFileUpload" class="menu-button">
+        <label class="menu-button" @click="triggerFileUpload">
           <i class="fa-solid fa-plus"></i>
           <span>{{ t('backgrounds.add') }}</span>
         </label>
-        <input ref="fileInput" type="file" @change="handleFileSelected" accept="image/*" hidden />
+        <input ref="fileInput" type="file" accept="image/*" hidden @change="handleFileSelected" />
         <span class="expander"></span>
-        <select class="text-pole" :title="t('backgrounds.fitting')" v-model="backgroundStore.fitting">
+        <select v-model="backgroundStore.fitting" class="text-pole" :title="t('backgrounds.fitting')">
           <option value="classic">{{ t('backgrounds.fittingOptions.classic') }}</option>
           <option value="cover">{{ t('backgrounds.fittingOptions.cover') }}</option>
           <option value="contain">{{ t('backgrounds.fittingOptions.contain') }}</option>
@@ -122,10 +122,10 @@ onMounted(() => {
       </div>
       <div class="backgrounds-drawer__header-row">
         <input
+          v-model="backgroundStore.searchTerm"
           class="text-pole"
           type="search"
           :placeholder="t('backgrounds.searchPlaceholder')"
-          v-model="backgroundStore.searchTerm"
         />
       </div>
     </div>
@@ -135,18 +135,18 @@ onMounted(() => {
         <h3>{{ t('backgrounds.systemBackgrounds') }}</h3>
         <div class="heading-controls">
           <button
-            @click="zoomIn"
             class="menu-button"
             :title="t('backgrounds.zoomIn')"
             :disabled="backgroundStore.thumbnailColumns <= THUMBNAIL_COLUMNS_MIN"
+            @click="zoomIn"
           >
             <i class="fa-solid fa-minus"></i>
           </button>
           <button
-            @click="zoomOut"
             class="menu-button"
             :title="t('backgrounds.zoomOut')"
             :disabled="backgroundStore.thumbnailColumns >= THUMBNAIL_COLUMNS_MAX"
+            @click="zoomOut"
           >
             <i class="fa-solid fa-plus"></i>
           </button>
@@ -170,24 +170,24 @@ onMounted(() => {
           </div>
           <div class="background-item__menu">
             <div
-              @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
               class="menu-button fa-solid fa-lock"
               :title="t('backgrounds.actions.lock')"
+              @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
             ></div>
             <div
-              @click.stop="backgroundStore.unlockBackground()"
               class="menu-button fa-solid fa-lock-open"
               :title="t('backgrounds.actions.unlock')"
+              @click.stop="backgroundStore.unlockBackground()"
             ></div>
             <div
-              @click.stop="handleRename(bg)"
               class="menu-button fa-solid fa-pen-to-square"
               :title="t('backgrounds.actions.rename')"
+              @click.stop="handleRename(bg)"
             ></div>
             <div
-              @click.stop="handleDelete(bg, false)"
               class="menu-button fa-solid fa-trash-can"
               :title="t('backgrounds.actions.delete')"
+              @click.stop="handleDelete(bg, false)"
             ></div>
           </div>
         </div>
@@ -196,7 +196,7 @@ onMounted(() => {
       <!-- TODO: Implement Chat Backgrounds -->
     </div>
 
-    <button @click="scrollToTop" class="backgrounds-drawer__scroll-top" :class="{ visible: isScrolled }">
+    <button class="backgrounds-drawer__scroll-top" :class="{ visible: isScrolled }" @click="scrollToTop">
       <i class="fa-solid fa-chevron-up"></i>
     </button>
   </div>

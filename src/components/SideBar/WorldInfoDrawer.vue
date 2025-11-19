@@ -62,26 +62,26 @@ const filteredBookNames = computed(() => {
       <div class="character-panel__browser-header world-info-controls">
         <div class="world-info-controls__row">
           <div
-            @click="worldInfoStore.createNewBook"
             class="menu-button fa-solid fa-plus"
             :title="t('worldInfo.newWorld')"
+            @click="worldInfoStore.createNewBook"
           ></div>
-          <div @click="triggerImport" class="menu-button fa-solid fa-file-import" :title="t('worldInfo.import')"></div>
-          <input ref="fileInput" type="file" @change="handleFileImport" accept=".json" hidden />
+          <div class="menu-button fa-solid fa-file-import" :title="t('worldInfo.import')" @click="triggerImport"></div>
+          <input ref="fileInput" type="file" accept=".json" hidden @change="handleFileImport" />
           <div
-            @click="worldInfoStore.refresh"
             class="menu-button fa-solid fa-sync"
             :title="t('worldInfo.refresh')"
+            @click="worldInfoStore.refresh"
           ></div>
         </div>
         <div class="world-info-controls__row">
           <input
+            v-model="worldInfoStore.browserSearchTerm"
             class="text-pole"
             type="search"
             :placeholder="t('worldInfo.searchPlaceholder')"
-            v-model="worldInfoStore.browserSearchTerm"
           />
-          <select class="text-pole" :title="t('worldInfo.sorting.title')" v-model="worldInfoStore.sortOrder">
+          <select v-model="worldInfoStore.sortOrder" class="text-pole" :title="t('worldInfo.sorting.title')">
             <option value="order:asc">{{ t('worldInfo.sorting.orderAsc') }}</option>
             <option value="comment:asc">{{ t('worldInfo.sorting.titleAsc') }}</option>
             <option value="comment:desc">{{ t('worldInfo.sorting.titleDesc') }}</option>

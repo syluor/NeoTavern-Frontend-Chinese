@@ -86,10 +86,10 @@ const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slide
     <div class="user-settings-drawer__header">
       <h3>{{ t('userSettings.title') }}</h3>
       <input
+        v-model="searchTerm"
         type="search"
         class="text-pole user-settings-drawer__search"
         :placeholder="t('userSettings.searchPlaceholder')"
-        v-model="searchTerm"
       />
     </div>
 
@@ -150,8 +150,8 @@ const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slide
                   <!-- Slider -->
                   <div v-if="setting.widget === 'slider'" class="slider-control">
                     <input
-                      type="range"
                       :id="setting.id"
+                      type="range"
                       :min="setting.min"
                       :max="setting.max"
                       :step="setting.step"

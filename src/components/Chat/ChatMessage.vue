@@ -199,7 +199,7 @@ function moveDown() {
 <template>
   <div class="message" :class="{ 'is-user': message.is_user, 'is-bot': !message.is_user }" :data-message-index="index">
     <div class="message__avatar-wrapper">
-      <div class="message__avatar" @click="handleAvatarClick" style="cursor: pointer">
+      <div class="message__avatar" style="cursor: pointer" @click="handleAvatarClick">
         <img :src="avatarUrls.thumbnail" :alt="`${displayName} Avatar`" />
       </div>
       <div class="message__id">#{{ index }}</div>
@@ -222,39 +222,39 @@ function moveDown() {
           <i class="message__button fa-solid fa-ellipsis" title="Message Actions"></i>
           <!-- TODO: Implement bookmark button -->
           <i class="message__button fa-solid fa-flag" title="Bookmark"></i>
-          <i @click="startEditing" class="message__button fa-solid fa-pencil" title="Edit"></i>
+          <i class="message__button fa-solid fa-pencil" title="Edit" @click="startEditing"></i>
           <i
-            @click="handleDeleteClick"
             class="message__button fa-solid fa-trash-can delete"
             :title="t('chat.buttons.deleteMessage')"
+            @click="handleDeleteClick"
           ></i>
         </div>
 
         <!-- Buttons for Editing Mode -->
         <div v-show="isEditing" class="message__edit-actions">
           <button
-            @click="saveEdit"
             class="menu-button confirm fa-solid fa-check"
             :title="t('chat.buttons.confirmEdit')"
+            @click="saveEdit"
           ></button>
           <button
-            @click="copyMessage"
             class="menu-button fa-solid fa-copy"
             :title="t('chat.buttons.copyMessage')"
+            @click="copyMessage"
           ></button>
           <button
-            @click="toggleReasoningEdit"
             class="menu-button fa-solid fa-lightbulb"
             :class="{ active: isEditingReasoning }"
             :title="t('chat.buttons.addReasoning')"
+            @click="toggleReasoningEdit"
           ></button>
-          <button @click="moveUp" class="menu-button fa-solid fa-chevron-up" :title="t('chat.buttons.moveUp')"></button>
+          <button class="menu-button fa-solid fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp"></button>
           <button
-            @click="moveDown"
             class="menu-button fa-solid fa-chevron-down"
             :title="t('chat.buttons.moveDown')"
+            @click="moveDown"
           ></button>
-          <button @click="cancelEdit" class="menu-button cancel fa-solid fa-xmark" :title="t('common.cancel')"></button>
+          <button class="menu-button cancel fa-solid fa-xmark" :title="t('common.cancel')" @click="cancelEdit"></button>
         </div>
       </div>
 
@@ -283,14 +283,14 @@ function moveDown() {
         <div class="message__swipe-controls">
           <i
             class="swipe-arrow fa-solid fa-chevron-left"
-            @click="swipe('left')"
             :title="t('chat.buttons.swipeLeft')"
+            @click="swipe('left')"
           ></i>
           <span class="swipe-counter">{{ (message.swipe_id ?? 0) + 1 }} / {{ message.swipes?.length ?? 0 }}</span>
           <i
             class="swipe-arrow fa-solid fa-chevron-right"
-            @click="swipe('right')"
             :title="t('chat.buttons.swipeRight')"
+            @click="swipe('right')"
           ></i>
         </div>
       </div>

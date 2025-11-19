@@ -233,13 +233,13 @@ async function handleReset() {
         </div>
         <h4>{{ t('promptManager.addSectionTitle') }}</h4>
         <div class="prompt-manager-popup__add-section">
-          <select class="text-pole" v-model="selectedPromptToAdd">
+          <select v-model="selectedPromptToAdd" class="text-pole">
             <option :value="null" disabled>{{ t('promptManager.selectToAdd') }}</option>
             <option v-for="prompt in unusedPrompts" :key="prompt.identifier" :value="prompt.identifier">
               {{ prompt.name }}
             </option>
           </select>
-          <button class="menu-button" @click="addSelectedPrompt" :disabled="!selectedPromptToAdd">
+          <button class="menu-button" :disabled="!selectedPromptToAdd" @click="addSelectedPrompt">
             {{ t('promptManager.addPrompt') }}
           </button>
         </div>

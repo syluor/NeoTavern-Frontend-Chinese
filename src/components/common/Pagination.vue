@@ -41,30 +41,30 @@ function changeItemsPerPage(event: Event) {
       <div
         class="menu-button fa-solid fa-angles-left"
         :class="{ disabled: !canGoBack }"
-        @click="changePage(1)"
         :title="t('pagination.first')"
+        @click="changePage(1)"
       ></div>
       <div
         class="menu-button fa-solid fa-angle-left"
         :class="{ disabled: !canGoBack }"
-        @click="changePage(currentPage - 1)"
         :title="t('pagination.previous')"
+        @click="changePage(currentPage - 1)"
       ></div>
       <div
         class="menu-button fa-solid fa-angle-right"
         :class="{ disabled: !canGoForward }"
-        @click="changePage(currentPage + 1)"
         :title="t('pagination.next')"
+        @click="changePage(currentPage + 1)"
       ></div>
       <div
         class="menu-button fa-solid fa-angles-right"
         :class="{ disabled: !canGoForward }"
-        @click="changePage(totalPages)"
         :title="t('pagination.last')"
+        @click="changePage(totalPages)"
       ></div>
     </div>
     <div class="pagination__size-changer">
-      <select :value="itemsPerPage" @change="changeItemsPerPage" class="text-pole">
+      <select :value="itemsPerPage" class="text-pole" @change="changeItemsPerPage">
         <option v-for="option in itemsPerPageOptions" :key="option" :value="option">
           {{ t('pagination.perPage', { count: option }) }}
         </option>

@@ -96,16 +96,16 @@ onMounted(() => {
       <div class="character-panel__browser-header">
         <div class="character-panel__actions">
           <div
-            @click="createNew"
             :title="t('characterPanel.createNew')"
             class="menu-button fa-solid fa-user-plus"
+            @click="createNew"
           ></div>
           <div
-            @click="triggerImport"
             :title="t('characterPanel.importFile')"
             class="menu-button fa-solid fa-file-import"
+            @click="triggerImport"
           ></div>
-          <input ref="fileInput" type="file" @change="handleFileImport" accept=".json,.png" multiple hidden />
+          <input ref="fileInput" type="file" accept=".json,.png" multiple hidden @change="handleFileImport" />
           <div :title="t('characterPanel.importUrl')" class="menu-button fa-solid fa-cloud-arrow-down"></div>
           <div :title="t('characterPanel.createGroup')" class="menu-button fa-solid fa-users-gear"></div>
           <div id="extension-buttons-container"></div>
@@ -117,15 +117,15 @@ onMounted(() => {
         </div>
         <div v-show="isSearchActive" id="character-search-form" class="character-panel__search-form">
           <input
+            v-model="characterStore.searchTerm"
             class="text-pole character-panel__search-input"
             type="search"
             :placeholder="t('characterPanel.searchPlaceholder')"
-            v-model="characterStore.searchTerm"
           />
           <select
+            v-model="characterStore.sortOrder"
             class="text-pole character-sort-order"
             :title="t('characterPanel.sorting.title')"
-            v-model="characterStore.sortOrder"
           >
             <option value="name:asc">{{ t('characterPanel.sorting.nameAsc') }}</option>
             <option value="name:desc">{{ t('characterPanel.sorting.nameDesc') }}</option>
@@ -139,9 +139,9 @@ onMounted(() => {
       <div class="character-panel__pagination">
         <Pagination
           v-if="characterStore.displayableEntities.length > 0"
-          :total-items="characterStore.displayableEntities.length"
           v-model:current-page="characterStore.currentPage"
           v-model:items-per-page="characterStore.itemsPerPage"
+          :total-items="characterStore.displayableEntities.length"
           :items-per-page-options="[10, 25, 50, 100]"
         />
       </div>
@@ -163,9 +163,9 @@ onMounted(() => {
               'is-active': activeCharacter?.avatar === (entity.item as Character).avatar,
               'flash animated': (entity.item as Character).avatar === characterStore.highlightedAvatar,
             }"
-            @click="characterStore.selectCharacterById(entity.id as number)"
             tabindex="0"
             :data-character-avatar="(entity.item as Character).avatar"
+            @click="characterStore.selectCharacterById(entity.id as number)"
           >
             <div class="character-item__avatar">
               <img
@@ -176,7 +176,7 @@ onMounted(() => {
             <div class="character-item__content">
               <div class="character-item__header">
                 <span class="character-item__name">{{ (entity.item as Character).name }}</span>
-                <i class="character-item__fav-icon fa-solid fa-star" v-if="(entity.item as Character).fav"></i>
+                <i v-if="(entity.item as Character).fav" class="character-item__fav-icon fa-solid fa-star"></i>
               </div>
               <div class="character-item__description">{{ (entity.item as Character).description || '&nbsp;' }}</div>
             </div>
@@ -203,7 +203,7 @@ onMounted(() => {
         <div class="placeholder-icon fa-solid fa-user-pen"></div>
         <h2 class="placeholder-title">{{ t('characterPanel.editor.placeholderTitle') }}</h2>
         <p class="placeholder-text">{{ t('characterPanel.editor.placeholderText') }}</p>
-        <div @click="createNew" class="menu-button">
+        <div class="menu-button" @click="createNew">
           <i class="fa-solid fa-user-plus"></i>&nbsp;
           <span>{{ t('characterPanel.editor.placeholderButton') }}</span>
         </div>

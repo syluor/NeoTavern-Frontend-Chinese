@@ -15,13 +15,13 @@ function resetToDefaults() {
   <div class="world-info-global-settings">
     <div class="editor-header">
       <h3>{{ t('worldInfo.globalSettings') }}</h3>
-      <button @click="resetToDefaults" class="menu-button">{{ t('common.resetToDefaults') }}</button>
+      <button class="menu-button" @click="resetToDefaults">{{ t('common.resetToDefaults') }}</button>
     </div>
 
     <div class="settings-section">
       <h4>{{ t('worldInfo.activeWorlds') }}</h4>
       <small>{{ t('worldInfo.activeWorldsHint') }}</small>
-      <select class="text-pole" multiple v-model="worldInfoStore.activeBookNames">
+      <select v-model="worldInfoStore.activeBookNames" class="text-pole" multiple>
         <option v-for="name in worldInfoStore.bookNames" :key="name" :value="name">{{ name }}</option>
       </select>
     </div>
@@ -36,20 +36,20 @@ function resetToDefaults() {
             <div class="range-block-title">{{ t('worldInfo.scanDepth') }}</div>
             <div class="range-block-range-and-counter">
               <input
+                v-model.number="worldInfoStore.settings.world_info_depth"
                 type="range"
                 class="neo-range-slider"
                 min="0"
                 max="1000"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_depth"
               />
               <input
+                v-model.number="worldInfoStore.settings.world_info_depth"
                 type="number"
                 class="neo-range-input"
                 min="0"
                 max="1000"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_depth"
               />
             </div>
           </div>
@@ -57,20 +57,20 @@ function resetToDefaults() {
             <div class="range-block-title">{{ t('worldInfo.contextPercent') }}</div>
             <div class="range-block-range-and-counter">
               <input
+                v-model.number="worldInfoStore.settings.world_info_budget"
                 type="range"
                 class="neo-range-slider"
                 min="1"
                 max="100"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_budget"
               />
               <input
+                v-model.number="worldInfoStore.settings.world_info_budget"
                 type="number"
                 class="neo-range-input"
                 min="1"
                 max="100"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_budget"
               />
             </div>
           </div>
@@ -78,47 +78,47 @@ function resetToDefaults() {
             <div class="range-block-title">{{ t('worldInfo.budgetCap') }}</div>
             <div class="range-block-range-and-counter">
               <input
+                v-model.number="worldInfoStore.settings.world_info_budget_cap"
                 type="range"
                 class="neo-range-slider"
                 min="0"
                 max="65536"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_budget_cap"
               />
               <input
+                v-model.number="worldInfoStore.settings.world_info_budget_cap"
                 type="number"
                 class="neo-range-input"
                 min="0"
                 max="65536"
                 step="1"
-                v-model.number="worldInfoStore.settings.world_info_budget_cap"
               />
             </div>
           </div>
         </div>
         <div class="wi-settings-grid__checkboxes">
           <label class="checkbox-label" :title="t('worldInfo.includeNamesHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_include_names" />
+            <input v-model="worldInfoStore.settings.world_info_include_names" type="checkbox" />
             <span>{{ t('worldInfo.includeNames') }}</span>
           </label>
           <label class="checkbox-label" :title="t('worldInfo.recursiveScanHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_recursive" />
+            <input v-model="worldInfoStore.settings.world_info_recursive" type="checkbox" />
             <span>{{ t('worldInfo.recursiveScan') }}</span>
           </label>
           <label class="checkbox-label" :title="t('worldInfo.caseSensitiveHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_case_sensitive" />
+            <input v-model="worldInfoStore.settings.world_info_case_sensitive" type="checkbox" />
             <span>{{ t('worldInfo.caseSensitive') }}</span>
           </label>
           <label class="checkbox-label" :title="t('worldInfo.matchWholeWordsHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_match_whole_words" />
+            <input v-model="worldInfoStore.settings.world_info_match_whole_words" type="checkbox" />
             <span>{{ t('worldInfo.matchWholeWords') }}</span>
           </label>
           <label class="checkbox-label" :title="t('worldInfo.useGroupScoringHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_use_group_scoring" />
+            <input v-model="worldInfoStore.settings.world_info_use_group_scoring" type="checkbox" />
             <span>{{ t('worldInfo.useGroupScoring') }}</span>
           </label>
           <label class="checkbox-label" :title="t('worldInfo.alertOnOverflowHint')">
-            <input type="checkbox" v-model="worldInfoStore.settings.world_info_overflow_alert" />
+            <input v-model="worldInfoStore.settings.world_info_overflow_alert" type="checkbox" />
             <span>{{ t('worldInfo.alertOnOverflow') }}</span>
           </label>
         </div>
@@ -131,7 +131,7 @@ function resetToDefaults() {
       <h4>{{ t('worldInfo.advancedSettings') }}</h4>
       <div class="range-block" :title="t('worldInfo.insertionStrategyHint')">
         <div class="range-block-title">{{ t('worldInfo.insertionStrategy') }}</div>
-        <select class="text-pole" v-model="worldInfoStore.settings.world_info_character_strategy">
+        <select v-model="worldInfoStore.settings.world_info_character_strategy" class="text-pole">
           <option :value="WorldInfoInsertionStrategy.EVENLY">
             {{ t('worldInfo.insertionStrategies.sortedEvenly') }}
           </option>

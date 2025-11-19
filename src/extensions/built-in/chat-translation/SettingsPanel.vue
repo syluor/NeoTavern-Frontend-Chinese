@@ -51,11 +51,11 @@ function resetPrompt() {
     <div class="setting-row">
       <div class="setting-item">
         <label>{{ t('extensionsBuiltin.chat_translation.source_lang') }}</label>
-        <input type="text" v-model="settings.sourceLang" class="text-pole" />
+        <input v-model="settings.sourceLang" type="text" class="text-pole" />
       </div>
       <div class="setting-item">
         <label>{{ t('extensionsBuiltin.chat_translation.target_lang') }}</label>
-        <input type="text" v-model="settings.targetLang" class="text-pole" />
+        <input v-model="settings.targetLang" type="text" class="text-pole" />
       </div>
     </div>
 

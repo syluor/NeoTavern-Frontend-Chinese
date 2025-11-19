@@ -125,7 +125,7 @@ export class WorldInfoProcessor {
     await eventEmitter.emit('world-info:processing-started', options);
 
     const buffer = new WorldInfoBuffer(this.chat, this.settings, this.character, this.persona);
-    let allActivatedEntries = new Set<WorldInfoEntry>();
+    const allActivatedEntries = new Set<WorldInfoEntry>();
     let continueScanning = true;
     let loopCount = 0;
     let tokenBudgetOverflowed = false;
@@ -143,7 +143,7 @@ export class WorldInfoProcessor {
 
     while (continueScanning && loopCount < (this.settings.world_info_max_recursion_steps || 10)) {
       loopCount++;
-      let activatedInThisLoop = new Set<WorldInfoEntry>();
+      const activatedInThisLoop = new Set<WorldInfoEntry>();
       let newContentForRecursion = '';
       let currentContentForBudget = '';
 

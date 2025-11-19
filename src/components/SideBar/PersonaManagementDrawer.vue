@@ -101,7 +101,7 @@ onMounted(() => {
         <label class="menu-button">
           <i class="fa-solid fa-file-import"></i>
           <span>{{ t('personaManagement.restore') }}</span>
-          <input type="file" @change="handleFileImport" accept=".json" hidden />
+          <input type="file" accept=".json" hidden @change="handleFileImport" />
         </label>
       </div>
     </div>
@@ -113,8 +113,8 @@ onMounted(() => {
             <i class="fa-solid fa-person-circle-question fa-fw"></i>
             <span>{{ t('personaManagement.create') }}</span>
           </div>
-          <input class="text-pole" type="search" :placeholder="t('common.search')" v-model="searchTerm" />
-          <select class="text-pole" v-model="sortOrder">
+          <input v-model="searchTerm" class="text-pole" type="search" :placeholder="t('common.search')" />
+          <select v-model="sortOrder" class="text-pole">
             <option value="asc">A-Z</option>
             <option value="desc">Z-A</option>
           </select>
@@ -122,9 +122,9 @@ onMounted(() => {
         </div>
         <Pagination
           v-if="filteredPersonas.length > 0"
-          :total-items="filteredPersonas.length"
           v-model:current-page="currentPage"
           v-model:items-per-page="itemsPerPage"
+          :total-items="filteredPersonas.length"
           :items-per-page-options="[5, 10, 25, 50, 100]"
         />
         <div class="persona-list" :class="{ 'grid-view': isGridView }">
@@ -170,7 +170,7 @@ onMounted(() => {
                 :title="t('personaManagement.actions.changeImage')"
                 @click="triggerAvatarUpload"
               ></div>
-              <input ref="avatarInput" type="file" @change="handleAvatarChange" accept="image/*" hidden />
+              <input ref="avatarInput" type="file" accept="image/*" hidden @change="handleAvatarChange" />
               <div class="menu-button fa-solid fa-clone" :title="t('personaManagement.actions.duplicate')"></div>
               <div
                 class="menu-button fa-solid fa-skull red_button"
@@ -210,15 +210,15 @@ onMounted(() => {
           <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
           <div class="persona-editor__global-settings">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.persona.showNotifications" />
+              <input v-model="settingsStore.settings.persona.showNotifications" type="checkbox" />
               <span>{{ t('personaManagement.globalSettings.showNotifications') }}</span>
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.persona.allowMultiConnections" />
+              <input v-model="settingsStore.settings.persona.allowMultiConnections" type="checkbox" />
               <span>{{ t('personaManagement.globalSettings.allowMultiConnections') }}</span>
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="settingsStore.settings.persona.autoLock" />
+              <input v-model="settingsStore.settings.persona.autoLock" type="checkbox" />
               <span>{{ t('personaManagement.globalSettings.autoLock') }}</span>
             </label>
           </div>

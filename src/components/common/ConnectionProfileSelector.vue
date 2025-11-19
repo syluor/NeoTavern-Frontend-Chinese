@@ -19,7 +19,7 @@ const selectedProfile = computed({
 </script>
 
 <template>
-  <select class="text-pole" v-model="selectedProfile">
+  <select v-model="selectedProfile" class="text-pole">
     <option :value="undefined">{{ t('apiConnections.profileManagement.none') }}</option>
     <option v-for="profile in apiStore.connectionProfiles" :key="profile.name" :value="profile.name">
       {{ profile.name }}

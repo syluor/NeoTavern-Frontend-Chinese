@@ -37,7 +37,7 @@ onMounted(() => {
   <div ref="zoomedAvatarEl" class="zoomed-avatar">
     <div class="panel-control-bar">
       <div ref="dragHandleEl" class="fa-fw fa-solid fa-grip drag-grabber"></div>
-      <div @click="close" class="fa-fw fa-solid fa-circle-xmark drag-close"></div>
+      <div class="fa-fw fa-solid fa-circle-xmark drag-close" @click="close"></div>
     </div>
     <div class="zoomed-avatar__container">
       <!-- TODO: Implement zoomed_avatar_magnification -->

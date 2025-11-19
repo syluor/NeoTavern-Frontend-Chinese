@@ -84,7 +84,7 @@ watch(
 
 <template>
   <div class="chat-interface">
-    <div id="chat-messages-container" class="chat-interface__messages" ref="messagesContainer">
+    <div id="chat-messages-container" ref="messagesContainer" class="chat-interface__messages">
       <ChatMessage v-for="(message, index) in chatStore.chat" :key="index" :message="message" :index="index" />
       <div v-show="chatStore.isGenerating" class="chat-interface__typing-indicator">
         <span>{{ t('chat.typingIndicator') }}</span>
@@ -112,27 +112,27 @@ watch(
           </div>
           <textarea
             id="chat-input"
+            v-model="userInput"
             :placeholder="t('chat.inputPlaceholder')"
             autocomplete="off"
-            v-model="userInput"
-            @keydown="handleKeydown"
             :disabled="chatStore.isGenerating"
+            @keydown="handleKeydown"
           ></textarea>
           <div class="chat-form__actions-right">
             <button
               v-show="chatStore.isGenerating"
-              @click="chatStore.abortGeneration"
               type="button"
               class="chat-form__button fa-fw fa-solid fa-stop"
               :title="t('chat.abort')"
+              @click="chatStore.abortGeneration"
             ></button>
             <template v-show="!chatStore.isGenerating">
               <button
-                @click="continueGeneration"
                 type="button"
                 class="chat-form__button fa-fw fa-solid fa-arrow-right"
                 :title="t('chat.continue')"
                 :disabled="chatStore.isGenerating"
+                @click="continueGeneration"
               ></button>
               <button
                 type="submit"
@@ -150,11 +150,11 @@ watch(
             <span>{{ t('chat.optionsMenu.manageChats') }}</span>
           </a>
           <hr />
-          <a @click="regenerate" class="options-menu__item">
+          <a class="options-menu__item" @click="regenerate">
             <i class="fa-solid fa-repeat"></i>
             <span>{{ t('chat.optionsMenu.regenerate') }}</span>
           </a>
-          <a @click="continueGeneration" class="options-menu__item">
+          <a class="options-menu__item" @click="continueGeneration">
             <i class="fa-solid fa-arrow-right"></i>
             <span>{{ t('chat.optionsMenu.continue') }}</span>
           </a>

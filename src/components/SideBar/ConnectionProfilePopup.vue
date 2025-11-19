@@ -107,39 +107,39 @@ function save() {
 </script>
 
 <template>
-  <dialog ref="dialog" id="connection-profile-popup" class="popup" @cancel="close">
+  <dialog id="connection-profile-popup" ref="dialog" class="popup" @cancel="close">
     <div class="popup-body">
       <h3>{{ t('apiConnections.profileManagement.createPopupTitle') }}</h3>
 
       <div class="connection-profile-form">
         <div class="form-group">
           <label for="profileName">{{ t('apiConnections.profileManagement.profileName') }}</label>
-          <input id="profileName" type="text" class="text-pole" v-model="profileName" />
+          <input id="profileName" v-model="profileName" type="text" class="text-pole" />
         </div>
 
         <h4>{{ t('apiConnections.profileManagement.fieldsToInclude') }}</h4>
 
         <div class="fields-grid">
           <label class="checkbox-label field-item">
-            <input type="checkbox" v-model="includeApi" />
+            <input v-model="includeApi" type="checkbox" />
             <span>{{ t('apiConnections.api') }}</span>
           </label>
           <div class="field-value">{{ currentApi }}</div>
 
           <label class="checkbox-label field-item">
-            <input type="checkbox" v-model="includeSource" />
+            <input v-model="includeSource" type="checkbox" />
             <span>{{ t('apiConnections.source') }}</span>
           </label>
           <div class="field-value">{{ currentSource }}</div>
 
           <label class="checkbox-label field-item">
-            <input type="checkbox" v-model="includeModel" />
+            <input v-model="includeModel" type="checkbox" />
             <span>{{ modelLabel }}</span>
           </label>
           <div class="field-value">{{ currentModel }}</div>
 
           <label class="checkbox-label field-item">
-            <input type="checkbox" v-model="includeSampler" />
+            <input v-model="includeSampler" type="checkbox" />
             <span>{{ t('aiConfig.presets.chatCompletion.label') }}</span>
           </label>
           <div class="field-value">{{ currentSampler }}</div>

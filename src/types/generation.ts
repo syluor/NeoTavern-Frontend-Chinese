@@ -71,13 +71,12 @@ export type BuildChatCompletionPayloadOptions = {
   source: ChatCompletionSource;
   providerSpecific: Settings['api']['providerSpecific'];
   playerName?: string;
-  characterName?: string;
   modelList?: ApiModel[];
 };
 
 export type GenerationContext = {
   mode: GenerationMode;
-  character: Character;
+  characters: Character[];
   history: ChatMessage[];
   persona: Persona;
   tokenizer: Tokenizer;
@@ -89,11 +88,10 @@ export type GenerationContext = {
   };
   // Other relevant data available to the interceptor for read-only purposes or modification
   playerName: string;
-  characterName: string;
 } & { controller: AbortController };
 
 export type PromptBuilderOptions = {
-  character: Character;
+  characters: Character[];
   chatHistory: ChatMessage[];
   samplerSettings: SamplerSettings;
   persona: Persona;

@@ -32,7 +32,6 @@ export interface MessageSchema {
     };
     active: string;
     errors: {
-      fetch: string;
       create: string;
       rename: string;
       delete: string;
@@ -465,7 +464,6 @@ export interface MessageSchema {
       syncWarning: string;
     };
     fetch: {
-      error: string;
       overflowWarning: string;
     };
     switch: {

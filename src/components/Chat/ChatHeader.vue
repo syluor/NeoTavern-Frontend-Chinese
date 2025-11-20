@@ -9,12 +9,12 @@ const uiStore = useUiStore();
 const characterStore = useCharacterStore();
 const settingsStore = useSettingsStore();
 
-const activeCharacter = computed(() => characterStore.activeCharacter);
-const avatarUrl = computed(() => getThumbnailUrl('avatar', activeCharacter.value?.avatar || ''));
+const firstCharacter = computed(() => characterStore.activeCharacters?.[0]);
+const avatarUrl = computed(() => getThumbnailUrl('avatar', firstCharacter.value?.avatar || ''));
 
 const lastMessageDate = computed(() => {
-  // TODO: Not character, get first/last message date from chat store
-  return activeCharacter.value?.create_date || '';
+  // Get first/last message date from chat store
+  return firstCharacter.value?.create_date || '';
 });
 
 const isFullScreen = computed(() => settingsStore.getAccountItem('chat_full_screen') === 'true');
@@ -43,10 +43,10 @@ function toggleFullScreen() {
     </div>
 
     <div class="chat-header-group center" @click="handleCharacterClick">
-      <div v-show="activeCharacter" class="chat-header-info">
-        <img :src="avatarUrl" :alt="activeCharacter?.name" class="chat-header-info-avatar" />
+      <div v-show="firstCharacter" class="chat-header-info">
+        <img :src="avatarUrl" :alt="firstCharacter?.name" class="chat-header-info-avatar" />
         <div class="chat-header-info-text">
-          <span class="chat-header-info-name">{{ activeCharacter?.name }}</span>
+          <span class="chat-header-info-name">{{ firstCharacter?.name }}</span>
           <span v-show="lastMessageDate" class="chat-header-info-meta">{{ lastMessageDate }}</span>
         </div>
       </div>

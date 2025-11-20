@@ -8,12 +8,15 @@ function getRegexedString(str: string): string {
   return str;
 }
 
-export function getFirstMessage(character: Character): ChatMessage {
+export function getFirstMessage(character?: Character): ChatMessage | null {
+  if (!character) {
+    return null;
+  }
   const firstMes = character?.first_mes || '';
   const alternateGreetings = character?.data?.alternate_greetings;
 
   const message: ChatMessage = {
-    name: character.name,
+    name: character.name || '',
     is_user: false,
     is_system: false,
     send_date: getMessageTimeStamp(),

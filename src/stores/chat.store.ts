@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia';
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { debounce } from 'lodash-es';
 import {
   type ChatMessage,
   type ChatMetadata,
   type SwipeInfo,
-  type Character,
   type GenerationContext,
   type GenerationResponse,
   type StreamedChunk,
@@ -13,6 +12,8 @@ import {
   type PromptTokenBreakdown,
   type FullChat,
   type ChatHeader,
+  type ChatInfo,
+  type Character,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -33,24 +34,46 @@ import { usePersonaStore } from './persona.store';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 
+export type ChatStoreState = {
+  messages: ChatMessage[];
+  metadata: ChatMetadata;
+};
+
+export type ChatMessageEditState = {
+  index: number;
+  originalContent: string;
+};
+
 export const useChatStore = defineStore('chat', () => {
   const { t } = useStrictI18n();
-  const chat = ref<Array<ChatMessage>>([]);
-  const chatMetadata = ref<ChatMetadata>({});
-  const activeMessageEditIndex = ref<number | null>(null);
-  const originalMessageContent = ref<string | null>(null);
-  const isGenerating = ref(false);
+  const activeChat = ref<ChatStoreState | null>(null);
   const activeChatFile = ref<string | null>(null);
+  const activeMessageEditState = ref<ChatMessageEditState | null>(null);
+
+  const isGenerating = ref(false);
   const generationController = ref<AbortController | null>(null);
   const isChatLoading = ref(false); // Prevents watcher from saving during initialization
+  const chatInfos = ref<ChatInfo[]>([]);
 
   const uiStore = useUiStore();
   const personaStore = usePersonaStore();
+  const characterStore = useCharacterStore();
+  const promptStore = usePromptStore();
+
+  const chatsMetadataByCharacterAvatars = computed(() => {
+    const mapping: Record<string, ChatInfo[]> = {};
+    for (const chatInfo of chatInfos.value) {
+      const avatar = chatInfo.chat_metadata.character_avatar;
+      if (!mapping[avatar]) {
+        mapping[avatar] = [];
+      }
+      mapping[avatar].push(chatInfo);
+    }
+    return mapping;
+  });
 
   const saveChatDebounced = debounce(async () => {
-    const characterStore = useCharacterStore();
-    const activeCharacter = characterStore.activeCharacter;
-    if (!activeCharacter || !activeChatFile.value) {
+    if (!activeChat.value || !activeChatFile.value) {
       console.error('Debounced save failed: No active character or chat file.');
       return;
     }
@@ -59,19 +82,19 @@ export const useChatStore = defineStore('chat', () => {
       uiStore.isChatSaving = true;
       const chatToSave: FullChat = [
         {
-          character_name: activeCharacter.name,
-          chat_metadata: chatMetadata.value,
+          chat_metadata: activeChat.value.metadata,
         },
-        ...chat.value,
+        ...activeChat.value.messages,
       ];
-      await apiSaveChat(activeCharacter, activeChatFile.value, chatToSave);
+      await apiSaveChat(activeChatFile.value, chatToSave);
 
       // Save itemized prompts
-      const promptStore = usePromptStore();
-      const currentChatId = getCurrentChatId();
-      if (currentChatId) {
-        await promptStore.saveItemizedPrompts(currentChatId);
+      await promptStore.saveItemizedPrompts(activeChatFile.value);
+      const chatInfo = chatInfos.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
+      if (chatInfo) {
+        chatInfo.chat_metadata = activeChat.value.metadata;
       }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to save chat:', error);
@@ -82,56 +105,48 @@ export const useChatStore = defineStore('chat', () => {
   }, DEFAULT_SAVE_EDIT_TIMEOUT);
 
   watch(
-    [chat, chatMetadata],
+    [activeChat],
     () => {
       // Emit event for UI reactivity
       nextTick(async () => {
-        await eventEmitter.emit('chat:updated');
+        await eventEmitter.emit('chat:updated', activeChatFile.value as string);
       });
 
       // Trigger debounced save if not loading
-      if (!isChatLoading.value && activeChatFile.value) {
+      if (!isChatLoading.value && activeChat.value) {
         saveChatDebounced();
       }
     },
     { deep: true },
   );
 
-  function getCurrentChatId() {
-    // TODO: Integrate group store later
-    return activeChatFile.value;
-  }
-
   async function clearChat(recreateFirstMessage = false) {
+    if (!activeChat.value) return;
     isChatLoading.value = true;
 
     saveChatDebounced.cancel();
-    chat.value = [];
-    chatMetadata.value = {};
-    activeMessageEditIndex.value = null;
+    activeChat.value.messages = [];
 
     if (!recreateFirstMessage) {
       activeChatFile.value = null;
     }
 
-    const promptStore = usePromptStore();
     promptStore.extensionPrompts = {};
-    const currentChatId = getCurrentChatId();
-    if (currentChatId) {
-      await promptStore.saveItemizedPrompts(currentChatId);
+    if (activeChatFile.value) {
+      await promptStore.saveItemizedPrompts(activeChatFile.value);
     }
     promptStore.itemizedPrompts = [];
 
     await nextTick();
     await eventEmitter.emit('chat:cleared');
 
-    if (recreateFirstMessage) {
-      const characterStore = useCharacterStore();
-      const activeCharacter = characterStore.activeCharacter;
+    // Send the first message of first active character
+    if (recreateFirstMessage && characterStore.activeCharacters.length > 0) {
+      const activeCharacter = characterStore.activeCharacters[0];
       if (activeCharacter) {
         const firstMessage = getFirstMessage(activeCharacter);
-        if (firstMessage.mes) {
-          chat.value.push(firstMessage);
+        if (firstMessage?.mes) {
+          activeChat.value.messages.push(firstMessage);
           await nextTick();
           await eventEmitter.emit('message:created', firstMessage);
         }
@@ -141,63 +156,55 @@ export const useChatStore = defineStore('chat', () => {
     isChatLoading.value = false;
 
     // Manually trigger a save if a new first message was created.
-    if (recreateFirstMessage && chat.value.length > 0) {
+    if (recreateFirstMessage && activeChat.value.messages.length > 0) {
       saveChatDebounced();
     }
   }
 
-  async function setActiveChatFile(chatFile: string) {
+  async function setActiveChatFile(chatFile: string, character?: Character) {
     if (activeChatFile.value === chatFile) return;
     await clearChat(false);
     activeChatFile.value = chatFile;
-    await refreshChat();
-  }
-
-  async function refreshChat() {
-    const characterStore = useCharacterStore();
-    const activeCharacter = characterStore.activeCharacter;
-
-    if (!activeCharacter || !activeChatFile.value) {
-      console.error('refreshChat called with no active character or chat file');
-      return;
-    }
 
     // TODO: unshallow character logic if needed
     isChatLoading.value = true;
     let wasNewChatCreated = false;
 
     try {
-      const response = await fetchChat(activeCharacter, activeChatFile.value);
+      const response = await fetchChat(activeChatFile.value);
       if (response.length > 0) {
         // Chat exists, load it
         const metadataItem = response.shift() as ChatHeader;
-        chatMetadata.value = metadataItem.chat_metadata ?? {};
-        chat.value = response as ChatMessage[];
+        activeChat.value = {
+          metadata: metadataItem.chat_metadata,
+          messages: response as ChatMessage[],
+        };
       } else {
         // No chat exists, create a new one
         wasNewChatCreated = true;
-        chatMetadata.value = {};
-        chat.value = [];
+        // activeChat.value.metadata
+        activeChat.value = {
+          metadata: { members: character ? [character.avatar] : [] },
+          messages: [],
+        };
 
-        const firstMessage = getFirstMessage(activeCharacter);
-        if (firstMessage.mes) {
-          chat.value.push(firstMessage);
+        const firstMessage = getFirstMessage(character);
+        if (firstMessage?.mes) {
+          activeChat.value.messages.push(firstMessage);
           await nextTick();
           await eventEmitter.emit('message:created', firstMessage);
         }
       }
 
-      if (!chatMetadata.value['integrity']) {
-        chatMetadata.value['integrity'] = uuidv4();
+      if (!activeChat.value.metadata['integrity']) {
+        activeChat.value.metadata['integrity'] = uuidv4();
       }
 
-      const currentChatId = getCurrentChatId();
-      if (currentChatId) {
-        const promptStore = usePromptStore();
-        await promptStore.loadItemizedPrompts(currentChatId);
+      if (activeChatFile.value) {
+        await promptStore.loadItemizedPrompts(activeChatFile.value);
       }
       await nextTick();
-      await eventEmitter.emit('chat:entered', activeCharacter as Character, activeChatFile.value as string);
+      await eventEmitter.emit('chat:entered', activeChatFile.value as string);
     } catch (error) {
       console.error('Failed to refresh chat:', error);
       toast.error(t('chat.loadError'));
@@ -237,7 +244,8 @@ export const useChatStore = defineStore('chat', () => {
     const settingsStore = useSettingsStore();
     const promptStore = usePromptStore();
 
-    const activeCharacter = characterStore.activeCharacter;
+    // TODO: Group chat support
+    const activeCharacter = characterStore.activeCharacters[0];
     if (!activeCharacter) {
       console.error('generateResponse called without an active character.');
       return;
@@ -246,17 +254,18 @@ export const useChatStore = defineStore('chat', () => {
     let generatedMessage: ChatMessage | null = null;
     let generationError: Error | undefined;
 
+    const activeChatMessages = activeChat.value?.messages || [];
     try {
       isGenerating.value = true;
       const genStarted = new Date().toISOString();
-      let lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
-      const chatHistoryForPrompt = [...chat.value];
+      let lastMessage = activeChatMessages.length > 0 ? activeChatMessages[activeChatMessages.length - 1] : null;
+      const chatHistoryForPrompt = [...activeChatMessages];
 
       if (mode === GenerationMode.REGENERATE) {
         if (lastMessage && !lastMessage.is_user) {
           chatHistoryForPrompt.pop();
-          chat.value.pop();
-          lastMessage = chat.value.length > 0 ? chat.value[chat.value.length - 1] : null;
+          activeChatMessages.pop();
+          lastMessage = activeChatMessages.length > 0 ? activeChatMessages[activeChatMessages.length - 1] : null;
         }
       } else if (mode === GenerationMode.ADD_SWIPE) {
         if (!lastMessage || lastMessage.is_user) return;
@@ -280,7 +289,7 @@ export const useChatStore = defineStore('chat', () => {
 
       const context: GenerationContext = {
         mode,
-        character: activeCharacter,
+        characters: characterStore.activeCharacters,
         history: chatHistoryForPrompt,
         persona: activePersona,
         settings: {
@@ -290,7 +299,6 @@ export const useChatStore = defineStore('chat', () => {
           providerSpecific: settings.api.providerSpecific,
         },
         playerName: uiStore.activePlayerName || 'User',
-        characterName: activeCharacter.name,
         controller: new AbortController(),
         tokenizer: tokenizer,
       };
@@ -304,7 +312,7 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       const promptBuilder = new PromptBuilder({
-        character: context.character,
+        characters: context.characters,
         chatHistory: context.history,
         persona: context.persona,
         samplerSettings: context.settings.sampler,
@@ -343,6 +351,7 @@ export const useChatStore = defineStore('chat', () => {
         }
       }
 
+      // TODO: With group chats, we need to track per-character prompts
       const breakdown: PromptTokenBreakdown = {
         systemTotal: 0,
         description: await tokenizer.getTokenCount(activeCharacter.description || ''),
@@ -369,7 +378,8 @@ export const useChatStore = defineStore('chat', () => {
         }
       }
 
-      const targetMessageIndex = mode === GenerationMode.CONTINUE ? chat.value.length - 1 : chat.value.length;
+      const targetMessageIndex =
+        mode === GenerationMode.CONTINUE ? activeChatMessages.length - 1 : activeChatMessages.length;
 
       const itemizedPrompt: ItemizedPrompt = {
         messageIndex: targetMessageIndex,
@@ -391,7 +401,6 @@ export const useChatStore = defineStore('chat', () => {
         source: context.settings.source,
         providerSpecific: context.settings.providerSpecific,
         playerName: context.playerName,
-        characterName: context.characterName,
         modelList: apiStore.modelList,
       });
 
@@ -420,13 +429,13 @@ export const useChatStore = defineStore('chat', () => {
           lastMessage.extra!.token_count = await tokenizer.getTokenCount(lastMessage.mes);
           generatedMessage = lastMessage;
           await nextTick();
-          await eventEmitter.emit('message:updated', chat.value.length - 1, lastMessage);
+          await eventEmitter.emit('message:updated', activeChatMessages.length - 1, lastMessage);
         } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
           if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
           if (!Array.isArray(lastMessage.swipe_info)) lastMessage.swipe_info = [];
           lastMessage.swipes.push(content);
           lastMessage.swipe_info.push(swipeInfo);
-          await syncSwipeToMes(chat.value.length - 1, lastMessage.swipes.length - 1);
+          await syncSwipeToMes(activeChatMessages.length - 1, lastMessage.swipes.length - 1);
           generatedMessage = lastMessage;
         } else {
           const botMessage: ChatMessage = {
@@ -451,7 +460,7 @@ export const useChatStore = defineStore('chat', () => {
             return;
           }
 
-          chat.value.push(botMessage);
+          activeChatMessages.push(botMessage);
           generatedMessage = botMessage;
           await nextTick();
           await eventEmitter.emit('message:created', botMessage);
@@ -484,9 +493,9 @@ export const useChatStore = defineStore('chat', () => {
         let targetMessageIndex = -1;
 
         if (mode === GenerationMode.CONTINUE && lastMessage) {
-          targetMessageIndex = chat.value.length - 1;
+          targetMessageIndex = activeChatMessages.length - 1;
         } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
-          targetMessageIndex = chat.value.length - 1;
+          targetMessageIndex = activeChatMessages.length - 1;
           if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
           if (!Array.isArray(lastMessage.swipe_info)) lastMessage.swipe_info = [];
           lastMessage.swipe_id = lastMessage.swipes.length;
@@ -515,9 +524,9 @@ export const useChatStore = defineStore('chat', () => {
             return;
           }
 
-          chat.value.push(botMessage);
+          activeChatMessages.push(botMessage);
           generatedMessage = botMessage;
-          targetMessageIndex = chat.value.length - 1;
+          targetMessageIndex = activeChatMessages.length - 1;
           await nextTick();
           await eventEmitter.emit('message:created', botMessage);
         }
@@ -535,7 +544,7 @@ export const useChatStore = defineStore('chat', () => {
             }
             if (chunk.reasoning) streamedReasoning += chunk.reasoning;
 
-            const targetMessage = chat.value[targetMessageIndex];
+            const targetMessage = activeChatMessages[targetMessageIndex];
             if (mode === GenerationMode.ADD_SWIPE) {
               targetMessage.swipes![targetMessage.swipe_id!] += chunk.delta;
               targetMessage.mes = targetMessage.swipes![targetMessage.swipe_id!];
@@ -545,7 +554,7 @@ export const useChatStore = defineStore('chat', () => {
             if (chunk.reasoning) targetMessage.extra!.reasoning = streamedReasoning;
           }
         } finally {
-          const finalMessage = chat.value[targetMessageIndex];
+          const finalMessage = activeChatMessages[targetMessageIndex];
           if (!finalMessage) return;
           finalMessage.gen_finished = new Date().toISOString();
           finalMessage.extra!.token_count = await tokenizer.getTokenCount(finalMessage.mes);
@@ -587,7 +596,7 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function sendMessage(messageText: string, triggerGeneration = true) {
-    if (!messageText.trim() || isGenerating.value) {
+    if (!messageText.trim() || isGenerating.value || activeChat.value === null) {
       return;
     }
 
@@ -608,7 +617,7 @@ export const useChatStore = defineStore('chat', () => {
       );
       return;
     }
-    chat.value.push(userMessage);
+    activeChat.value.messages.push(userMessage);
     await nextTick();
     await eventEmitter.emit('message:created', userMessage);
 
@@ -618,21 +627,21 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   function startEditing(index: number) {
-    if (index >= 0 && index < chat.value.length) {
-      originalMessageContent.value = chat.value[index].mes;
-      activeMessageEditIndex.value = index;
-    }
+    if (!activeChat.value || index < 0 || index >= activeChat.value.messages.length) return;
+    activeMessageEditState.value = {
+      index,
+      originalContent: activeChat.value.messages[index].mes,
+    };
   }
 
   function cancelEditing() {
-    activeMessageEditIndex.value = null;
-    originalMessageContent.value = null;
+    activeMessageEditState.value = null;
   }
 
   async function saveMessageEdit(newContent: string, newReasoning?: string) {
-    if (activeMessageEditIndex.value !== null) {
-      const index = activeMessageEditIndex.value;
-      const message = chat.value[index];
+    if (activeMessageEditState.value !== null && activeChat.value) {
+      const index = activeMessageEditState.value.index;
+      const message = activeChat.value.messages[index];
       message.mes = newContent;
       if (message.extra) {
         delete message.extra.display_text;
@@ -669,11 +678,11 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function updateMessageObject(index: number, updates: Partial<ChatMessage>): Promise<void> {
-    if (index < 0 || index >= chat.value.length) {
+    if (!activeChat.value || index < 0 || index >= activeChat.value.messages.length) {
       console.warn(`[ChatStore] updateMessageObject: index ${index} out of bounds.`);
       return;
     }
-    const message = chat.value[index];
+    const message = activeChat.value.messages[index];
     Object.assign(message, updates);
 
     if (updates.mes !== undefined) {
@@ -687,9 +696,9 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function syncSwipeToMes(messageIndex: number, swipeIndex: number) {
-    if (messageIndex < 0 || messageIndex >= chat.value.length) return;
+    if (!activeChat.value || messageIndex < 0 || messageIndex >= activeChat.value.messages.length) return;
 
-    const message = chat.value[messageIndex];
+    const message = activeChat.value.messages[messageIndex];
     if (!message || !Array.isArray(message.swipes) || swipeIndex < 0 || swipeIndex >= message.swipes.length) {
       return;
     }
@@ -714,7 +723,8 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function swipeMessage(messageIndex: number, direction: 'left' | 'right') {
-    const message = chat.value[messageIndex];
+    if (!activeChat.value || messageIndex < 0 || messageIndex >= activeChat.value.messages.length) return;
+    const message = activeChat.value.messages[messageIndex];
     if (!message || !Array.isArray(message.swipes)) return;
 
     let currentSwipeId = message.swipe_id ?? 0;
@@ -735,9 +745,9 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function deleteMessage(index: number) {
-    if (index < 0 || index >= chat.value.length) return;
-    chat.value.splice(index, 1);
-    if (activeMessageEditIndex.value === index) {
+    if (!activeChat.value || index < 0 || index >= activeChat.value.messages.length) return;
+    activeChat.value.messages.splice(index, 1);
+    if (activeMessageEditState.value?.index === index) {
       cancelEditing();
     }
     await nextTick();
@@ -745,7 +755,8 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function deleteSwipe(messageIndex: number, swipeIndex: number) {
-    const message = chat.value[messageIndex];
+    if (!activeChat.value || messageIndex < 0 || messageIndex >= activeChat.value.messages.length) return;
+    const message = activeChat.value.messages[messageIndex];
     if (
       !message ||
       !Array.isArray(message.swipes) ||
@@ -767,28 +778,33 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   function moveMessage(index: number, direction: 'up' | 'down') {
-    if (index < 0 || index >= chat.value.length) return;
+    if (!activeChat.value || index < 0 || index >= activeChat.value.messages.length) return;
 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= chat.value.length) return;
+    if (newIndex < 0 || newIndex >= activeChat.value.messages.length) return;
 
-    [chat.value[index], chat.value[newIndex]] = [chat.value[newIndex], chat.value[index]];
+    [activeChat.value.messages[index], activeChat.value.messages[newIndex]] = [
+      activeChat.value.messages[newIndex],
+      activeChat.value.messages[index],
+    ];
 
-    if (activeMessageEditIndex.value === index) {
-      activeMessageEditIndex.value = newIndex;
-    } else if (activeMessageEditIndex.value === newIndex) {
-      activeMessageEditIndex.value = index;
+    if (activeMessageEditState.value) {
+      if (activeMessageEditState.value.index === index) {
+        activeMessageEditState.value.index = newIndex;
+      } else if (activeMessageEditState.value.index === newIndex) {
+        activeMessageEditState.value.index = index;
+      }
     }
   }
 
   return {
-    chat,
-    chatMetadata,
-    activeMessageEditIndex,
+    activeChat,
+    chatInfos,
+    activeMessageEditState,
     isGenerating,
     activeChatFile,
+    chatsMetadataByCharacterAvatars,
     clearChat,
-    refreshChat,
     sendMessage,
     generateResponse,
     abortGeneration,
@@ -800,7 +816,6 @@ export const useChatStore = defineStore('chat', () => {
     deleteSwipe,
     swipeMessage,
     moveMessage,
-    getCurrentChatId,
     setActiveChatFile,
   };
 });

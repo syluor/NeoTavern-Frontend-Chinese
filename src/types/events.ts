@@ -22,8 +22,8 @@ export interface ExtensionEventMap {
    * This updated when something changed on the chat. Even deeper changes some message.extra. So try not to use it too much.
    * Prefer more specific events like message:created/updated/deleted where possible.
    */
-  'chat:updated': [];
-  'chat:entered': [character: Character, chatFile: string];
+  'chat:updated': [chatFile: string];
+  'chat:entered': [chatFile: string];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'setting:changed': [path: SettingsPath, value: any, oldValue: any];
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
-import type { Character } from '../../types';
 import CharacterEditForm from './CharacterEditForm.vue';
 import Pagination from '../Common/Pagination.vue';
 import { getThumbnailUrl } from '../../utils/image';
@@ -43,8 +42,6 @@ watch(
   },
   { flush: 'post' }, // Wait for the DOM to update
 );
-
-const activeCharacter = computed(() => characterStore.activeCharacter);
 
 function createNew() {
   characterStore.startCreating();
@@ -138,50 +135,45 @@ onMounted(() => {
 
       <div class="character-panel-pagination">
         <Pagination
-          v-if="characterStore.displayableEntities.length > 0"
+          v-if="characterStore.displayableCharacters.length > 0"
           v-model:current-page="characterStore.currentPage"
           v-model:items-per-page="characterStore.itemsPerPage"
-          :total-items="characterStore.displayableEntities.length"
+          :total-items="characterStore.displayableCharacters.length"
           :items-per-page-options="[10, 25, 50, 100]"
         />
       </div>
 
       <div id="character-list" ref="characterListEl" class="character-panel-character-list">
-        <div v-if="characterStore.paginatedEntities.length === 0">{{ t('common.loading') }}</div>
-        <template v-for="entity in characterStore.paginatedEntities" :key="entity.id">
+        <div v-if="characterStore.paginatedCharacters.length === 0">{{ t('common.loading') }}</div>
+        <template v-for="character in characterStore.paginatedCharacters" :key="character.id">
           <div
-            v-if="entity.type === 'character'"
             :ref="
               (el) => {
-                if ((entity.item as Character).avatar === characterStore.highlightedAvatar) {
+                if (character.avatar === characterStore.highlightedAvatar) {
                   highlightedItemRef = el as HTMLElement;
                 }
               }
             "
             class="character-item"
             :class="{
-              'is-active': activeCharacter?.avatar === (entity.item as Character).avatar,
-              'flash animated': (entity.item as Character).avatar === characterStore.highlightedAvatar,
+              'is-active': characterStore.editFormCharacter?.avatar === character.avatar,
+              'flash animated': character.avatar === characterStore.highlightedAvatar,
             }"
             tabindex="0"
-            :data-character-avatar="(entity.item as Character).avatar"
-            @click="characterStore.selectCharacterById(entity.id as number)"
+            :data-character-avatar="character.avatar"
+            @click="characterStore.selectCharacterByAvatar(character.avatar)"
           >
             <div class="character-item-avatar">
-              <img
-                :src="getThumbnailUrl('avatar', (entity.item as Character).avatar)"
-                :alt="`${(entity.item as Character).name} Avatar`"
-              />
+              <img :src="getThumbnailUrl('avatar', character.avatar)" :alt="`${character.name} Avatar`" />
             </div>
             <div class="character-item-content">
               <div class="character-item-header">
-                <span class="character-item-name">{{ (entity.item as Character).name }}</span>
-                <i v-if="(entity.item as Character).fav" class="character-item-fav-icon fa-solid fa-star"></i>
+                <span class="character-item-name">{{ character.name }}</span>
+                <i v-if="character.fav" class="character-item-fav-icon fa-solid fa-star"></i>
               </div>
-              <div class="character-item-description">{{ (entity.item as Character).description || '&nbsp;' }}</div>
+              <div class="character-item-description">{{ character.description || '&nbsp;' }}</div>
             </div>
           </div>
-          <!-- TODO: Group rendering logic -->
         </template>
       </div>
     </div>
@@ -199,7 +191,7 @@ onMounted(() => {
 
     <!-- Right Pane: Character Editor -->
     <div class="character-panel-editor">
-      <div v-show="!activeCharacter" class="character-panel-editor-placeholder">
+      <div v-show="!characterStore.editFormCharacter" class="character-panel-editor-placeholder">
         <div class="placeholder-icon fa-solid fa-user-pen"></div>
         <h2 class="placeholder-title">{{ t('characterPanel.editor.placeholderTitle') }}</h2>
         <p class="placeholder-text">{{ t('characterPanel.editor.placeholderText') }}</p>
@@ -208,7 +200,7 @@ onMounted(() => {
           <span>{{ t('characterPanel.editor.placeholderButton') }}</span>
         </div>
       </div>
-      <CharacterEditForm v-show="activeCharacter" />
+      <CharacterEditForm v-show="characterStore.editFormCharacter" />
     </div>
   </div>
 </template>

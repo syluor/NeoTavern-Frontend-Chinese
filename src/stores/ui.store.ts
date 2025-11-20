@@ -14,6 +14,8 @@ export const useUiStore = defineStore('ui', () => {
   const activePlayerAvatar = ref<string | null>(null);
   const zoomedAvatars = ref<ZoomedAvatar[]>([]);
 
+  const selectedCharacterAvatarForEditing = ref<string | null>(null);
+
   const isLeftSidebarOpen = ref(false);
   const leftSidebarView = ref<string | null>(null);
 
@@ -118,6 +120,7 @@ export const useUiStore = defineStore('ui', () => {
     activePlayerName,
     activePlayerAvatar,
     zoomedAvatars,
+    selectedCharacterAvatarForEditing,
 
     // Sidebar State
     isLeftSidebarOpen,

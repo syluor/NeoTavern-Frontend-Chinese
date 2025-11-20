@@ -99,7 +99,11 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets the entire chat history for the active chat.
      */
     getHistory: (): readonly ChatMessage[] => {
-      return deepClone(useChatStore().chat);
+      const store = useChatStore();
+      if (!store.activeChat) {
+        throw new Error('No active chat to get history from.');
+      }
+      return deepClone(store.activeChat.messages);
     },
 
     /**
@@ -107,8 +111,9 @@ const baseExtensionAPI: ExtensionAPI = {
      */
     getLastMessage: (): Readonly<ChatMessage> | null => {
       const store = useChatStore();
-      const lastMessage = store.chat.length > 0 ? store.chat[store.chat.length - 1] : null;
-      return lastMessage ? deepClone(lastMessage) : null;
+      const messages = store.activeChat?.messages ?? [];
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      return deepClone(lastMessage);
     },
 
     /**
@@ -120,11 +125,18 @@ const baseExtensionAPI: ExtensionAPI = {
      */
     insertMessage: (message: Omit<ChatMessage, 'send_date'> & { send_date?: string }, index?: number): void => {
       const store = useChatStore();
+      if (!store.activeChat) {
+        throw new Error('No active chat to insert message into.');
+      }
+      if (index !== undefined && (index < 0 || index > store.activeChat.messages.length)) {
+        throw new Error('Index out of bounds for inserting message.');
+      }
       const fullMessage: ChatMessage = { ...message, send_date: message.send_date ?? getMessageTimeStamp() };
-      if (index === undefined || index < 0 || index >= store.chat.length) {
-        store.chat.push(fullMessage);
+      const messages = store.activeChat?.messages ?? [];
+      if (index === undefined || index < 0 || index >= messages.length) {
+        messages.push(fullMessage);
       } else {
-        store.chat.splice(index, 0, fullMessage);
+        messages.splice(index, 0, fullMessage);
       }
     },
 
@@ -209,7 +221,6 @@ const baseExtensionAPI: ExtensionAPI = {
     buildPayload: (messages: ApiChatMessage[], samplerOverrides?: Partial<SamplerSettings>): ChatCompletionPayload => {
       const settingsStore = useSettingsStore();
       const apiStore = useApiStore();
-      const characterStore = useCharacterStore();
       const uiStore = useUiStore();
 
       const samplerSettings = { ...settingsStore.settings.api.samplers, ...samplerOverrides };
@@ -217,7 +228,6 @@ const baseExtensionAPI: ExtensionAPI = {
       const model = apiStore.activeModel;
       const providerSpecific = settingsStore.settings.api.providerSpecific;
       const playerName = uiStore.activePlayerName || 'User';
-      const characterName = characterStore.activeCharacter?.name || '';
       const modelList = apiStore.modelList;
 
       if (!model) {
@@ -231,21 +241,27 @@ const baseExtensionAPI: ExtensionAPI = {
         source,
         providerSpecific,
         playerName,
-        characterName,
         modelList,
       });
     },
 
     metadata: {
-      get: (): Readonly<ChatMetadata> => {
-        return deepClone(useChatStore().chatMetadata);
+      get: (): Readonly<ChatMetadata> | null => {
+        return deepClone(useChatStore().activeChat?.metadata ?? null);
       },
       set: (metadata: ChatMetadata): void => {
-        useChatStore().chatMetadata = metadata;
+        const store = useChatStore();
+        if (!store.activeChat) {
+          throw new Error('No active chat to set metadata for.');
+        }
+        store.activeChat.metadata = metadata;
       },
       update: (updates: Partial<ChatMetadata>): void => {
         const store = useChatStore();
-        store.chatMetadata = { ...store.chatMetadata, ...updates };
+        if (!store.activeChat) {
+          throw new Error('No active chat to update metadata for.');
+        }
+        store.activeChat.metadata = { ...store.activeChat.metadata, ...updates };
       },
     },
 
@@ -313,9 +329,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * Gets the currently active character object.
      * @returns A deep copy of the active character, or null if none is active.
      */
-    getActive: (): Readonly<Character> | null => {
-      const character = useCharacterStore().activeCharacter;
-      return deepClone(character);
+    getActives: (): Readonly<Character[]> => {
+      return deepClone(useCharacterStore().activeCharacters);
     },
 
     /**
@@ -329,35 +344,6 @@ const baseExtensionAPI: ExtensionAPI = {
     get: (avatar: string): Readonly<Character> | null => {
       const char = useCharacterStore().characters.find((c) => c.avatar === avatar);
       return char ? deepClone(char) : null;
-    },
-
-    /**
-     * Sets the active character by its avatar filename.
-     * @param avatar The unique avatar filename of the character to activate.
-     * @returns A promise that resolves when the character is selected.
-     */
-    setActive: async (avatar: string): Promise<void> => {
-      const store = useCharacterStore();
-      const index = store.characters.findIndex((c) => c.avatar === avatar);
-      if (index > -1) {
-        await store.selectCharacterById(index);
-      } else {
-        throw new Error(`Character with avatar "${avatar}" not found.`);
-      }
-    },
-
-    /**
-     * Updates the currently active character with new data.
-     * This triggers a debounced save.
-     * @param data A partial character object with the fields to update.
-     */
-    updateActive: (data: Partial<Character>): void => {
-      const store = useCharacterStore();
-      if (store.activeCharacter) {
-        store.saveCharacterDebounced(data);
-      } else {
-        console.warn('[ExtensionAPI] No active character to update.');
-      }
     },
 
     create: async (character: Character, avatarImage?: File): Promise<void> => {

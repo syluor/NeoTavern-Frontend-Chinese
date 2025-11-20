@@ -20,6 +20,7 @@ function substitute(text: string, char: Character, user: string): string {
 }
 
 export class PromptBuilder {
+  private characters: Character[];
   private character: Character;
   private chatHistory: ChatMessage[];
   private samplerSettings: SamplerSettings;
@@ -28,8 +29,9 @@ export class PromptBuilder {
   private tokenizer: Tokenizer;
   public processedWorldInfo: ProcessedWorldInfo | null = null;
 
-  constructor({ character, chatHistory, samplerSettings, persona, tokenizer }: PromptBuilderOptions) {
-    this.character = character;
+  constructor({ characters, chatHistory, samplerSettings, persona, tokenizer }: PromptBuilderOptions) {
+    this.characters = characters;
+    this.character = characters[0]; // Assuming first character for now. TODO: Change with group chats.
     this.chatHistory = chatHistory;
     this.samplerSettings = samplerSettings;
     this.persona = persona;
@@ -40,7 +42,7 @@ export class PromptBuilder {
 
   public async build(): Promise<ApiChatMessage[]> {
     const options: PromptBuilderOptions = {
-      character: this.character,
+      characters: this.characters,
       chatHistory: this.chatHistory,
       samplerSettings: this.samplerSettings,
       persona: this.persona,
@@ -61,7 +63,7 @@ export class PromptBuilder {
     const processor = new WorldInfoProcessor({
       books: activeBooks.filter((book): book is NonNullable<typeof book> => book !== null),
       chat: this.chatHistory,
-      character: this.character,
+      characters: this.characters,
       settings: worldInfoStore.settings,
       persona: this.persona,
       maxContext: this.maxContext,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -13,28 +13,24 @@ const { t } = useStrictI18n();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
 const popupStore = usePopupStore();
-const chats = ref<ChatInfo[]>([]);
 
-async function fetchChatList() {
-  if (!characterStore.activeCharacter) return;
-  try {
-    chats.value = await api.listChatsForCharacter(characterStore.activeCharacter);
-  } catch {
-    toast.error(t('chatManagement.errors.fetch'));
-  }
-}
-
-watch(
-  () => characterStore.activeCharacter,
-  () => {
-    if (characterStore.activeCharacter) {
-      fetchChatList();
-    } else {
-      chats.value = [];
+const chats = computed<ChatInfo[]>(() => {
+  if (!characterStore.activeCharacters) return [];
+  const avatars = characterStore.activeCharacterAvatars;
+  let allChats: ChatInfo[] = [];
+  for (const avatar of avatars) {
+    const chatsForAvatar = chatStore.chatsMetadataByCharacterAvatars[avatar];
+    if (chatsForAvatar) {
+      allChats.push(...chatsForAvatar);
     }
-  },
-  { immediate: true },
-);
+  }
+
+  // Remove duplicates
+  allChats = allChats.filter((chat, index, self) => index === self.findIndex((c) => c.file_id === chat.file_id));
+
+  allChats.sort((a, b) => b.last_mes - a.last_mes);
+  return allChats;
+});
 
 async function selectChat(chatFile: string) {
   await chatStore.setActiveChatFile(chatFile);
@@ -42,17 +38,18 @@ async function selectChat(chatFile: string) {
 }
 
 async function createNewChat() {
+  const firstCharacter = characterStore.activeCharacters?.[0];
   const { result, value: newName } = await popupStore.show({
     title: t('chatManagement.newChat'),
     content: t('chatManagement.createPrompt'),
     type: POPUP_TYPE.INPUT,
-    inputValue: `${characterStore.activeCharacterName} - ${humanizedDateTime()}`,
+    inputValue: `${firstCharacter?.avatar} - ${humanizedDateTime()}`,
   });
 
-  if (result === POPUP_RESULT.AFFIRMATIVE && newName && characterStore.activeCharacter) {
+  if (result === POPUP_RESULT.AFFIRMATIVE && newName && characterStore.activeCharacters) {
     const newFileName = `${newName.trim()}`;
     try {
-      await api.saveChat(characterStore.activeCharacter, newFileName);
+      await api.saveChat(newFileName);
       await selectChat(newFileName);
     } catch {
       toast.error(t('chatManagement.errors.create'));
@@ -68,15 +65,14 @@ async function renameChat(oldFile: string) {
     inputValue: oldFile,
   });
 
-  if (result === POPUP_RESULT.AFFIRMATIVE && newName && characterStore.activeCharacter) {
+  if (result === POPUP_RESULT.AFFIRMATIVE && newName && characterStore.activeCharacters) {
     let newFileName = newName.trim();
     try {
       // TODO: Implement group chat
-      newFileName = (await api.renameChat(characterStore.activeCharacter, oldFile, newFileName, false)).newFileName;
+      newFileName = (await api.renameChat(oldFile, newFileName, false)).newFileName;
       if (chatStore.activeChatFile === oldFile) {
         chatStore.activeChatFile = newFileName;
       }
-      fetchChatList();
     } catch {
       toast.error(t('chatManagement.errors.rename'));
     }
@@ -90,9 +86,9 @@ async function deleteChat(chatFile: string) {
     type: POPUP_TYPE.CONFIRM,
   });
 
-  if (result === POPUP_RESULT.AFFIRMATIVE && characterStore.activeCharacter) {
+  if (result === POPUP_RESULT.AFFIRMATIVE && characterStore.activeCharacters) {
     try {
-      await api.deleteChat(characterStore.activeCharacter, chatFile);
+      await api.deleteChat(chatFile);
       if (chatStore.activeChatFile === chatFile && chats.value) {
         // If we deleted the active chat, switch to another one or create a new one
         const remainingChats = chats.value.filter((f) => f.file_id !== chatFile);
@@ -102,7 +98,6 @@ async function deleteChat(chatFile: string) {
           await createNewChat();
         }
       }
-      fetchChatList();
     } catch {
       toast.error(t('chatManagement.errors.delete'));
     }
@@ -114,7 +109,7 @@ async function deleteChat(chatFile: string) {
   <div class="popup-body">
     <h3>{{ t('chatManagement.title') }}</h3>
     <div class="chat-management-actions">
-      <button v-show="characterStore.activeCharacter" class="menu-button" @click="createNewChat">
+      <button v-show="characterStore.activeCharacters" class="menu-button" @click="createNewChat">
         {{ t('chatManagement.newChat') }}
       </button>
     </div>

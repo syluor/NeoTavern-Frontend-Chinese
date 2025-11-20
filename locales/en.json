@@ -29,7 +29,6 @@
     },
     "active": "Active",
     "errors": {
-      "fetch": "Could not fetch chat list.",
       "create": "Failed to create new chat.",
       "rename": "Failed to rename chat.",
       "delete": "Failed to delete chat."
@@ -462,7 +461,6 @@
       "syncWarning": "Character saved, but local list might be out of sync. Consider refreshing."
     },
     "fetch": {
-      "error": "The active character is no longer available. The page will be refreshed to prevent data loss.",
       "overflowWarning": "Character data length limit reached. To resolve this, set \"performance.lazyLoadCharacters\" to \"true\" in config.yaml and restart the server."
     },
     "switch": {

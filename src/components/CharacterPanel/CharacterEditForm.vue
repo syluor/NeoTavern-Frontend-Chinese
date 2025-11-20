@@ -36,7 +36,7 @@ const characterStore = useCharacterStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
-const activeCharacter = computed(() => characterStore.activeCharacter);
+
 const isCreating = computed(() => characterStore.isCreating);
 
 const formData = ref<CharacterFormData>({} as CharacterFormData);
@@ -90,7 +90,7 @@ const joinedTags = computed({
 
 // --- Watchers to sync form data with store ---
 watch(
-  activeCharacter,
+  characterStore.editFormCharacter!,
   (newChar) => {
     if (newChar) {
       if (JSON.stringify(newChar) !== JSON.stringify(formData.value)) {
@@ -139,7 +139,7 @@ watch(
 
     // If creating, update the draft in store but don't call save API
     if (isCreating.value) {
-      characterStore.saveActiveCharacter(newData); // This updates the draft state in store without API call
+      characterStore.saveCharacterOnEditForm(newData); // This updates the draft state in store without API call
       return;
     }
 
@@ -282,7 +282,7 @@ const displayAvatarUrl = computed(() => {
 </script>
 
 <template>
-  <div v-show="activeCharacter && formData.data" class="character-edit-form">
+  <div v-show="characterStore.editFormCharacter && formData.data" class="character-edit-form">
     <form id="character-editor-form" action="javascript:void(null);" method="post" enctype="multipart/form-data">
       <div id="character-editor-header" class="character-edit-form-header">
         <div id="character-editor-name-container" class="character-edit-form-header-main">

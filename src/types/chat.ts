@@ -2,6 +2,9 @@ export interface ChatMetadata {
   integrity?: string;
   custom_background?: string;
   chat_backgrounds?: string[];
+
+  members: string[];
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -42,7 +45,6 @@ export interface ChatMessage {
 }
 
 export type ChatHeader = {
-  character_name: string;
   chat_metadata: ChatMetadata;
 };
 

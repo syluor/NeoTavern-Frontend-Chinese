@@ -3,7 +3,6 @@ import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
-import ChatManagementPopup from './ChatManagementPopup.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
 
@@ -14,7 +13,6 @@ const userInput = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 const isOptionsMenuVisible = ref(false);
 const optionsMenu = ref<HTMLElement | null>(null);
-const isChatManagementPopupVisible = ref(false);
 
 function submitMessage() {
   chatStore.sendMessage(userInput.value);
@@ -28,11 +26,6 @@ function regenerate() {
 
 function continueGeneration() {
   chatStore.generateResponse(GenerationMode.CONTINUE);
-  isOptionsMenuVisible.value = false;
-}
-
-function openChatManagement() {
-  isChatManagementPopupVisible.value = true;
   isOptionsMenuVisible.value = false;
 }
 
@@ -145,10 +138,6 @@ watch(
         </div>
 
         <div v-show="isOptionsMenuVisible" ref="optionsMenu" class="options-menu">
-          <a class="options-menu-item" @click="openChatManagement">
-            <i class="fa-solid fa-address-book"></i>
-            <span>{{ t('chat.optionsMenu.manageChats') }}</span>
-          </a>
           <hr />
           <a class="options-menu-item" @click="regenerate">
             <i class="fa-solid fa-repeat"></i>
@@ -161,6 +150,5 @@ watch(
         </div>
       </form>
     </div>
-    <ChatManagementPopup :visible="isChatManagementPopupVisible" @close="isChatManagementPopupVisible = false" />
   </div>
 </template>

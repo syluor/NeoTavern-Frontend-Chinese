@@ -12,11 +12,14 @@ import { useSettingsStore } from './stores/settings.store';
 import { usePopupStore } from './stores/popup.store';
 import { useUiStore } from './stores/ui.store';
 import { useBackgroundStore } from './stores/background.store';
+import ChatManagement from './components/Chat/ChatManagement.vue';
+import { useStrictI18n } from './composables/useStrictI18n';
 
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const uiStore = useUiStore();
 const backgroundStore = useBackgroundStore();
+const { t } = useStrictI18n();
 
 const backgroundStyle = computed(() => ({
   backgroundImage: backgroundStore.currentBackgroundUrl,
@@ -27,6 +30,7 @@ const isFullScreen = computed(() => settingsStore.getAccountItem('chat_full_scre
 onMounted(() => {
   settingsStore.initializeSettings();
 
+  // TODO: Add i18n
   uiStore.registerSidebar(
     'recent-chats',
     {
@@ -43,6 +47,16 @@ onMounted(() => {
       component: AiConfigDrawer,
       title: 'AI Configuration',
       icon: 'fa-sliders',
+    },
+    'right',
+  );
+
+  uiStore.registerSidebar(
+    'chat-management',
+    {
+      component: ChatManagement,
+      title: t('chat.optionsMenu.manageChats'),
+      icon: 'fa-address-book',
     },
     'right',
   );

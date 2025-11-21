@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, nextTick, onUnmounted } from 'vue';
+import { ref, computed, onUnmounted, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { Character, MessageRole } from '../../types';
@@ -8,28 +8,10 @@ import { POPUP_TYPE, type PopupOptions } from '../../types';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { slideTransitionHooks } from '../../utils/dom';
-import { get, set } from 'lodash-es';
-import {
-  default_avatar,
-  depth_prompt_depth_default,
-  depth_prompt_role_default,
-  talkativeness_default,
-} from '../../constants';
-import type { Path, ValueForPath } from '../../types/utils';
+import { default_avatar } from '../../constants';
 import { toast } from '../../composables/useToast';
 import { usePopupStore } from '../../stores/popup.store';
-
-type CharacterFormData = Omit<Character, 'data'> & {
-  data: Omit<NonNullable<Character['data']>, 'depth_prompt'> & {
-    depth_prompt?: {
-      prompt: string;
-      depth: number;
-      role: MessageRole;
-    };
-  };
-};
-
-type CharacterFormDataPath = Path<CharacterFormData>;
+import { cloneDeep, set } from 'lodash-es';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -38,9 +20,6 @@ const popupStore = usePopupStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 
 const isCreating = computed(() => characterStore.isCreating);
-
-const formData = ref<CharacterFormData>({} as CharacterFormData);
-const isUpdatingFromStore = ref(false);
 
 // --- State for new features ---
 const isPeeking = ref(false);
@@ -77,91 +56,49 @@ const isSubmitting = ref(false);
 // --- Transition Hooks ---
 const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slideTransitionHooks;
 
-// --- Computed properties for form fields ---
-const joinedTags = computed({
-  get: () => formData.value.tags?.join(', ') || '',
-  set: (value) => {
-    updateValue(
-      'tags',
-      value.split(',').map((t) => t.trim()),
-    );
-  },
-});
+const localCharacter = ref<Character | null>(null);
 
-// --- Watchers to sync form data with store ---
 watch(
-  characterStore.editFormCharacter!,
-  (newChar) => {
-    if (newChar) {
-      if (JSON.stringify(newChar) !== JSON.stringify(formData.value)) {
-        isUpdatingFromStore.value = true;
-
-        const charCopy = JSON.parse(JSON.stringify(newChar));
-
-        // Ensure data structures exist for the template
-        if (!charCopy.data) charCopy.data = {};
-        if (!charCopy.data.creator_notes) charCopy.data.creator_notes = charCopy.creatorcomment || '';
-        if (!charCopy.data.depth_prompt) {
-          charCopy.data.depth_prompt = {
-            prompt: '',
-            depth: depth_prompt_depth_default,
-            role: depth_prompt_role_default,
-          };
-        }
-        if (charCopy.talkativeness === undefined) charCopy.talkativeness = talkativeness_default;
-
-        formData.value = charCopy;
-        characterStore.calculateAllTokens(charCopy);
-        isPeeking.value = false;
-
-        if (!isCreating.value) {
-          revokePreviewUrl();
-          selectedAvatarFile.value = null;
-        }
-
-        nextTick(() => {
-          isUpdatingFromStore.value = false;
-        });
-      }
-    } else {
-      formData.value = { data: {} } as CharacterFormData;
-      revokePreviewUrl();
+  () => characterStore.editFormCharacter,
+  (newVal) => {
+    if (newVal && (!localCharacter.value || localCharacter.value.avatar !== newVal.avatar)) {
+      localCharacter.value = cloneDeep(newVal);
+      characterStore.calculateAllTokens(localCharacter.value);
+    } else if (!newVal) {
+      localCharacter.value = null;
     }
   },
-  { immediate: true, deep: true },
+  { immediate: true },
 );
 
 watch(
-  formData,
-  (newData, oldData) => {
-    if (isUpdatingFromStore.value) return;
-    if (oldData && Object.keys(oldData).length === 0) return; // Prevent saving on initial hydration
-
-    // If creating, update the draft in store but don't call save API
-    if (isCreating.value) {
-      characterStore.saveCharacterOnEditForm(newData); // This updates the draft state in store without API call
-      return;
-    }
-
-    if (newData.avatar === oldData?.avatar) {
-      characterStore.saveCharacterDebounced(newData);
-      characterStore.calculateAllTokens(newData);
+  localCharacter,
+  (newVal) => {
+    if (newVal) {
+      characterStore.saveCharacterDebounced(newVal);
+      characterStore.calculateAllTokens(newVal);
     }
   },
   { deep: true },
 );
 
+const joinedTags = computed({
+  get: () => characterStore.editFormCharacter?.tags?.join(', ') || '',
+  set: (value) => {
+    if (characterStore.editFormCharacter) {
+      characterStore.editFormCharacter.tags = value.split(',').map((t) => t.trim());
+    }
+  },
+});
+
 onUnmounted(() => {
   revokePreviewUrl();
 });
 
-// --- Methods ---
-function updateValue<P extends CharacterFormDataPath>(path: P, value: ValueForPath<CharacterFormData, P>) {
-  set(formData.value, path, value);
-}
-
 function toggleFavorite() {
-  formData.value.fav = !formData.value.fav;
+  if (characterStore.editFormCharacter) {
+    characterStore.editFormCharacter.fav = !characterStore.editFormCharacter.fav;
+  }
 }
 
 function peekSpoilerMode() {
@@ -171,14 +108,15 @@ function peekSpoilerMode() {
 function openMaximizeEditor(fieldName: EditableField, title: string) {
   editingFieldName.value = fieldName;
   editorPopupTitle.value = t('characterEditor.advanced.editingTitle', { title });
-  editorPopupValue.value = get(formData.value, fieldName) ?? '';
+  // @ts-expect-error Element implicitly has an 'any'
+  editorPopupValue.value = characterStore.editFormCharacter ? (characterStore.editFormCharacter[fieldName] ?? '') : '';
   editorPopupOptions.value = { wide: true, large: true, okButton: 'common.ok', cancelButton: false };
   isEditorPopupVisible.value = true;
 }
 
 function handleEditorSubmit({ value }: { value: string }) {
-  if (editingFieldName.value) {
-    set(formData.value, editingFieldName.value, value);
+  if (editingFieldName.value && characterStore.editFormCharacter) {
+    set(characterStore.editFormCharacter, editingFieldName.value, value);
   }
 }
 
@@ -190,6 +128,8 @@ function revokePreviewUrl() {
 }
 
 async function handleAvatarFileChange(event: Event) {
+  if (!characterStore.editFormCharacter) return;
+
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
     const file = input.files[0];
@@ -200,18 +140,18 @@ async function handleAvatarFileChange(event: Event) {
       avatarPreviewUrl.value = URL.createObjectURL(file);
       selectedAvatarFile.value = file;
       // Also update name if empty
-      if (!formData.value.name) {
+      if (!characterStore.editFormCharacter?.name) {
         const name = file.name.replace(/\.[^/.]+$/, '');
-        updateValue('name', name);
+        characterStore.editFormCharacter.name = name;
       }
     } else {
-      await characterStore.updateCharacterImage(formData.value.avatar, file);
+      await characterStore.updateCharacterImage(characterStore.editFormCharacter.avatar, file);
     }
   }
 }
 
 async function handleCreate() {
-  if (!formData.value.name) {
+  if (!characterStore.editFormCharacter?.name) {
     toast.error(t('characterEditor.validation.nameRequired'));
     return;
   }
@@ -228,15 +168,16 @@ async function handleCreate() {
 
   isSubmitting.value = true;
   try {
-    await characterStore.createNewCharacter(formData.value as Character, selectedAvatarFile.value);
+    await characterStore.createNewCharacter(characterStore.editFormCharacter as Character, selectedAvatarFile.value);
   } finally {
     isSubmitting.value = false;
   }
 }
 
 async function handleDelete() {
-  const charName = formData.value.name;
-  const avatar = formData.value.avatar;
+  if (!characterStore.editFormCharacter) return;
+  const charName = characterStore.editFormCharacter.name;
+  const avatar = characterStore.editFormCharacter.avatar;
 
   const RESULT_CANCEL = -1;
   const RESULT_DELETE_ONLY = 1;
@@ -274,22 +215,24 @@ async function handleDelete() {
 }
 
 const displayAvatarUrl = computed(() => {
+  if (!characterStore.editFormCharacter) return '';
+
   if (isCreating.value && avatarPreviewUrl.value) {
     return avatarPreviewUrl.value;
   }
-  return getThumbnailUrl('avatar', formData.value.avatar);
+  return getThumbnailUrl('avatar', characterStore.editFormCharacter.avatar);
 });
 </script>
 
 <template>
-  <div v-show="characterStore.editFormCharacter && formData.data" class="character-edit-form">
+  <div v-if="localCharacter" class="character-edit-form">
     <form id="character-editor-form" action="javascript:void(null);" method="post" enctype="multipart/form-data">
       <div id="character-editor-header" class="character-edit-form-header">
         <div id="character-editor-name-container" class="character-edit-form-header-main">
-          <h2 v-show="!isCreating" class="interactable" tabindex="0">{{ formData.name }}</h2>
+          <h2 v-show="!isCreating" class="interactable" tabindex="0">{{ localCharacter.name }}</h2>
           <input
             v-show="isCreating"
-            v-model="formData.name"
+            v-model="localCharacter.name"
             class="text-pole"
             :placeholder="t('characterEditor.namePlaceholder')"
             style="font-size: 1.2em; font-weight: bold"
@@ -336,7 +279,7 @@ const displayAvatarUrl = computed(() => {
             <img
               id="character-editor-avatar"
               :src="displayAvatarUrl"
-              :alt="`${formData.name} Avatar`"
+              :alt="`${localCharacter.name} Avatar`"
               class="character-edit-form-avatar-img"
             />
             <input
@@ -365,7 +308,7 @@ const displayAvatarUrl = computed(() => {
           <div v-show="!isCreating" class="character-edit-form-buttons">
             <div
               class="menu-button fa-solid fa-star"
-              :class="{ 'is-favorite': formData.fav }"
+              :class="{ 'is-favorite': localCharacter.fav }"
               :title="t('characterEditor.favorite')"
               @click="toggleFavorite"
             ></div>
@@ -404,7 +347,7 @@ const displayAvatarUrl = computed(() => {
           <div class="menu-button fa-solid fa-tags" :title="t('characterEditor.viewAllTags')"></div>
         </div>
         <div class="tags">
-          <span v-for="tag in formData.tags" :key="tag" class="tag">{{ tag }}</span>
+          <span v-for="tag in localCharacter.tags" :key="tag" class="tag">{{ tag }}</span>
         </div>
       </div>
 
@@ -439,8 +382,10 @@ const displayAvatarUrl = computed(() => {
           <div v-show="isCreatorNotesOpen">
             <div class="inline-drawer-content">
               <!-- TODO: We should make sure this is sanitized when we loading the character eslint-disable-next-line vue/no-v-html -->
-              <div v-show="formData.data.creator_notes" v-html="formData.data.creator_notes"></div>
-              <div v-show="!formData.data.creator_notes">{{ t('characterEditor.noCreatorNotes') }}</div>
+              <div v-show="localCharacter.data?.creator_notes" v-html="localCharacter?.data?.creator_notes"></div>
+              <div v-show="!localCharacter.data?.creator_notes">
+                {{ t('characterEditor.noCreatorNotes') }}
+              </div>
             </div>
           </div>
         </Transition>
@@ -462,9 +407,9 @@ const displayAvatarUrl = computed(() => {
             id="description_textarea"
             class="text-pole"
             rows="12"
-            :value="formData.description"
+            :value="localCharacter.description"
             :placeholder="t('characterEditor.descriptionPlaceholder')"
-            @input="updateValue('description', ($event.target as HTMLTextAreaElement).value)"
+            @input="localCharacter.description = ($event.target as HTMLTextAreaElement).value"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['description'] || 0 }}</span>
@@ -484,9 +429,9 @@ const displayAvatarUrl = computed(() => {
             id="firstmessage_textarea"
             class="text-pole"
             rows="10"
-            :value="formData.first_mes"
+            :value="localCharacter.first_mes"
             :placeholder="t('characterEditor.firstMessagePlaceholder')"
-            @input="updateValue('first_mes', ($event.target as HTMLTextAreaElement).value)"
+            @input="localCharacter.first_mes = ($event.target as HTMLTextAreaElement).value"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['first_mes'] || 0 }}</span>
@@ -503,11 +448,11 @@ const displayAvatarUrl = computed(() => {
             ></i>
           </label>
           <textarea
-            :value="formData.personality"
+            :value="localCharacter.personality"
             class="text-pole"
             rows="4"
             :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
-            @input="updateValue('personality', ($event.target as HTMLTextAreaElement).value)"
+            @input="localCharacter.personality = ($event.target as HTMLTextAreaElement).value"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
@@ -523,11 +468,11 @@ const displayAvatarUrl = computed(() => {
             ></i>
           </label>
           <textarea
-            :value="formData.scenario"
+            :value="localCharacter.scenario"
             class="text-pole"
             rows="4"
             :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
-            @input="updateValue('scenario', ($event.target as HTMLTextAreaElement).value)"
+            @input="localCharacter.scenario = ($event.target as HTMLTextAreaElement).value"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
@@ -545,28 +490,28 @@ const displayAvatarUrl = computed(() => {
             </label>
             <!-- @vue-ignore -->
             <textarea
-              :value="formData.data.depth_prompt?.prompt"
+              :value="localCharacter.data.depth_prompt?.prompt"
               class="text-pole"
               rows="5"
               :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
-              @input="updateValue('data.depth_prompt.prompt', ($event.target as HTMLTextAreaElement).value)"
+              @input="localCharacter.data.depth_prompt.prompt = ($event.target as HTMLTextAreaElement).value"
             ></textarea>
           </div>
           <div class="character-note-controls">
             <label>{{ t('characterEditor.advanced.depth') }}</label>
             <!-- @vue-ignore -->
             <input
-              :value="formData.data.depth_prompt?.depth"
+              :value="localCharacter.data.depth_prompt?.depth"
               type="number"
               min="0"
               max="9999"
               class="text-pole"
-              @input="updateValue('data.depth_prompt.depth', ($event.target as HTMLInputElement).valueAsNumber)"
+              @input="localCharacter.data.depth_prompt.depth = ($event.target as HTMLInputElement).valueAsNumber"
             />
             <label>{{ t('characterEditor.advanced.role') }}</label>
             <!-- @vue-ignore -->
             <select
-              :value="formData.data.depth_prompt?.role"
+              :value="localCharacter.data.depth_prompt?.role"
               class="text-pole"
               @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
             >
@@ -580,12 +525,12 @@ const displayAvatarUrl = computed(() => {
           <label>{{ t('characterEditor.advanced.talkativeness') }}</label>
           <small>{{ t('characterEditor.advanced.talkativenessHint') }}</small>
           <input
-            :value="formData.talkativeness"
+            :value="localCharacter.talkativeness"
             type="range"
             min="0"
             max="1"
             step="0.05"
-            @input="updateValue('talkativeness', ($event.target as HTMLInputElement).valueAsNumber)"
+            @input="localCharacter.talkativeness = ($event.target as HTMLInputElement).valueAsNumber"
           />
           <div class="slider-hint">
             <span>{{ t('characterEditor.advanced.talkativenessShy') }}</span>
@@ -605,11 +550,11 @@ const displayAvatarUrl = computed(() => {
           </label>
           <small>{{ t('characterEditor.advanced.dialogueExamplesHint') }}</small>
           <textarea
-            :value="formData.mes_example"
+            :value="localCharacter.mes_example"
             class="text-pole"
             rows="6"
             :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
-            @input="updateValue('mes_example', ($event.target as HTMLTextAreaElement).value)"
+            @input="localCharacter.mes_example = ($event.target as HTMLTextAreaElement).value"
           ></textarea>
           <div class="token-counter">
             {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
@@ -649,11 +594,11 @@ const displayAvatarUrl = computed(() => {
                     ></i>
                   </label>
                   <textarea
-                    :value="formData.data.system_prompt"
+                    :value="localCharacter.data?.system_prompt"
                     class="text-pole"
                     rows="3"
                     :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
-                    @input="updateValue('data.system_prompt', ($event.target as HTMLTextAreaElement).value)"
+                    @input="localCharacter.data!.system_prompt = ($event.target as HTMLTextAreaElement).value"
                   ></textarea>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
@@ -674,11 +619,13 @@ const displayAvatarUrl = computed(() => {
                     ></i>
                   </label>
                   <textarea
-                    :value="formData.data.post_history_instructions"
+                    :value="localCharacter.data?.post_history_instructions"
                     class="text-pole"
                     rows="3"
                     :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
-                    @input="updateValue('data.post_history_instructions', ($event.target as HTMLTextAreaElement).value)"
+                    @input="
+                      localCharacter.data!.post_history_instructions = ($event.target as HTMLTextAreaElement).value
+                    "
                   ></textarea>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
@@ -716,21 +663,21 @@ const displayAvatarUrl = computed(() => {
                   <div class="form-column">
                     <label>{{ t('characterEditor.advanced.createdBy') }}</label>
                     <textarea
-                      :value="formData.data.creator"
+                      :value="localCharacter.data?.creator"
                       class="text-pole"
                       rows="2"
                       :placeholder="t('characterEditor.advanced.createdByPlaceholder')"
-                      @input="updateValue('data.creator', ($event.target as HTMLTextAreaElement).value)"
+                      @input="localCharacter.data!.creator = ($event.target as HTMLTextAreaElement).value"
                     ></textarea>
                   </div>
                   <div class="form-column">
                     <label>{{ t('characterEditor.advanced.characterVersion') }}</label>
                     <textarea
-                      :value="formData.data.character_version"
+                      :value="localCharacter.data?.character_version"
                       class="text-pole"
                       rows="2"
                       :placeholder="t('characterEditor.advanced.characterVersionPlaceholder')"
-                      @input="updateValue('data.character_version', ($event.target as HTMLTextAreaElement).value)"
+                      @input="localCharacter.data!.character_version = ($event.target as HTMLTextAreaElement).value"
                     ></textarea>
                   </div>
                 </div>
@@ -745,11 +692,11 @@ const displayAvatarUrl = computed(() => {
                       ></i>
                     </label>
                     <textarea
-                      :value="formData.data.creator_notes"
+                      :value="localCharacter.data?.creator_notes"
                       class="text-pole"
                       rows="4"
                       :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
-                      @input="updateValue('data.creator_notes', ($event.target as HTMLTextAreaElement).value)"
+                      @input="localCharacter.data!.creator_notes = ($event.target as HTMLTextAreaElement).value"
                     ></textarea>
                   </div>
                   <div class="form-column">

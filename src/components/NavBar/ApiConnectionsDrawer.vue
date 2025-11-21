@@ -185,7 +185,7 @@ onMounted(() => {
         </div>
 
         <!-- OpenAI Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.OPENAI">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.OPENAI">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.openaiKey') }}</h4>
             <div class="api-connections-drawer-input-group">
@@ -222,10 +222,10 @@ onMounted(() => {
               </optgroup>
             </select>
           </div>
-        </form>
+        </div>
 
         <!-- Claude Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CLAUDE">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CLAUDE">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.claudeKey') }}</h4>
             <div class="api-connections-drawer-input-group">
@@ -243,7 +243,7 @@ onMounted(() => {
               @update:model-value="settingsStore.setSetting('api.selectedProviderModels.claude', $event)"
             />
           </div>
-        </form>
+        </div>
 
         <!-- OpenRouter Form -->
         <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.OPENROUTER">
@@ -315,7 +315,7 @@ onMounted(() => {
         </div>
 
         <!-- MistralAI Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.MISTRALAI">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.MISTRALAI">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.mistralaiKey') }}</h4>
             <div class="api-connections-drawer-input-group">
@@ -330,10 +330,10 @@ onMounted(() => {
               @update:model-value="settingsStore.setSetting('api.selectedProviderModels.mistralai', $event)"
             />
           </div>
-        </form>
+        </div>
 
         <!-- Groq Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.GROQ">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.GROQ">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.groqKey') }}</h4>
             <div class="api-connections-drawer-input-group">
@@ -348,10 +348,10 @@ onMounted(() => {
               @update:model-value="settingsStore.setSetting('api.selectedProviderModels.groq', $event)"
             />
           </div>
-        </form>
+        </div>
 
         <!-- Custom Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CUSTOM">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CUSTOM">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.customUrl') }}</h4>
             <AppInput
@@ -372,10 +372,10 @@ onMounted(() => {
               <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
           </div>
-        </form>
+        </div>
 
         <!-- Azure OpenAI Form -->
-        <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.AZURE_OPENAI">
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.AZURE_OPENAI">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureKey') }}</h4>
             <div class="api-connections-drawer-input-group">
@@ -417,7 +417,7 @@ onMounted(() => {
               @update:model-value="settingsStore.setSetting('api.selectedProviderModels.azure_openai', String($event))"
             />
           </div>
-        </form>
+        </div>
 
         <!-- TODO: Add forms for other sources -->
 

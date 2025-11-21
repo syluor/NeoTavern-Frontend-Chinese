@@ -99,7 +99,7 @@ watch(
       </div>
     </div>
     <div class="chat-interface-form-container">
-      <form id="chat-form" class="chat-form" @submit.prevent="submitMessage">
+      <div id="chat-form" class="chat-form">
         <div class="chat-form-inner">
           <div class="chat-form-actions-left">
             <AppIconButton
@@ -129,13 +129,6 @@ watch(
             <div v-show="!chatStore.isGenerating" style="display: contents">
               <AppIconButton
                 class="chat-form-button"
-                icon="fa-arrow-right"
-                :title="t('chat.continue')"
-                :disabled="chatStore.isGenerating"
-                @click="continueGeneration"
-              />
-              <AppIconButton
-                class="chat-form-button"
                 icon="fa-paper-plane"
                 :title="t('chat.send')"
                 :disabled="chatStore.isGenerating"
@@ -156,7 +149,7 @@ watch(
             <span>{{ t('chat.optionsMenu.continue') }}</span>
           </a>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>

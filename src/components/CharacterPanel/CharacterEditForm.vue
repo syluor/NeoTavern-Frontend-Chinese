@@ -264,7 +264,7 @@ function handleMoreAction(action: string) {
 
 <template>
   <div v-if="localCharacter" class="character-edit-form">
-    <form id="character-editor-form" action="javascript:void(null);" method="post" enctype="multipart/form-data">
+    <div id="character-editor-form">
       <div id="character-editor-header" class="character-edit-form-header">
         <div id="character-editor-name-container" class="character-edit-form-header-main" style="flex-grow: 1">
           <h2 v-show="!isCreating" class="interactable" tabindex="0">{{ localCharacter.name }}</h2>
@@ -625,7 +625,7 @@ function handleMoreAction(action: string) {
           </div>
         </CollapsibleSection>
       </div>
-    </form>
+    </div>
 
     <Popup
       id="character-edit-form-editor-popup"

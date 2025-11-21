@@ -9,7 +9,7 @@
   form {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 100%;
     gap: 15px;
   }
 
@@ -65,9 +65,7 @@
   &-main-content {
     display: flex;
     flex-direction: column;
-    gap: 15px;
     flex-grow: 1;
-    min-height: 0;
   }
 
   &-avatar-name-block {
@@ -120,29 +118,12 @@
     .menu-button {
       padding: 0;
       font-size: 1.1em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &.is-favorite {
-        color: var(--color-golden);
-        filter: drop-shadow(0 0 3px var(--color-golden));
-      }
     }
-  }
 
-  &-tags-block {
-    .tag-controls {
-      display: flex;
-      gap: 5px;
-      .text-pole {
-        flex-grow: 1;
-      }
-    }
-    .tags {
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 5px;
+    // Targeted specifically for AppIconButton used for favorites
+    .menu-button-icon.is-favorite {
+      color: var(--color-golden);
+      filter: drop-shadow(0 0 3px var(--color-golden));
     }
   }
 
@@ -151,10 +132,6 @@
     flex-direction: column;
     gap: 5px;
     position: relative;
-
-    &--text-area textarea {
-      height: 100%;
-    }
 
     &.character-note {
       display: flex;
@@ -172,15 +149,6 @@
         flex-direction: column;
         gap: 5px;
       }
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 2px;
-      font-weight: bold;
-      font-size: 0.95em;
     }
 
     small {
@@ -204,19 +172,6 @@
     }
   }
 
-  .form-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  .form-column {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
   .inline-drawer-content--column {
     display: flex;
     flex-direction: column;
@@ -229,12 +184,4 @@
     width: 100%;
     margin: 5px 0;
   }
-}
-
-.slide-js-enter-active,
-.slide-js-leave-active {
-  transition:
-    height 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
-  overflow: hidden;
 }

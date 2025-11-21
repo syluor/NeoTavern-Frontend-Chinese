@@ -42,6 +42,10 @@
     padding: 5px 0;
     border-bottom: 1px solid var(--theme-border-color);
   }
+
+  &-editor {
+    height: 100%;
+  }
 }
 
 .character-item {

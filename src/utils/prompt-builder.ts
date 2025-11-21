@@ -7,21 +7,34 @@ import type {
   PromptBuilderOptions,
   Tokenizer,
   ProcessedWorldInfo,
+  ChatMetadata,
 } from '../types';
 import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
 import { defaultSamplerSettings } from '../constants';
 import { eventEmitter } from './event-emitter';
+import { joinCharacterField } from './group-chat';
+import Handlebars from 'handlebars';
 
 // TODO: Add proper templating engine
-function substitute(text: string, char: Character, user: string): string {
+function substitute(text: string, chars: Character[], user: string): string {
   if (!text) return '';
-  return text.replace(/{{char}}/g, char.name).replace(/{{user}}/g, user);
+  const template = Handlebars.compile(text, { noEscape: true });
+  const result = template({
+    user,
+    char: chars.length > 0 ? chars[0].name : '',
+    chars: chars.map((c) => c.name),
+    description: chars.length > 0 ? chars[0].description : '',
+    personality: chars.length > 0 ? chars[0].personality : '',
+    scenario: chars.length > 0 ? chars[0].scenario : '',
+  });
+  return result;
 }
 
 export class PromptBuilder {
   private characters: Character[];
   private character: Character;
+  private chatMetadata: ChatMetadata;
   private chatHistory: ChatMessage[];
   private samplerSettings: SamplerSettings;
   private persona: Persona;
@@ -29,9 +42,10 @@ export class PromptBuilder {
   private tokenizer: Tokenizer;
   public processedWorldInfo: ProcessedWorldInfo | null = null;
 
-  constructor({ characters, chatHistory, samplerSettings, persona, tokenizer }: PromptBuilderOptions) {
+  constructor({ characters, chatHistory, samplerSettings, persona, tokenizer, chatMetadata }: PromptBuilderOptions) {
     this.characters = characters;
-    this.character = characters[0]; // Assuming first character for now. TODO: Change with group chats.
+    this.character = characters[0];
+    this.chatMetadata = chatMetadata;
     this.chatHistory = chatHistory;
     this.samplerSettings = samplerSettings;
     this.persona = persona;
@@ -40,9 +54,17 @@ export class PromptBuilder {
     this.maxContext = this.samplerSettings.max_context ?? defaultSamplerSettings.max_context;
   }
 
+  private getContent(fieldGetter: (char: Character) => string | undefined, singleCharContent?: string): string {
+    if (this.characters.length > 1) {
+      return joinCharacterField(this.characters, fieldGetter);
+    }
+    return singleCharContent || '';
+  }
+
   public async build(): Promise<ApiChatMessage[]> {
     const options: PromptBuilderOptions = {
       characters: this.characters,
+      chatMetadata: this.chatMetadata,
       chatHistory: this.chatHistory,
       samplerSettings: this.samplerSettings,
       persona: this.persona,
@@ -92,27 +114,54 @@ export class PromptBuilder {
           case 'chatHistory':
             fixedPrompts.push(historyPlaceholder);
             break;
-          case 'charDescription':
-            if (this.character.description) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: this.character.description });
+          case 'charDescription': {
+            const content = this.getContent((c) => c.description, this.character.description);
+            if (content) {
+              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             }
             break;
-          case 'charPersonality':
-            if (this.character.personality) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: this.character.personality });
+          }
+          case 'charPersonality': {
+            const content = this.getContent((c) => c.personality, this.character.personality);
+            if (content) {
+              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             }
             break;
-          case 'scenario':
-            if (this.character.scenario) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: this.character.scenario });
+          }
+          case 'scenario': {
+            let content = '';
+            if (this.chatMetadata.promptOverrides?.scenario) {
+              content = this.chatMetadata.promptOverrides.scenario;
+            } else {
+              content = this.getContent((c) => c.scenario, this.character.scenario);
+            }
+
+            if (content) {
+              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             }
             break;
-          case 'dialogueExamples':
-            if (this.character.mes_example) {
-              const example = substitute(this.character.mes_example, this.character, this.persona.name);
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: example });
+          }
+          case 'dialogueExamples': {
+            // Join mode concatenates examples.
+            let content = '';
+            if (this.characters.length > 1) {
+              // For examples, we might want to substitute {{char}} before joining to ensure names are correct per block
+              content = this.characters
+                .map((c) => {
+                  if (!c.mes_example) return null;
+                  return substitute(c.mes_example, [c], this.persona.name);
+                })
+                .filter(Boolean)
+                .join('\n\n');
+            } else if (this.character.mes_example) {
+              content = substitute(this.character.mes_example, [this.character], this.persona.name);
+            }
+
+            if (content) {
+              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             }
             break;
+          }
           case 'worldInfoBefore':
             if (worldInfoBefore) {
               fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: worldInfoBefore });
@@ -126,7 +175,7 @@ export class PromptBuilder {
         }
       } else {
         if (promptDefinition.content && promptDefinition.role) {
-          const content = substitute(promptDefinition.content, this.character, this.persona.name);
+          const content = substitute(promptDefinition.content, this.characters, this.persona.name);
           if (content) {
             fixedPrompts.push({ role: promptDefinition.role, content });
           }
@@ -154,6 +203,11 @@ export class PromptBuilder {
         role: msg.is_user ? 'user' : 'assistant',
         content: msg.mes,
       };
+
+      if (!msg.is_user && this.chatMetadata.members.length > 1) {
+        apiMsg.content = `${msg.name}: ${msg.mes}`;
+      }
+
       const msgTokenCount = await this.tokenizer.getTokenCount(apiMsg.content);
 
       if (historyTokenCount + msgTokenCount <= historyBudget) {

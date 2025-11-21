@@ -1,4 +1,30 @@
 .chat-management {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &-header {
+    display: flex;
+    gap: 5px;
+    border-bottom: 1px solid var(--theme-border-color);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+
+    button {
+      flex: 1;
+      &.active {
+        background-color: var(--theme-emphasis-color);
+        color: var(--black-100);
+        font-weight: bold;
+      }
+    }
+  }
+
+  &-content {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
   &-actions {
     display: flex;
     justify-content: flex-start;
@@ -6,7 +32,6 @@
   }
 
   &-list {
-    max-height: 60vh;
     overflow-y: auto;
 
     table {
@@ -41,4 +66,51 @@
   border-radius: 5px;
   font-size: 0.8em;
   margin-right: 10px;
+}
+
+.group-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.group-member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--black-30a);
+  padding: 5px;
+  border-radius: 5px;
+
+  &.muted {
+    opacity: 0.6;
+    .group-member-name {
+      text-decoration: line-through;
+    }
+  }
+
+  img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .group-member-name {
+    flex-grow: 1;
+    font-weight: bold;
+  }
+
+  .member-actions {
+    display: flex;
+    gap: 5px;
+  }
+}
+
+.group-config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px;
 }

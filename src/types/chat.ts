@@ -1,9 +1,29 @@
+import type { GroupGenerationHandlingMode, GroupReplyStrategy } from '../constants';
+
+export interface GroupMemberStatus {
+  muted: boolean;
+}
+
 export interface ChatMetadata {
   integrity: string;
   custom_background?: string;
   chat_backgrounds?: string[];
 
   members: string[];
+
+  promptOverrides?: {
+    scenario?: string;
+  };
+
+  group?: {
+    config: {
+      replyStrategy: GroupReplyStrategy;
+      handlingMode: GroupGenerationHandlingMode;
+      allowSelfResponses: boolean;
+      autoMode: number; // seconds, 0 = disabled
+    };
+    members: Record<string, GroupMemberStatus>;
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;

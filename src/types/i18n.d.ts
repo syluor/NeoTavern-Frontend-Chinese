@@ -19,7 +19,6 @@ export interface MessageSchema {
     description: string;
   };
   chatManagement: {
-    title: string;
     newChat: string;
     createPrompt: string;
     renamePrompt: string;
@@ -36,6 +35,38 @@ export interface MessageSchema {
       rename: string;
       delete: string;
     };
+    tabs: {
+      chats: string;
+      group: string;
+      prompts: string;
+    };
+    prompts: {
+      singleCharHint: string;
+    };
+  };
+  group: {
+    peek: string;
+    forceTalk: string;
+    mute: string;
+    replyStrategy: string;
+    strategies: {
+      manual: string;
+      natural: string;
+      list: string;
+      pooled: string;
+    };
+    handlingMode: string;
+    modes: {
+      swap: string;
+      joinExclude: string;
+      joinInclude: string;
+    };
+    allowSelfResponses: string;
+    autoMode: string;
+    autoModeHint: string;
+    scenarioOverride: string;
+    scenarioOverridePlaceholder: string;
+    selectToAdd: string;
   };
   personaManagement: {
     title: string;
@@ -363,6 +394,8 @@ export interface MessageSchema {
     by: string;
     reset: string;
     copied: string;
+    seconds: string;
+    remove: string;
   };
   popup: {
     cropAvatar: {
@@ -389,6 +422,7 @@ export interface MessageSchema {
       errorFallback: string;
       noModelError: string;
       noPersonaError: string;
+      noSpeaker: string;
     };
     buttons: {
       confirmEdit: string;

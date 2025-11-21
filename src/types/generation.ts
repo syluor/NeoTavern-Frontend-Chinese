@@ -1,7 +1,7 @@
 import type { GenerationMode, OpenrouterMiddleoutType, ReasoningEffort } from '../constants';
 import type { ApiModel, ChatCompletionSource } from './api';
 import type { Character } from './character';
-import type { ChatMessage } from './chat';
+import type { ChatMetadata, ChatMessage } from './chat';
 import type { MessageRole } from './common';
 import type { Persona } from './persona';
 import type { SamplerSettings, Settings } from './settings';
@@ -77,6 +77,7 @@ export type BuildChatCompletionPayloadOptions = {
 export type GenerationContext = {
   mode: GenerationMode;
   characters: Character[];
+  chatMetadata: ChatMetadata;
   history: ChatMessage[];
   persona: Persona;
   tokenizer: Tokenizer;
@@ -92,6 +93,7 @@ export type GenerationContext = {
 
 export type PromptBuilderOptions = {
   characters: Character[];
+  chatMetadata: ChatMetadata;
   chatHistory: ChatMessage[];
   samplerSettings: SamplerSettings;
   persona: Persona;

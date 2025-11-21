@@ -13,6 +13,7 @@ import {
   type FullChat,
   type ChatHeader,
   type ChatInfo,
+  type Character,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -27,11 +28,19 @@ import { useStrictI18n } from '../composables/useStrictI18n';
 import { PromptBuilder } from '../utils/prompt-builder';
 import { buildChatCompletionPayload, ChatCompletionService } from '../api/generation';
 import { getThumbnailUrl } from '../utils/image';
-import { default_user_avatar, DEFAULT_SAVE_EDIT_TIMEOUT, GenerationMode } from '../constants';
+import {
+  default_user_avatar,
+  DEFAULT_SAVE_EDIT_TIMEOUT,
+  GenerationMode,
+  GroupGenerationHandlingMode,
+  GroupReplyStrategy,
+  talkativeness_default,
+} from '../constants';
 import { useSettingsStore } from './settings.store';
 import { usePersonaStore } from './persona.store';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
+import { getCharactersForContext } from '../utils/group-chat';
 
 export type ChatStoreState = {
   messages: ChatMessage[];
@@ -51,8 +60,10 @@ export const useChatStore = defineStore('chat', () => {
 
   const isGenerating = ref(false);
   const generationController = ref<AbortController | null>(null);
-  const isChatLoading = ref(false); // Prevents watcher from saving during initialization
+  const isChatLoading = ref(false);
   const chatInfos = ref<ChatInfo[]>([]);
+
+  const autoModeTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
   const uiStore = useUiStore();
   const personaStore = usePersonaStore();
@@ -72,6 +83,32 @@ export const useChatStore = defineStore('chat', () => {
     return mapping;
   });
 
+  const isGroupChat = computed(() => {
+    return activeChat.value && activeChat.value.metadata.members.length > 1;
+  });
+
+  const groupConfig = computed(() => {
+    if (!activeChat.value) return null;
+
+    // Initialize defaults if missing
+    if (!activeChat.value.metadata.group) {
+      activeChat.value.metadata.group = {
+        config: {
+          replyStrategy: GroupReplyStrategy.NATURAL_ORDER,
+          handlingMode: GroupGenerationHandlingMode.SWAP,
+          allowSelfResponses: false,
+          autoMode: 0,
+        },
+        members: {},
+      };
+      // Sync members list status
+      activeChat.value.metadata.members.forEach((avatar) => {
+        activeChat.value!.metadata.group!.members[avatar] = { muted: false };
+      });
+    }
+    return activeChat.value.metadata.group;
+  });
+
   const saveChatDebounced = debounce(async () => {
     if (!activeChat.value || !activeChatFile.value) {
       console.error('Debounced save failed: No active character or chat file.');
@@ -88,7 +125,6 @@ export const useChatStore = defineStore('chat', () => {
       ];
       await apiSaveChat(activeChatFile.value, chatToSave);
 
-      // Save itemized prompts
       await promptStore.saveItemizedPrompts(activeChatFile.value);
       const chatInfo = chatInfos.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
       if (chatInfo) {
@@ -107,18 +143,130 @@ export const useChatStore = defineStore('chat', () => {
   watch(
     [activeChat],
     () => {
-      // Emit event for UI reactivity
       nextTick(async () => {
         await eventEmitter.emit('chat:updated', activeChatFile.value as string);
       });
 
-      // Trigger debounced save if not loading
       if (!isChatLoading.value && activeChat.value) {
         saveChatDebounced();
       }
     },
     { deep: true },
   );
+
+  watch(
+    () => isGenerating.value,
+    (generating) => {
+      if (!generating && groupConfig.value?.config.autoMode && groupConfig.value.config.autoMode > 0) {
+        startAutoModeTimer();
+      } else {
+        stopAutoModeTimer();
+      }
+    },
+  );
+
+  function startAutoModeTimer() {
+    stopAutoModeTimer();
+    if (!groupConfig.value?.config.autoMode) return;
+
+    autoModeTimer.value = setTimeout(() => {
+      generateResponse(GenerationMode.NEW);
+    }, groupConfig.value.config.autoMode * 1000);
+  }
+
+  function stopAutoModeTimer() {
+    if (autoModeTimer.value) {
+      clearTimeout(autoModeTimer.value);
+      autoModeTimer.value = null;
+    }
+  }
+
+  function determineNextSpeaker(characters: Character[], lastMessage: ChatMessage | null): Character | null {
+    if (!groupConfig.value) return characters[0];
+    const strategy = groupConfig.value.config.replyStrategy;
+    const activeMembers = characters.filter((c) => !groupConfig.value!.members[c.avatar]?.muted);
+
+    if (activeMembers.length === 0) return null; // Everyone muted
+
+    if (strategy === GroupReplyStrategy.LIST_ORDER) {
+      if (!lastMessage || lastMessage.is_user) return activeMembers[0];
+      const lastIndex = activeMembers.findIndex((c) => c.name === lastMessage.name);
+      const nextIndex = (lastIndex + 1) % activeMembers.length;
+      return activeMembers[nextIndex];
+    }
+
+    if (strategy === GroupReplyStrategy.POOLED_ORDER) {
+      // Check who hasn't spoken since last user message
+      let lastUserIndex = -1;
+      const messages = activeChat.value?.messages || [];
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].is_user) {
+          lastUserIndex = i;
+          break;
+        }
+      }
+
+      const speakersSinceUser = new Set<string>();
+      if (lastUserIndex > -1) {
+        for (let i = lastUserIndex + 1; i < messages.length; i++) {
+          if (!messages[i].is_user) speakersSinceUser.add(messages[i].name);
+        }
+      }
+
+      const available = activeMembers.filter((c) => !speakersSinceUser.has(c.name));
+      if (available.length > 0) {
+        return available[Math.floor(Math.random() * available.length)];
+      }
+      // All spoke? Pick random.
+      return activeMembers[Math.floor(Math.random() * activeMembers.length)];
+    }
+
+    if (strategy === GroupReplyStrategy.NATURAL_ORDER) {
+      if (!lastMessage) return activeMembers[Math.floor(Math.random() * activeMembers.length)];
+
+      const textToCheck = lastMessage.mes.toLowerCase();
+      const mentions: Character[] = [];
+
+      // 1. Check mentions
+      for (const char of activeMembers) {
+        if (!groupConfig.value.config.allowSelfResponses && lastMessage.name === char.name) continue;
+
+        // Simple name matching
+        const nameParts = char.name.toLowerCase().split(' ');
+        for (const part of nameParts) {
+          if (part.length > 2 && new RegExp(`\\b${part}\\b`).test(textToCheck)) {
+            mentions.push(char);
+            break;
+          }
+        }
+      }
+
+      if (mentions.length > 0) {
+        return mentions[0]; // TODO: Queue not implemented fully, pick first mention
+      }
+
+      // 2. Talkativeness RNG
+      const candidates: Character[] = [];
+      for (const char of activeMembers) {
+        if (!groupConfig.value.config.allowSelfResponses && lastMessage.name === char.name) continue;
+
+        const chance = (char.talkativeness ?? talkativeness_default) * 100;
+        if (Math.random() * 100 < chance) {
+          candidates.push(char);
+        }
+      }
+
+      if (candidates.length > 0) {
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      // 3. Fallback
+      return activeMembers[Math.floor(Math.random() * activeMembers.length)];
+    }
+
+    // Manual/Default
+    return null;
+  }
 
   async function clearChat(recreateFirstMessage = false) {
     if (!activeChat.value) return;
@@ -140,8 +288,8 @@ export const useChatStore = defineStore('chat', () => {
     await nextTick();
     await eventEmitter.emit('chat:cleared');
 
-    // Send the first message of first active character
     if (recreateFirstMessage && characterStore.activeCharacters.length > 0) {
+      // Group chat? Recreate first message for the *primary* character (first in list)
       const activeCharacter = characterStore.activeCharacters[0];
       if (activeCharacter) {
         const firstMessage = getFirstMessage(activeCharacter);
@@ -244,7 +392,8 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function generateResponse(mode: GenerationMode) {
+  // Optional: forceSpeaker allows bypassing logic to force specific char
+  async function generateResponse(mode: GenerationMode, forceSpeakerAvatar?: string) {
     if (isGenerating.value) return;
 
     const startController = new AbortController();
@@ -264,10 +413,26 @@ export const useChatStore = defineStore('chat', () => {
     const settingsStore = useSettingsStore();
     const promptStore = usePromptStore();
 
-    // TODO: Group chat support
-    const activeCharacter = characterStore.activeCharacters[0];
+    let activeCharacter: Character | null = null;
+
+    if (forceSpeakerAvatar) {
+      activeCharacter = characterStore.activeCharacters.find((c) => c.avatar === forceSpeakerAvatar) || null;
+    }
+
     if (!activeCharacter) {
-      console.error('generateResponse called without an active character.');
+      if (characterStore.activeCharacters.length === 1) {
+        activeCharacter = characterStore.activeCharacters[0];
+      } else {
+        const lastMessage = activeChat.value?.messages.length
+          ? activeChat.value.messages[activeChat.value.messages.length - 1]
+          : null;
+        activeCharacter = determineNextSpeaker(characterStore.activeCharacters, lastMessage);
+      }
+    }
+
+    if (!activeCharacter) {
+      toast.info(t('chat.generate.noSpeaker'));
+      isGenerating.value = false;
       return;
     }
 
@@ -307,9 +472,23 @@ export const useChatStore = defineStore('chat', () => {
 
       const tokenizer = new ApiTokenizer({ tokenizerType: settings.api.tokenizer, model: activeModel });
 
+      const handlingMode = groupConfig.value?.config.handlingMode ?? GroupGenerationHandlingMode.SWAP;
+
+      // Construct list of characters for prompt context
+      const charactersForContext = getCharactersForContext(
+        characterStore.activeCharacters,
+        activeCharacter,
+        handlingMode !== GroupGenerationHandlingMode.SWAP,
+        handlingMode === GroupGenerationHandlingMode.JOIN_INCLUDE_MUTED,
+        groupConfig.value?.members
+          ? Object.fromEntries(Object.entries(groupConfig.value.members).map(([k, v]) => [k, v.muted]))
+          : {},
+      );
+
       const context: GenerationContext = {
         mode,
-        characters: characterStore.activeCharacters,
+        characters: charactersForContext,
+        chatMetadata: activeChat.value!.metadata,
         history: chatHistoryForPrompt,
         persona: activePersona,
         settings: {
@@ -333,6 +512,7 @@ export const useChatStore = defineStore('chat', () => {
 
       const promptBuilder = new PromptBuilder({
         characters: context.characters,
+        chatMetadata: context.chatMetadata,
         chatHistory: context.history,
         persona: context.persona,
         samplerSettings: context.settings.sampler,
@@ -374,6 +554,7 @@ export const useChatStore = defineStore('chat', () => {
       // TODO: With group chats, we need to track per-character prompts
       const breakdown: PromptTokenBreakdown = {
         systemTotal: 0,
+        // TODO: Use primary character for estimates, or sum all? Just estimating active char for now.
         description: await tokenizer.getTokenCount(activeCharacter.description || ''),
         personality: await tokenizer.getTokenCount(activeCharacter.personality || ''),
         scenario: await tokenizer.getTokenCount(activeCharacter.scenario || ''),
@@ -459,7 +640,7 @@ export const useChatStore = defineStore('chat', () => {
           generatedMessage = lastMessage;
         } else {
           const botMessage: ChatMessage = {
-            name: activeCharacter.name,
+            name: activeCharacter!.name,
             is_user: false,
             mes: content,
             send_date: swipeInfo.send_date,
@@ -469,6 +650,7 @@ export const useChatStore = defineStore('chat', () => {
             swipe_info: [swipeInfo],
             swipe_id: 0,
             extra: { reasoning, token_count },
+            original_avatar: activeCharacter!.avatar,
           };
 
           const createController = new AbortController();
@@ -512,17 +694,7 @@ export const useChatStore = defineStore('chat', () => {
         let streamedReasoning = '';
         let targetMessageIndex = -1;
 
-        if (mode === GenerationMode.CONTINUE && lastMessage) {
-          targetMessageIndex = activeChatMessages.length - 1;
-        } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
-          targetMessageIndex = activeChatMessages.length - 1;
-          if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
-          if (!Array.isArray(lastMessage.swipe_info)) lastMessage.swipe_info = [];
-          lastMessage.swipe_id = lastMessage.swipes.length;
-          lastMessage.swipes.push('');
-          lastMessage.mes = '';
-          lastMessage.extra = { reasoning: '' };
-        } else {
+        if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
           const botMessage: ChatMessage = {
             name: activeCharacter.name,
             is_user: false,
@@ -533,6 +705,7 @@ export const useChatStore = defineStore('chat', () => {
             swipe_id: 0,
             swipe_info: [],
             extra: { reasoning: '' },
+            original_avatar: activeCharacter.avatar,
           };
 
           const createController = new AbortController();
@@ -549,6 +722,16 @@ export const useChatStore = defineStore('chat', () => {
           targetMessageIndex = activeChatMessages.length - 1;
           await nextTick();
           await eventEmitter.emit('message:created', botMessage);
+        } else if (mode === GenerationMode.ADD_SWIPE && lastMessage) {
+          targetMessageIndex = activeChatMessages.length - 1;
+          // ... setup swipe
+          if (!Array.isArray(lastMessage.swipes)) lastMessage.swipes = [lastMessage.mes];
+          lastMessage.swipes.push('');
+          lastMessage.swipe_id = lastMessage.swipes.length - 1;
+          lastMessage.mes = '';
+        } else {
+          // Continue
+          targetMessageIndex = activeChatMessages.length - 1;
         }
 
         try {
@@ -565,7 +748,11 @@ export const useChatStore = defineStore('chat', () => {
             if (chunk.reasoning) streamedReasoning += chunk.reasoning;
 
             const targetMessage = activeChatMessages[targetMessageIndex];
-            if (mode === GenerationMode.ADD_SWIPE) {
+            if (
+              mode === GenerationMode.ADD_SWIPE ||
+              mode === GenerationMode.NEW ||
+              mode === GenerationMode.REGENERATE
+            ) {
               targetMessage.swipes![targetMessage.swipe_id!] += chunk.delta;
               targetMessage.mes = targetMessage.swipes![targetMessage.swipe_id!];
             } else {
@@ -575,26 +762,23 @@ export const useChatStore = defineStore('chat', () => {
           }
         } finally {
           const finalMessage = activeChatMessages[targetMessageIndex];
-          if (!finalMessage) return;
-          finalMessage.gen_finished = new Date().toISOString();
-          finalMessage.extra!.token_count = await tokenizer.getTokenCount(finalMessage.mes);
+          if (finalMessage) {
+            finalMessage.gen_finished = new Date().toISOString();
+            finalMessage.extra!.token_count = await tokenizer.getTokenCount(finalMessage.mes);
+            // Add swipe info
+            const swipeInfo: SwipeInfo = {
+              send_date: finalMessage.send_date!,
+              gen_started: genStarted,
+              gen_finished: finalMessage.gen_finished,
+              extra: { ...finalMessage.extra },
+            };
+            if (!finalMessage.swipe_info) finalMessage.swipe_info = [];
 
-          if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
-            finalMessage.swipes![0] = finalMessage.mes;
-          }
-
-          const swipeInfo: SwipeInfo = {
-            send_date: finalMessage.send_date!,
-            gen_started: genStarted,
-            gen_finished: finalMessage.gen_finished,
-            extra: { ...finalMessage.extra },
-          };
-
-          if (mode === GenerationMode.ADD_SWIPE) {
-            if (!Array.isArray(finalMessage.swipe_info)) finalMessage.swipe_info = [];
-            finalMessage.swipe_info.push(swipeInfo);
-          } else if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
-            finalMessage.swipe_info = [swipeInfo];
+            if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
+              finalMessage.swipe_info = [swipeInfo];
+            } else if (mode === GenerationMode.ADD_SWIPE) {
+              finalMessage.swipe_info.push(swipeInfo);
+            }
           }
         }
       }
@@ -620,6 +804,8 @@ export const useChatStore = defineStore('chat', () => {
       return;
     }
 
+    stopAutoModeTimer();
+
     const userMessage: ChatMessage = {
       name: uiStore.activePlayerName || 'User',
       is_user: true,
@@ -643,6 +829,64 @@ export const useChatStore = defineStore('chat', () => {
 
     if (triggerGeneration) {
       await generateResponse(GenerationMode.NEW);
+    }
+  }
+
+  // Toggles mute status in metadata
+  function toggleMemberMute(avatar: string) {
+    if (!activeChat.value?.metadata.group) return;
+    const member = activeChat.value.metadata.group.members[avatar];
+    if (member) {
+      member.muted = !member.muted;
+      saveChatDebounced();
+    }
+  }
+
+  function reorderMembers(fromIndex: number, toIndex: number) {
+    if (!activeChat.value) return;
+    const members = activeChat.value.metadata.members;
+    if (toIndex >= 0 && toIndex < members.length) {
+      const item = members.splice(fromIndex, 1)[0];
+      members.splice(toIndex, 0, item);
+      saveChatDebounced();
+    }
+  }
+
+  async function addMember(avatar: string) {
+    if (!activeChat.value) return;
+    if (activeChat.value.metadata.members.includes(avatar)) return;
+
+    activeChat.value.metadata.members.push(avatar);
+
+    // Initialize group config if needed
+    if (!activeChat.value.metadata.group) {
+      activeChat.value.metadata.group = {
+        config: {
+          replyStrategy: GroupReplyStrategy.NATURAL_ORDER,
+          handlingMode: GroupGenerationHandlingMode.SWAP,
+          allowSelfResponses: false,
+          autoMode: 0,
+        },
+        members: {},
+      };
+    }
+    // Initialize member status
+    if (!activeChat.value.metadata.group.members[avatar]) {
+      activeChat.value.metadata.group.members[avatar] = { muted: false };
+    }
+
+    saveChatDebounced();
+  }
+
+  async function removeMember(avatar: string) {
+    if (!activeChat.value) return;
+    const index = activeChat.value.metadata.members.indexOf(avatar);
+    if (index > -1) {
+      activeChat.value.metadata.members.splice(index, 1);
+      if (activeChat.value.metadata.group?.members[avatar]) {
+        delete activeChat.value.metadata.group.members[avatar];
+      }
+      saveChatDebounced();
     }
   }
 
@@ -754,7 +998,6 @@ export const useChatStore = defineStore('chat', () => {
       currentSwipeId = (currentSwipeId - 1 + swipeCount) % swipeCount;
       await syncSwipeToMes(messageIndex, currentSwipeId);
     } else {
-      // Right swipe
       if (currentSwipeId < swipeCount - 1) {
         currentSwipeId++;
         await syncSwipeToMes(messageIndex, currentSwipeId);
@@ -823,6 +1066,8 @@ export const useChatStore = defineStore('chat', () => {
     activeMessageEditState,
     isGenerating,
     activeChatFile,
+    isGroupChat,
+    groupConfig,
     chatsMetadataByCharacterAvatars,
     clearChat,
     sendMessage,
@@ -838,5 +1083,9 @@ export const useChatStore = defineStore('chat', () => {
     moveMessage,
     setActiveChatFile,
     createNewChatForCharacter,
+    toggleMemberMute,
+    reorderMembers,
+    addMember,
+    removeMember,
   };
 });

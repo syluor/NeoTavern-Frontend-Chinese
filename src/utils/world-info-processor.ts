@@ -38,7 +38,7 @@ class WorldInfoBuffer {
   constructor(chat: ChatMessage[], settings: WorldInfoSettings, characters: Character[], persona: Persona) {
     this.#settings = settings;
     this.#characters = characters;
-    this.#character = characters[0]; // Assuming first character for now. TODO: Change with group chats.
+    this.#character = characters[0]; // Assuming first character for now.
     this.#persona = persona;
     this.#initDepthBuffer(chat);
   }
@@ -112,7 +112,7 @@ export class WorldInfoProcessor {
   constructor({ chat, characters, settings, books, maxContext, persona, tokenizer }: WorldInfoOptions) {
     this.chat = chat;
     this.characters = characters;
-    this.character = characters[0]; // Assuming first character for now. TODO: Change with group chats.
+    this.character = characters[0]; // Assuming first character for now
     this.settings = settings;
     this.books = books;
     this.persona = persona;
@@ -280,7 +280,6 @@ export class WorldInfoProcessor {
     const finalEntries = Array.from(allActivatedEntries).sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 
     for (const entry of finalEntries) {
-      // Populate triggered entries record
       if (!result.triggeredEntries[entry.world]) {
         result.triggeredEntries[entry.world] = [];
       }

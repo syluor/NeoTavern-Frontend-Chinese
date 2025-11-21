@@ -16,7 +16,6 @@
     "description": "Text completion, such as instruc preset."
   },
   "chatManagement": {
-    "title": "Manage Chats for {characterName}",
     "newChat": "New Chat",
     "createPrompt": "Enter a name for the new chat:",
     "renamePrompt": "Enter the new name for this chat:",
@@ -32,7 +31,39 @@
       "create": "Failed to create new chat.",
       "rename": "Failed to rename chat.",
       "delete": "Failed to delete chat."
+    },
+    "tabs": {
+      "chats": "Chats",
+      "group": "Group",
+      "prompts": "Prompts"
+    },
+    "prompts": {
+      "singleCharHint": "Prompt overrides are currently only available for Group Chats."
     }
+  },
+  "group": {
+    "peek": "Peek Definition",
+    "forceTalk": "Force Reply",
+    "mute": "Mute/Unmute",
+    "replyStrategy": "Reply Strategy",
+    "strategies": {
+      "manual": "Manual",
+      "natural": "Natural Order",
+      "list": "List Order",
+      "pooled": "Pooled Order"
+    },
+    "handlingMode": "Context Handling Mode",
+    "modes": {
+      "swap": "Swap Character Cards",
+      "joinExclude": "Join (Exclude Muted)",
+      "joinInclude": "Join (Include Muted)"
+    },
+    "allowSelfResponses": "Allow Self Responses",
+    "autoMode": "Auto Mode Interval",
+    "autoModeHint": "Set to 0 to disable. Time in seconds before next auto-generation.",
+    "scenarioOverride": "Group Scenario Override",
+    "scenarioOverridePlaceholder": "Enter a scenario that applies to the whole group, overriding individual character scenarios...",
+    "selectToAdd": "Select character to add..."
   },
   "personaManagement": {
     "title": "Persona Management",
@@ -359,7 +390,9 @@
     "confirmDelete": "Confirm Deletion",
     "by": "by",
     "reset": "Reset",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "seconds": "seconds",
+    "remove": "Remove"
   },
   "popup": {
     "cropAvatar": {
@@ -385,7 +418,8 @@
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI.",
       "noModelError": "No model selected. Please check your API connection settings.",
-      "noPersonaError": "No persona selected. Please check your persona settings."
+      "noPersonaError": "No persona selected. Please check your persona settings.",
+      "noSpeaker": "No valid speaker found for generation."
     },
     "buttons": {
       "confirmEdit": "Confirm edit",

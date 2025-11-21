@@ -77,6 +77,19 @@ export enum TokenizerType {
   GPT4O = 'gpt-4o',
 }
 
+export enum GroupReplyStrategy {
+  MANUAL = 'manual',
+  NATURAL_ORDER = 'natural_order',
+  LIST_ORDER = 'list_order',
+  POOLED_ORDER = 'pooled_order',
+}
+
+export enum GroupGenerationHandlingMode {
+  SWAP = 'swap',
+  JOIN_EXCLUDE_MUTED = 'join_exclude_muted',
+  JOIN_INCLUDE_MUTED = 'join_include_muted',
+}
+
 export const TOKENIZER_GUESS_MAP: Array<[RegExp, TokenizerType]> = [
   [/gemma|gemini/i, TokenizerType.GEMMA],
   [/deepseek/i, TokenizerType.DEEPSEEK],
@@ -102,6 +115,7 @@ export const ANIMATION_DURATION_DEFAULT = 125;
 export const talkativeness_default = 0.5;
 export const depth_prompt_depth_default = 4;
 export const depth_prompt_role_default = 'system';
+export const group_auto_mode_default_interval = 5; // seconds
 
 export const defaultPrompts: Prompt[] = [
   {

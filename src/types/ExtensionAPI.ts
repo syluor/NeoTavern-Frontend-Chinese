@@ -23,16 +23,26 @@ export enum MountableComponent {
   ConnectionProfileSelector = 'ConnectionProfileSelector',
   AppButton = 'AppButton',
   AppCheckbox = 'AppCheckbox',
+  AppFileInput = 'AppFileInput',
+  AppFormItem = 'AppFormItem',
   AppIcon = 'AppIcon',
   AppIconButton = 'AppIconButton',
   AppInput = 'AppInput',
+  AppListItem = 'AppListItem',
+  AppSearch = 'AppSearch',
   AppSelect = 'AppSelect',
+  AppTabs = 'AppTabs',
   AppTextarea = 'AppTextarea',
   AppToggle = 'AppToggle',
+  CollapsibleSection = 'CollapsibleSection',
   RangeControl = 'RangeControl',
   TagInput = 'TagInput',
   Pagination = 'Pagination',
   DraggableList = 'DraggableList',
+  DrawerHeader = 'DrawerHeader',
+  EmptyState = 'EmptyState',
+  SmartAvatar = 'SmartAvatar',
+  SplitPane = 'SplitPane',
 }
 
 /**
@@ -59,6 +69,20 @@ export interface MountableComponentPropsMap {
     disabled?: boolean;
     'onUpdate:modelValue'?: (value: boolean) => void;
   };
+  [MountableComponent.AppFileInput]: {
+    accept?: string;
+    multiple?: boolean;
+    type?: 'icon' | 'button';
+    icon?: string;
+    label?: string;
+    onChange?: (files: File[]) => void;
+  };
+  [MountableComponent.AppFormItem]: {
+    label?: string;
+    description?: string;
+    error?: string;
+    horizontal?: boolean;
+  };
   [MountableComponent.AppIcon]: {
     icon: string;
     spin?: boolean;
@@ -84,6 +108,15 @@ export interface MountableComponentPropsMap {
     'onUpdate:modelValue'?: (value: string | number) => void;
     onChange?: (event: Event) => void;
   };
+  [MountableComponent.AppListItem]: {
+    active?: boolean;
+    selected?: boolean;
+  };
+  [MountableComponent.AppSearch]: {
+    modelValue: string;
+    placeholder?: string;
+    'onUpdate:modelValue'?: (value: string) => void;
+  };
   [MountableComponent.AppSelect]: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     modelValue: any;
@@ -95,6 +128,11 @@ export interface MountableComponentPropsMap {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     'onUpdate:modelValue'?: (value: any) => void;
     onChange?: (event: Event) => void;
+  };
+  [MountableComponent.AppTabs]: {
+    modelValue: string;
+    options: { label: string; value: string; icon?: string }[];
+    'onUpdate:modelValue'?: (value: string) => void;
   };
   [MountableComponent.AppTextarea]: {
     modelValue: string;
@@ -110,6 +148,12 @@ export interface MountableComponentPropsMap {
     modelValue: boolean;
     disabled?: boolean;
     'onUpdate:modelValue'?: (value: boolean) => void;
+  };
+  [MountableComponent.CollapsibleSection]: {
+    title: string;
+    isOpen?: boolean;
+    subtitle?: string;
+    'onUpdate:isOpen'?: (value: boolean) => void;
   };
   [MountableComponent.RangeControl]: {
     modelValue: number;
@@ -142,6 +186,27 @@ export interface MountableComponentPropsMap {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     'onUpdate:items'?: (items: any[]) => void;
     onReorder?: (payload: { from: number; to: number }) => void;
+  };
+  [MountableComponent.DrawerHeader]: {
+    title?: string;
+  };
+  [MountableComponent.EmptyState]: {
+    icon?: string;
+    title?: string;
+    description?: string;
+  };
+  [MountableComponent.SmartAvatar]: {
+    urls: string[];
+    alt?: string;
+  };
+  [MountableComponent.SplitPane]: {
+    storageKey?: string;
+    initialWidth?: number;
+    minWidth?: number;
+    maxWidth?: number;
+    collapsed?: boolean;
+    side?: 'left' | 'right';
+    'onUpdate:collapsed'?: (value: boolean) => void;
   };
 }
 

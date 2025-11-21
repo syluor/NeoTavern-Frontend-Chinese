@@ -62,6 +62,7 @@ export const useChatStore = defineStore('chat', () => {
   const generationController = ref<AbortController | null>(null);
   const isChatLoading = ref(false);
   const chatInfos = ref<ChatInfo[]>([]);
+  const recentChats = ref<ChatInfo[]>([]);
 
   const autoModeTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
@@ -73,7 +74,7 @@ export const useChatStore = defineStore('chat', () => {
   const chatsMetadataByCharacterAvatars = computed(() => {
     const mapping: Record<string, ChatInfo[]> = {};
     for (const chatInfo of chatInfos.value) {
-      for (const memberAvatar of chatInfo.chat_metadata.members) {
+      for (const memberAvatar of chatInfo.chat_metadata.members || []) {
         if (!mapping[memberAvatar]) {
           mapping[memberAvatar] = [];
         }
@@ -84,7 +85,7 @@ export const useChatStore = defineStore('chat', () => {
   });
 
   const isGroupChat = computed(() => {
-    return activeChat.value && activeChat.value.metadata.members.length > 1;
+    return activeChat.value && (activeChat.value.metadata.members?.length ?? 0) > 1;
   });
 
   const groupConfig = computed(() => {
@@ -102,7 +103,7 @@ export const useChatStore = defineStore('chat', () => {
         members: {},
       };
       // Sync members list status
-      activeChat.value.metadata.members.forEach((avatar) => {
+      activeChat.value.metadata.members?.forEach((avatar) => {
         activeChat.value!.metadata.group!.members[avatar] = { muted: false };
       });
     }
@@ -129,6 +130,10 @@ export const useChatStore = defineStore('chat', () => {
       const chatInfo = chatInfos.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
       if (chatInfo) {
         chatInfo.chat_metadata = activeChat.value.metadata;
+      }
+      const recentChatInfo = recentChats.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
+      if (recentChatInfo) {
+        recentChatInfo.chat_metadata = activeChat.value.metadata;
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -354,14 +359,14 @@ export const useChatStore = defineStore('chat', () => {
       isChatLoading.value = true;
       const firstMessage = getFirstMessage(character);
       activeChat.value = {
-        metadata: { members: [character.avatar], integrity: uuidv4() },
+        metadata: { members: [character.avatar], integrity: uuidv4(), promptOverrides: { scenario: '' } },
         messages: firstMessage && firstMessage.mes ? [firstMessage] : [],
       };
       const fullChat: FullChat = [{ chat_metadata: activeChat.value.metadata }, ...activeChat.value.messages];
       await saveChat(filename, fullChat);
       characterStore.updateAndSaveCharacter(character.avatar, { chat: filename });
       activeChatFile.value = filename;
-      chatInfos.value.push({
+      const cInfo: ChatInfo = {
         chat_metadata: activeChat.value.metadata,
         chat_items: activeChat.value.messages.length,
         file_id: filename,
@@ -369,7 +374,9 @@ export const useChatStore = defineStore('chat', () => {
         file_size: JSON.stringify(fullChat).length,
         last_mes: Date.now(),
         mes: firstMessage?.mes || '',
-      });
+      };
+      chatInfos.value.push(cInfo);
+      recentChats.value.push(cInfo);
 
       await nextTick();
       await eventEmitter.emit('chat:entered', filename);
@@ -640,7 +647,7 @@ export const useChatStore = defineStore('chat', () => {
           generatedMessage = lastMessage;
         } else {
           const botMessage: ChatMessage = {
-            name: activeCharacter!.name,
+            name: activeCharacter.name,
             is_user: false,
             mes: content,
             send_date: swipeInfo.send_date,
@@ -651,7 +658,7 @@ export const useChatStore = defineStore('chat', () => {
             swipe_info: [swipeInfo],
             swipe_id: 0,
             extra: { reasoning, token_count },
-            original_avatar: activeCharacter!.avatar,
+            original_avatar: activeCharacter.avatar,
           };
 
           const createController = new AbortController();
@@ -856,7 +863,7 @@ export const useChatStore = defineStore('chat', () => {
 
   function reorderMembers(fromIndex: number, toIndex: number) {
     if (!activeChat.value) return;
-    const members = activeChat.value.metadata.members;
+    const members = activeChat.value.metadata.members || [];
     if (toIndex >= 0 && toIndex < members.length) {
       const item = members.splice(fromIndex, 1)[0];
       members.splice(toIndex, 0, item);
@@ -866,9 +873,9 @@ export const useChatStore = defineStore('chat', () => {
 
   async function addMember(avatar: string) {
     if (!activeChat.value) return;
-    if (activeChat.value.metadata.members.includes(avatar)) return;
+    if (activeChat.value.metadata.members?.includes(avatar)) return;
 
-    activeChat.value.metadata.members.push(avatar);
+    activeChat.value.metadata.members?.push(avatar);
 
     // Initialize group config if needed
     if (!activeChat.value.metadata.group) {
@@ -892,9 +899,9 @@ export const useChatStore = defineStore('chat', () => {
 
   async function removeMember(avatar: string) {
     if (!activeChat.value) return;
-    const index = activeChat.value.metadata.members.indexOf(avatar);
+    const index = activeChat.value.metadata.members?.indexOf(avatar) ?? -1;
     if (index > -1) {
-      activeChat.value.metadata.members.splice(index, 1);
+      activeChat.value.metadata.members?.splice(index, 1);
       if (activeChat.value.metadata.group?.members[avatar]) {
         delete activeChat.value.metadata.group.members[avatar];
       }
@@ -1075,6 +1082,7 @@ export const useChatStore = defineStore('chat', () => {
   return {
     activeChat,
     chatInfos,
+    recentChats,
     activeMessageEditState,
     isGenerating,
     activeChatFile,

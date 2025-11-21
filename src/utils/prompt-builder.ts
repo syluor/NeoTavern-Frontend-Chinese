@@ -205,7 +205,7 @@ export class PromptBuilder {
       };
 
       // TODO: Configuration?
-      if (!msg.is_user && this.chatMetadata.members.length > 1) {
+      if (!msg.is_user && (this.chatMetadata.members?.length ?? 0) > 1) {
         apiMsg.content = `${msg.name}: ${msg.mes}`;
       }
 

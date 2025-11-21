@@ -1,0 +1,147 @@
+.prompt-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+  overflow: hidden;
+
+  &-header {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--theme-border-color);
+    flex-shrink: 0;
+  }
+
+  &-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px; // Space for scrollbar
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.prompt-item {
+  background-color: var(--black-30a);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 5px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: background-color var(--animation-duration-2x);
+
+  &.disabled {
+    opacity: 0.6;
+    background-color: transparent;
+  }
+
+  &.is-editing {
+    background-color: var(--white-20a);
+    border-color: var(--theme-emphasis-color);
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  &-drag-handle {
+    cursor: grab;
+    opacity: 0.5;
+    padding: 5px;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &-name {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &-badges {
+    display: flex;
+    gap: 5px;
+  }
+
+  &-badge {
+    font-size: 0.75em;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background-color: var(--black-50a);
+    opacity: 0.8;
+    text-transform: uppercase;
+
+    &--system {
+      color: var(--color-accent-red);
+    }
+    &--user {
+      color: var(--theme-text-color);
+    }
+    &--assistant {
+      color: var(--color-accent-green-70a);
+    }
+    &--marker {
+      border: 1px solid var(--theme-quote-color);
+      background: transparent;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &-editor {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--theme-border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    label {
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-bottom: 2px;
+      display: block;
+    }
+  }
+}
+
+.prompt-empty-state {
+  text-align: center;
+  opacity: 0.6;
+  padding: 20px;
+  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    font-size: 2em;
+  }
+}

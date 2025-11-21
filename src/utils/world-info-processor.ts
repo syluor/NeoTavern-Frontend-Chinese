@@ -32,6 +32,7 @@ class WorldInfoBuffer {
   #depthBuffer: string[] = [];
   #recurseBuffer: string[] = [];
   #settings: WorldInfoSettings;
+  // @ts-expect-error unused
   #characters: Character[];
   #character: Character;
   #persona: Persona;

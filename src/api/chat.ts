@@ -57,6 +57,23 @@ export async function listChats(): Promise<ChatInfo[]> {
   return await response.json();
 }
 
+export async function listRecentChats(): Promise<ChatInfo[]> {
+  const response = await fetch('/api/chats/recent', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({
+      avatar_url: '',
+      metadata: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to list recent chat histories');
+  }
+
+  return await response.json();
+}
+
 export async function deleteChat(chatFile: string): Promise<void> {
   const fixedChatFile = !chatFile.endsWith('.jsonl') ? `${chatFile}.jsonl` : chatFile;
   const response = await fetch('/api/chats/delete', {

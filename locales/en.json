@@ -9,7 +9,7 @@
     "extensions": "Extensions",
     "personaManagement": "Persona Management",
     "characterManagement": "Character Management",
-    "chatManagement": "Chat Management"
+    "recentChats": "Recent Chats"
   },
   "formatting": {
     "title": "AI Response Formatting",
@@ -21,12 +21,16 @@
     "renamePrompt": "Enter the new name for this chat:",
     "deleteConfirmTitle": "Delete Chat",
     "deleteConfirmContent": "Are you sure you want to delete the chat file \"{chatFile}\"? This action cannot be undone.",
+    "noRecentChats": "No recent chats found.",
+    "noChatsFound": "No chats found.",
+    "scenarioOverride": "Scenario Override",
+    "scenarioOverridePlaceholder": "Override the scenario for this specific group chat...",
+    "deleteSelectedConfirmContent": "Are you sure you want to delete {count} selected chats?",
+    "deleteSuccess": "Successfully deleted {count} chats.",
     "actions": {
-      "select": "Select Chat",
       "rename": "Rename Chat",
       "delete": "Delete Chat"
     },
-    "active": "Active",
     "errors": {
       "create": "Failed to create new chat.",
       "rename": "Failed to rename chat.",
@@ -36,15 +40,13 @@
       "chats": "Chats",
       "group": "Group",
       "prompts": "Prompts"
-    },
-    "prompts": {
-      "singleCharHint": "Prompt overrides are currently only available for Group Chats."
     }
   },
   "group": {
-    "peek": "Peek Definition",
-    "forceTalk": "Force Reply",
+    "peek": "Peek Character",
+    "forceTalk": "Force Talk",
     "mute": "Mute/Unmute",
+    "addMember": "Add Member",
     "replyStrategy": "Reply Strategy",
     "strategies": {
       "manual": "Manual",
@@ -59,11 +61,8 @@
       "joinInclude": "Join (Include Muted)"
     },
     "allowSelfResponses": "Allow Self Responses",
-    "autoMode": "Auto Mode Interval",
-    "autoModeHint": "Set to 0 to disable. Time in seconds before next auto-generation.",
-    "scenarioOverride": "Group Scenario Override",
-    "scenarioOverridePlaceholder": "Enter a scenario that applies to the whole group, overriding individual character scenarios...",
-    "selectToAdd": "Select character to add..."
+    "autoMode": "Auto Mode",
+    "autoModeHint": "Automatically generate responses every X seconds. Set to 0 to disable."
   },
   "personaManagement": {
     "title": "Persona Management",
@@ -280,7 +279,11 @@
       "label": "Prompt Manager",
       "description": "Control how the final prompt is constructed before being sent to the AI.",
       "noPrompts": "No prompts created yet.",
-      "newPrompt": "New Prompt"
+      "newPrompt": "New Prompt",
+      "role": "Role",
+      "content": "Content",
+      "markerHint": "This is a marker prompt. It serves as a placeholder for injected content and cannot be edited directly.",
+      "cannotDeleteMarker": "Cannot delete a system marker."
     },
     "contextSize": {
       "label": "Context Size (tokens)",
@@ -392,7 +395,16 @@
     "reset": "Reset",
     "copied": "Copied!",
     "seconds": "seconds",
-    "remove": "Remove"
+    "remove": "Remove",
+    "dragToReorder": "Drag to reorder",
+    "toggle": "Toggle",
+    "refresh": "Refresh",
+    "messages": "messages",
+    "noResults": "No results found",
+    "name": "Name",
+    "select": "Select",
+    "selected": "Selected",
+    "selectAll": "Select All"
   },
   "popup": {
     "cropAvatar": {
@@ -414,6 +426,7 @@
     "send": "Send a message",
     "loadError": "Failed to load chat.",
     "createError": "Failed to create chat message.",
+    "emptyLog": "Empty chat log",
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI.",

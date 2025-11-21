@@ -5,7 +5,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
-import { listChats } from '@/api/chat';
+import { listChats, listRecentChats } from '@/api/chat';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
@@ -51,6 +51,7 @@ onMounted(async () => {
 
   // TODO: We should have a more centralized way to refresh chat lists.
   chatStore.chatInfos = await listChats();
+  chatStore.recentChats = await listRecentChats();
 });
 
 onUnmounted(() => {

@@ -12,7 +12,7 @@ export interface MessageSchema {
     extensions: string;
     personaManagement: string;
     characterManagement: string;
-    chatManagement: string;
+    recentChats: string;
   };
   formatting: {
     title: string;
@@ -24,12 +24,16 @@ export interface MessageSchema {
     renamePrompt: string;
     deleteConfirmTitle: string;
     deleteConfirmContent: string;
+    noRecentChats: string;
+    noChatsFound: string;
+    scenarioOverride: string;
+    scenarioOverridePlaceholder: string;
+    deleteSelectedConfirmContent: string;
+    deleteSuccess: string;
     actions: {
-      select: string;
       rename: string;
       delete: string;
     };
-    active: string;
     errors: {
       create: string;
       rename: string;
@@ -40,14 +44,12 @@ export interface MessageSchema {
       group: string;
       prompts: string;
     };
-    prompts: {
-      singleCharHint: string;
-    };
   };
   group: {
     peek: string;
     forceTalk: string;
     mute: string;
+    addMember: string;
     replyStrategy: string;
     strategies: {
       manual: string;
@@ -64,9 +66,6 @@ export interface MessageSchema {
     allowSelfResponses: string;
     autoMode: string;
     autoModeHint: string;
-    scenarioOverride: string;
-    scenarioOverridePlaceholder: string;
-    selectToAdd: string;
   };
   personaManagement: {
     title: string;
@@ -284,6 +283,10 @@ export interface MessageSchema {
       description: string;
       noPrompts: string;
       newPrompt: string;
+      role: string;
+      content: string;
+      markerHint: string;
+      cannotDeleteMarker: string;
     };
     contextSize: {
       label: string;
@@ -396,6 +399,15 @@ export interface MessageSchema {
     copied: string;
     seconds: string;
     remove: string;
+    dragToReorder: string;
+    toggle: string;
+    refresh: string;
+    messages: string;
+    noResults: string;
+    name: string;
+    select: string;
+    selected: string;
+    selectAll: string;
   };
   popup: {
     cropAvatar: {
@@ -417,6 +429,7 @@ export interface MessageSchema {
     send: string;
     loadError: string;
     createError: string;
+    emptyLog: string;
     generate: {
       noPrompts: string;
       errorFallback: string;

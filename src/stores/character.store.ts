@@ -549,7 +549,7 @@ export const useCharacterStore = defineStore('character', () => {
 
       // Delete chat is not going to work for root chats, so we handle it here
       const isThereOnlyCharacter =
-        chatStore.activeChat?.metadata.members.length === 1 && chatStore.activeChat.metadata.members[0] === avatar;
+        chatStore.activeChat?.metadata.members?.length === 1 && chatStore.activeChat.metadata.members[0] === avatar;
       if (isThereOnlyCharacter) {
         await chatStore.clearChat();
         chatStore.activeChat = null;

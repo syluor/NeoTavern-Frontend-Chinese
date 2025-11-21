@@ -22,6 +22,17 @@ export function getFirstMessage(character?: Character): ChatMessage | null {
     send_date: getMessageTimeStamp(),
     mes: getRegexedString(firstMes),
     extra: {},
+    original_avatar: character.avatar,
+    swipe_id: 0,
+    swipes: firstMes ? [getRegexedString(firstMes)] : [],
+    swipe_info: firstMes
+      ? [
+          {
+            extra: {},
+            send_date: getMessageTimeStamp(),
+          },
+        ]
+      : [],
   };
 
   if (Array.isArray(alternateGreetings) && alternateGreetings.length > 0) {

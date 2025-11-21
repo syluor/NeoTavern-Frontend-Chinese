@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_RESULT, POPUP_TYPE, type ChatInfo, type Character } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { humanizedDateTime } from '../../utils/date';
+import { formatTimeStamp, humanizedDateTime } from '../../utils/date';
 import * as api from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import { GenerationMode, GroupGenerationHandlingMode, GroupReplyStrategy } from '../../constants';
 import { getThumbnailUrl } from '../../utils/image';
+import Pagination from '../Common/Pagination.vue';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
 const popupStore = usePopupStore();
+const settingsStore = useSettingsStore();
 
 const activeTab = ref<'chats' | 'members' | 'prompts'>('chats');
-const selectedCharToAdd = ref('');
+const chatSearchTerm = ref('');
+
+// --- Pagination State for Members to Add ---
+const STORAGE_KEY_ADD_MEMBER = 'add_member_page_size';
+const savedPageSize = settingsStore.getAccountItem(STORAGE_KEY_ADD_MEMBER);
+
+const addMemberSearchTerm = ref('');
+const addMemberPage = ref(1);
+const addMemberPageSize = ref(savedPageSize ? parseInt(savedPageSize, 10) : 10);
+
+watch(addMemberPageSize, (newVal) => {
+  settingsStore.setAccountItem(STORAGE_KEY_ADD_MEMBER, newVal.toString());
+  addMemberPage.value = 1; // Reset page when size changes
+});
 
 // --- Chat List Logic ---
 const chats = computed<ChatInfo[]>(() => {
@@ -32,6 +48,13 @@ const chats = computed<ChatInfo[]>(() => {
   }
   // Remove duplicates
   allChats = allChats.filter((chat, index, self) => index === self.findIndex((c) => c.file_id === chat.file_id));
+
+  // Filter by search
+  if (chatSearchTerm.value) {
+    const lower = chatSearchTerm.value.toLowerCase();
+    allChats = allChats.filter((c) => c.file_id.toLowerCase().includes(lower));
+  }
+
   allChats.sort((a, b) => b.last_mes - a.last_mes);
   return allChats;
 });
@@ -75,7 +98,7 @@ async function renameChat(oldFile: string) {
     let newFileName = newName.trim();
     try {
       const info = chats.value.find((c) => c.file_id === oldFile);
-      const isGroup = (info?.chat_metadata.members.length ?? 0) > 1;
+      const isGroup = (info?.chat_metadata.members?.length ?? 0) > 1;
       newFileName = (await api.renameChat(oldFile, newFileName, isGroup)).newFileName;
       if (chatStore.activeChatFile === oldFile) {
         chatStore.activeChatFile = newFileName;
@@ -99,7 +122,6 @@ async function deleteChat(chatFile: string) {
       const index = chats.value.findIndex((chat) => chat.file_id === chatFile);
       const isActiveChat = chatStore.activeChatFile === chatFile;
       if (isActiveChat) {
-        // Select another chat if available
         if (chats.value.length > 1) {
           const newIndex = index === 0 ? 1 : index - 1;
           const newChatFile = chats.value[newIndex].file_id;
@@ -109,6 +131,7 @@ async function deleteChat(chatFile: string) {
         }
       }
       chatStore.chatInfos = chatStore.chatInfos.filter((chat) => chat.file_id !== chatFile);
+      chatStore.recentChats = chatStore.recentChats.filter((chat) => chat.file_id !== chatFile);
     } catch {
       toast.error(t('chatManagement.errors.delete'));
     }
@@ -118,15 +141,31 @@ async function deleteChat(chatFile: string) {
 // --- Group / Members Logic ---
 const groupMembers = computed(() => {
   if (!chatStore.activeChat) return [];
-  return chatStore.activeChat.metadata.members.map((avatar) => {
-    return characterStore.characters.find((c) => c.avatar === avatar) || ({ name: avatar, avatar } as Character);
-  });
+  return (
+    chatStore.activeChat.metadata.members?.map((avatar) => {
+      return characterStore.characters.find((c) => c.avatar === avatar) || ({ name: avatar, avatar } as Character);
+    }) || []
+  );
 });
 
-const availableCharacters = computed(() => {
+const availableCharactersFiltered = computed(() => {
   if (!chatStore.activeChat) return [];
-  const currentMembers = new Set(chatStore.activeChat.metadata.members);
-  return characterStore.characters.filter((c) => !currentMembers.has(c.avatar));
+  const currentMembers = new Set(chatStore.activeChat.metadata.members || []);
+
+  let list = characterStore.characters.filter((c) => !currentMembers.has(c.avatar));
+
+  if (addMemberSearchTerm.value) {
+    const term = addMemberSearchTerm.value.toLowerCase();
+    list = list.filter((c) => c.name.toLowerCase().includes(term));
+  }
+
+  return list;
+});
+
+const availableCharactersPaginated = computed(() => {
+  const start = (addMemberPage.value - 1) * addMemberPageSize.value;
+  const end = start + addMemberPageSize.value;
+  return availableCharactersFiltered.value.slice(start, end);
 });
 
 const groupConfig = computed(() => chatStore.groupConfig);
@@ -149,11 +188,8 @@ function peekCharacter(avatar: string) {
   characterStore.selectCharacterByAvatar(avatar);
 }
 
-async function addMember() {
-  if (selectedCharToAdd.value) {
-    await chatStore.addMember(selectedCharToAdd.value);
-    selectedCharToAdd.value = '';
-  }
+async function addMember(avatar: string) {
+  await chatStore.addMember(avatar);
 }
 
 async function removeMember(avatar: string) {
@@ -177,67 +213,61 @@ async function removeMember(avatar: string) {
 
     <div class="chat-management-content">
       <!-- Tab: Chats -->
-      <div v-show="activeTab === 'chats'">
+      <div v-show="activeTab === 'chats'" class="chat-management-tab-content">
         <div class="chat-management-actions">
           <button v-show="characterStore.activeCharacters.length > 0" class="menu-button" @click="createNewChat()">
-            {{ t('chatManagement.newChat') }}
+            <i class="fa-solid fa-plus"></i> {{ t('chatManagement.newChat') }}
           </button>
+          <input
+            v-model="chatSearchTerm"
+            type="search"
+            class="text-pole chat-management-search-input"
+            :placeholder="t('common.search')"
+          />
         </div>
+
         <div class="chat-management-list">
-          <table>
-            <tbody>
-              <tr v-for="file in chats" :key="file.file_id" class="chat-file-row" :data-file="file.file_id">
-                <td class="chat-file-name">
-                  <span v-show="chatStore.activeChatFile === file.file_id" class="active-indicator">
-                    {{ t('chatManagement.active') }}
-                  </span>
-                  {{ file.file_id }}
-                </td>
-                <td class="chat-file-actions">
-                  <button
-                    class="menu-button"
-                    :disabled="chatStore.activeChatFile === file.file_id"
-                    :title="t('chatManagement.actions.select')"
-                    @click="selectChat(file.file_id)"
-                  >
-                    <i class="fa-solid fa-check"></i>
-                  </button>
-                  <button
-                    class="menu-button"
-                    :title="t('chatManagement.actions.rename')"
-                    @click="renameChat(file.file_id)"
-                  >
-                    <i class="fa-solid fa-pencil"></i>
-                  </button>
-                  <button
-                    class="menu-button menu-button--danger"
-                    :title="t('chatManagement.actions.delete')"
-                    @click="deleteChat(file.file_id)"
-                  >
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div
+            v-for="file in chats"
+            :key="file.file_id"
+            class="chat-management-item"
+            :class="{ active: chatStore.activeChatFile === file.file_id }"
+            @click="selectChat(file.file_id)"
+          >
+            <div class="chat-management-item-icon">
+              <i class="fa-solid fa-comments"></i>
+            </div>
+            <div class="chat-management-item-info">
+              <div class="chat-management-item-name" :title="file.file_id">
+                {{ file.file_id }}
+              </div>
+              <div class="chat-management-item-meta">
+                <span>{{ formatTimeStamp(file.last_mes) }}</span>
+                <span>{{ file.chat_items }} msgs</span>
+              </div>
+            </div>
+            <div class="chat-management-item-actions">
+              <button
+                class="menu-button-icon fa-solid fa-pencil"
+                :title="t('chatManagement.actions.rename')"
+                @click.stop="renameChat(file.file_id)"
+              ></button>
+              <button
+                class="menu-button-icon fa-solid fa-trash-can menu-button--danger"
+                :title="t('chatManagement.actions.delete')"
+                @click.stop="deleteChat(file.file_id)"
+              ></button>
+            </div>
+          </div>
+          <div v-if="chats.length === 0" class="prompt-empty-state">
+            {{ t('chatManagement.noChatsFound') }}
+          </div>
         </div>
       </div>
 
       <!-- Tab: Members / Group Config -->
-      <div v-show="activeTab === 'members'">
-        <!-- Add Member Control -->
-        <div class="group-add-member">
-          <select v-model="selectedCharToAdd" class="text-pole">
-            <option value="" disabled>{{ t('group.selectToAdd') }}</option>
-            <option v-for="char in availableCharacters" :key="char.avatar" :value="char.avatar">
-              {{ char.name }}
-            </option>
-          </select>
-          <button class="menu-button" :disabled="!selectedCharToAdd" @click="addMember">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-
+      <div v-show="activeTab === 'members'" class="chat-management-tab-content">
+        <!-- Current Members -->
         <div class="group-members-list">
           <div
             v-for="(member, index) in groupMembers"
@@ -246,7 +276,7 @@ async function removeMember(avatar: string) {
             :class="{ muted: groupConfig?.members[member.avatar]?.muted }"
           >
             <img :src="getThumbnailUrl('avatar', member.avatar)" />
-            <span class="group-member-name">{{ member.name }}</span>
+            <span class="group-member-name" :title="member.name">{{ member.name }}</span>
 
             <div class="member-actions">
               <div
@@ -285,6 +315,40 @@ async function removeMember(avatar: string) {
               ></div>
             </div>
           </div>
+        </div>
+
+        <!-- Add Member Section -->
+        <div class="group-add-section">
+          <h4>{{ t('group.addMember') }}</h4>
+          <input
+            v-model="addMemberSearchTerm"
+            type="search"
+            class="text-pole add-member-search"
+            :placeholder="t('common.search')"
+            @input="addMemberPage = 1"
+          />
+          <div class="add-member-list">
+            <div
+              v-for="char in availableCharactersPaginated"
+              :key="char.avatar"
+              class="add-member-card"
+              @click="addMember(char.avatar)"
+            >
+              <img :src="getThumbnailUrl('avatar', char.avatar)" />
+              <span>{{ char.name }}</span>
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <div v-if="availableCharactersPaginated.length === 0" class="chat-management-empty-notice">
+              {{ t('common.noResults') }}
+            </div>
+          </div>
+          <Pagination
+            v-if="availableCharactersFiltered.length > addMemberPageSize"
+            v-model:current-page="addMemberPage"
+            v-model:items-per-page="addMemberPageSize"
+            :total-items="availableCharactersFiltered.length"
+            :items-per-page-options="[10, 25, 50, 100]"
+          />
         </div>
 
         <!-- Group Config: Only show if actual group -->
@@ -327,33 +391,18 @@ async function removeMember(avatar: string) {
       </div>
 
       <!-- Tab: Prompt Overrides -->
-      <div v-show="activeTab === 'prompts'" style="padding: 5px">
-        <div v-if="isGroup">
-          <label>{{ t('group.scenarioOverride') }}</label>
+      <div v-show="activeTab === 'prompts'" class="chat-management-prompt-tab">
+        <div>
+          <label>{{ t('chatManagement.scenarioOverride') }}</label>
           <textarea
             v-if="chatStore.activeChat?.metadata.promptOverrides"
             v-model="chatStore.activeChat.metadata.promptOverrides.scenario"
             class="text-pole"
             rows="6"
-            :placeholder="t('group.scenarioOverridePlaceholder')"
+            :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
           ></textarea>
-          <!-- Initialize promptOverrides if missing, usually store handles structure but UI binding safe check needed -->
-        </div>
-        <div v-else>
-          <p>{{ t('chatManagement.prompts.singleCharHint') }}</p>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.group-add-member {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-  select {
-    flex-grow: 1;
-  }
-}
-</style>

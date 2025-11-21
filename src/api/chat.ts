@@ -1,14 +1,13 @@
 import { getRequestHeaders } from '../utils/api';
-import type { Character, ChatInfo, FullChat } from '../types';
+import type { ChatInfo, FullChat } from '../types';
 
-export async function fetchChat(character: Character, chatFile: string): Promise<FullChat> {
+export async function fetchChat(chatFile: string): Promise<FullChat> {
   const response = await fetch('/api/chats/get', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      ch_name: character.name,
       file_name: chatFile,
-      avatar_url: character.avatar,
+      avatar_url: '', // Means root level folder
     }),
   });
 
@@ -19,15 +18,14 @@ export async function fetchChat(character: Character, chatFile: string): Promise
   return await response.json();
 }
 
-export async function saveChat(character: Character, chatFile: string, chatToSave?: FullChat): Promise<void> {
+export async function saveChat(chatFile: string, chatToSave?: FullChat): Promise<void> {
   const response = await fetch('/api/chats/save', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      ch_name: character.name,
       file_name: chatFile,
       chat: chatToSave || [],
-      avatar_url: character.avatar,
+      avatar_url: '',
       force: false, // For now, we won't handle the integrity check failure popup
     }),
   });
@@ -42,12 +40,12 @@ export async function saveChat(character: Character, chatFile: string, chatToSav
   }
 }
 
-export async function listChatsForCharacter(character: Character): Promise<ChatInfo[]> {
+export async function listChats(): Promise<ChatInfo[]> {
   const response = await fetch('/api/characters/chats', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      avatar_url: character.avatar,
+      avatar_url: '',
       metadata: true,
     }),
   });
@@ -59,13 +57,31 @@ export async function listChatsForCharacter(character: Character): Promise<ChatI
   return await response.json();
 }
 
-export async function deleteChat(character: Character, chatFile: string): Promise<void> {
+export async function listRecentChats(): Promise<ChatInfo[]> {
+  const response = await fetch('/api/chats/recent', {
+    method: 'POST',
+    headers: getRequestHeaders(),
+    body: JSON.stringify({
+      avatar_url: '',
+      metadata: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to list recent chat histories');
+  }
+
+  return await response.json();
+}
+
+export async function deleteChat(chatFile: string): Promise<void> {
+  const fixedChatFile = !chatFile.endsWith('.jsonl') ? `${chatFile}.jsonl` : chatFile;
   const response = await fetch('/api/chats/delete', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      chatfile: chatFile,
-      avatar_url: character.avatar,
+      chatfile: fixedChatFile,
+      avatar_url: '',
     }),
   });
 
@@ -73,17 +89,13 @@ export async function deleteChat(character: Character, chatFile: string): Promis
     throw new Error('Failed to delete chat history');
   }
 }
-export async function renameChat(
-  character: Character,
-  oldFile: string,
-  newFile: string,
-  isGroup: boolean,
-): Promise<{ newFileName: string }> {
+
+export async function renameChat(oldFile: string, newFile: string, isGroup: boolean): Promise<{ newFileName: string }> {
   const response = await fetch('/api/chats/rename', {
     method: 'POST',
     headers: getRequestHeaders(),
     body: JSON.stringify({
-      avatar_url: character.avatar,
+      avatar_url: '',
       original_file: oldFile,
       renamed_file: newFile,
       is_group: isGroup,

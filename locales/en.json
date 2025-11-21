@@ -9,31 +9,60 @@
     "extensions": "Extensions",
     "personaManagement": "Persona Management",
     "characterManagement": "Character Management",
-    "chatManagement": "Chat Management"
+    "recentChats": "Recent Chats"
   },
   "formatting": {
     "title": "AI Response Formatting",
     "description": "Text completion, such as instruc preset."
   },
   "chatManagement": {
-    "title": "Manage Chats for {characterName}",
     "newChat": "New Chat",
     "createPrompt": "Enter a name for the new chat:",
     "renamePrompt": "Enter the new name for this chat:",
     "deleteConfirmTitle": "Delete Chat",
     "deleteConfirmContent": "Are you sure you want to delete the chat file \"{chatFile}\"? This action cannot be undone.",
+    "noRecentChats": "No recent chats found.",
+    "noChatsFound": "No chats found.",
+    "scenarioOverride": "Scenario Override",
+    "scenarioOverridePlaceholder": "Override the scenario for this specific group chat...",
+    "deleteSelectedConfirmContent": "Are you sure you want to delete {count} selected chats?",
+    "deleteSuccess": "Successfully deleted {count} chats.",
     "actions": {
-      "select": "Select Chat",
       "rename": "Rename Chat",
       "delete": "Delete Chat"
     },
-    "active": "Active",
     "errors": {
-      "fetch": "Could not fetch chat list.",
       "create": "Failed to create new chat.",
       "rename": "Failed to rename chat.",
       "delete": "Failed to delete chat."
+    },
+    "tabs": {
+      "chats": "Chats",
+      "group": "Group",
+      "prompts": "Prompts"
     }
+  },
+  "group": {
+    "peek": "Peek Character",
+    "forceTalk": "Force Talk",
+    "mute": "Mute/Unmute",
+    "addMember": "Add Member",
+    "replyStrategy": "Reply Strategy",
+    "strategies": {
+      "manual": "Manual",
+      "natural": "Natural Order",
+      "list": "List Order",
+      "pooled": "Pooled Order"
+    },
+    "handlingMode": "Context Handling Mode",
+    "modes": {
+      "swap": "Swap Character Cards",
+      "joinExclude": "Join (Exclude Muted)",
+      "joinInclude": "Join (Include Muted)"
+    },
+    "allowSelfResponses": "Allow Self Responses",
+    "autoMode": "Auto Mode",
+    "autoModeHint": "Automatically generate responses every X seconds. Set to 0 to disable."
   },
   "personaManagement": {
     "title": "Persona Management",
@@ -250,7 +279,11 @@
       "label": "Prompt Manager",
       "description": "Control how the final prompt is constructed before being sent to the AI.",
       "noPrompts": "No prompts created yet.",
-      "newPrompt": "New Prompt"
+      "newPrompt": "New Prompt",
+      "role": "Role",
+      "content": "Content",
+      "markerHint": "This is a marker prompt. It serves as a placeholder for injected content and cannot be edited directly.",
+      "cannotDeleteMarker": "Cannot delete a system marker."
     },
     "contextSize": {
       "label": "Context Size (tokens)",
@@ -360,7 +393,20 @@
     "confirmDelete": "Confirm Deletion",
     "by": "by",
     "reset": "Reset",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "seconds": "seconds",
+    "remove": "Remove",
+    "dragToReorder": "Drag to reorder",
+    "toggle": "Toggle",
+    "refresh": "Refresh",
+    "messages": "messages",
+    "noResults": "No results found",
+    "name": "Name",
+    "select": "Select",
+    "selected": "Selected",
+    "selectAll": "Select All",
+    "chat": "Chat",
+    "new": "New"
   },
   "popup": {
     "cropAvatar": {
@@ -381,11 +427,14 @@
     "continue": "Continue the last message",
     "send": "Send a message",
     "loadError": "Failed to load chat.",
+    "createError": "Failed to create chat message.",
+    "emptyLog": "Empty chat log",
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI.",
       "noModelError": "No model selected. Please check your API connection settings.",
-      "noPersonaError": "No persona selected. Please check your persona settings."
+      "noPersonaError": "No persona selected. Please check your persona settings.",
+      "noSpeaker": "No valid speaker found for generation."
     },
     "buttons": {
       "confirmEdit": "Confirm edit",
@@ -462,11 +511,7 @@
       "syncWarning": "Character saved, but local list might be out of sync. Consider refreshing."
     },
     "fetch": {
-      "error": "The active character is no longer available. The page will be refreshed to prevent data loss.",
       "overflowWarning": "Character data length limit reached. To resolve this, set \"performance.lazyLoadCharacters\" to \"true\" in config.yaml and restart the server."
-    },
-    "switch": {
-      "wait": "Please wait until the chat is saved before switching characters."
     },
     "create": {
       "success": "New character created: {name}",
@@ -531,6 +576,8 @@
     "namePlaceholder": "Enter character name here",
     "descriptionPlaceholder": "Describe your character's physical and mental traits here.",
     "firstMessagePlaceholder": "This will be the first message from the character that starts every chat.",
+    "openLastChat": "Open last chat with this character",
+    "startNewChat": "Start a new chat with this character",
     "tokenCounts": {
       "title": "Token counts may be inaccurate and provided just for reference.",
       "total": "Total tokens",

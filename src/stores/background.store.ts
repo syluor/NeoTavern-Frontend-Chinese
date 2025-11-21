@@ -30,7 +30,7 @@ export const useBackgroundStore = defineStore('background', () => {
   });
 
   const currentBackgroundUrl = computed(() => {
-    const lockedBg = chatStore.chatMetadata[BG_METADATA_KEY];
+    const lockedBg = chatStore.activeChat?.metadata[BG_METADATA_KEY];
     return lockedBg ?? settingsStore.settings.ui.background.url;
   });
 
@@ -43,9 +43,9 @@ export const useBackgroundStore = defineStore('background', () => {
   );
 
   watch(
-    () => chatStore.chat,
+    () => chatStore.activeChat?.metadata,
     () => {
-      chatBackgrounds.value = chatStore.chatMetadata[LIST_METADATA_KEY] ?? [];
+      chatBackgrounds.value = chatStore.activeChat?.metadata[LIST_METADATA_KEY] ?? [];
     },
     { deep: true, immediate: true },
   );
@@ -68,7 +68,7 @@ export const useBackgroundStore = defineStore('background', () => {
 
   function selectBackground(fileName: string) {
     const fileUrl = `url("/backgrounds/${encodeURIComponent(fileName)}")`;
-    if (chatStore.chatMetadata[BG_METADATA_KEY]) {
+    if (chatStore.activeChat?.metadata[BG_METADATA_KEY]) {
       // If locked, clicking a new background updates the lock
       lockBackground(fileUrl);
     } else {
@@ -78,15 +78,15 @@ export const useBackgroundStore = defineStore('background', () => {
   }
 
   function lockBackground(url: string) {
-    if (!chatStore.getCurrentChatId()) {
+    if (!chatStore.activeChatFile) {
       toast.warning(t('backgrounds.errors.noChatLock'));
       return;
     }
-    chatStore.chatMetadata[BG_METADATA_KEY] = url;
+    chatStore.activeChat!.metadata[BG_METADATA_KEY] = url;
   }
 
   function unlockBackground() {
-    delete chatStore.chatMetadata[BG_METADATA_KEY];
+    delete chatStore.activeChat!.metadata[BG_METADATA_KEY];
   }
 
   async function handleUpload(file: File) {

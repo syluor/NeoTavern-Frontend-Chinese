@@ -50,7 +50,7 @@ export function getMessageTimeStamp() {
   return formattedDate;
 }
 
-export function formatTimeStamp(dateString?: string): string {
+export function formatTimeStamp(dateString?: string | number): string {
   if (!dateString) return '';
   try {
     const d = new Date(dateString);
@@ -83,6 +83,6 @@ export function formatTimeStamp(dateString?: string): string {
     }
     return `${month} ${day}, ${year} ${hours}:${minutes}${meridiem}`;
   } catch {
-    return dateString; // TODO: Really? How in the world we have try/catch in date formatting?
+    return String(dateString); // TODO: Really? How in the world we have try/catch in date formatting?
   }
 }

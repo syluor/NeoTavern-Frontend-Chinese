@@ -1,7 +1,7 @@
 import type { GenerationMode, OpenrouterMiddleoutType, ReasoningEffort } from '../constants';
 import type { ApiModel, ChatCompletionSource } from './api';
 import type { Character } from './character';
-import type { ChatMessage } from './chat';
+import type { ChatMetadata, ChatMessage } from './chat';
 import type { MessageRole } from './common';
 import type { Persona } from './persona';
 import type { SamplerSettings, Settings } from './settings';
@@ -71,13 +71,13 @@ export type BuildChatCompletionPayloadOptions = {
   source: ChatCompletionSource;
   providerSpecific: Settings['api']['providerSpecific'];
   playerName?: string;
-  characterName?: string;
   modelList?: ApiModel[];
 };
 
 export type GenerationContext = {
   mode: GenerationMode;
-  character: Character;
+  characters: Character[];
+  chatMetadata: ChatMetadata;
   history: ChatMessage[];
   persona: Persona;
   tokenizer: Tokenizer;
@@ -89,11 +89,11 @@ export type GenerationContext = {
   };
   // Other relevant data available to the interceptor for read-only purposes or modification
   playerName: string;
-  characterName: string;
 } & { controller: AbortController };
 
 export type PromptBuilderOptions = {
-  character: Character;
+  characters: Character[];
+  chatMetadata: ChatMetadata;
   chatHistory: ChatMessage[];
   samplerSettings: SamplerSettings;
   persona: Persona;

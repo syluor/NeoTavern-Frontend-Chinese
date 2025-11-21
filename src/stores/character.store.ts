@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, nextTick } from 'vue';
-import type { Character, Entity } from '../types';
+import type { Character } from '../types';
 import {
   fetchAllCharacters,
   saveCharacter as apiSaveCharacter,
@@ -14,7 +14,6 @@ import DOMPurify from 'dompurify';
 import { humanizedDateTime } from '../utils/date';
 import { toast } from '../composables/useToast';
 import { useChatStore } from './chat.store';
-import { useGroupStore } from './group.store';
 import { useUiStore } from './ui.store';
 import {
   CHARACTER_FIELD_MAPPINGS,
@@ -30,7 +29,7 @@ import { useSettingsStore } from './settings.store';
 import { onlyUnique } from '../utils/array';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { getFirstMessage } from '../utils/chat';
-import { get, set, defaultsDeep, debounce } from 'lodash-es';
+import { get, set, debounce } from 'lodash-es';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 
@@ -41,8 +40,9 @@ const CHARACTER_SORT_ORDER_KEY = 'character_sort_order';
 export const useCharacterStore = defineStore('character', () => {
   const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
+  const chatStore = useChatStore();
+  const uiStore = useUiStore();
   const characters = ref<Array<Character>>([]);
-  const activeCharacterIndex = ref<number | null>(null);
   const favoriteCharacterChecked = ref<boolean>(false);
   const currentPage = ref(1);
   const itemsPerPage = ref(25);
@@ -60,25 +60,37 @@ export const useCharacterStore = defineStore('character', () => {
   });
 
   const isCreating = ref(false);
-  const draftCharacter = ref<Character | null>(null);
+  const draftCharacter = ref<Character>(DEFAULT_CHARACTER);
 
-  const activeCharacter = computed<Character | null>(() => {
-    if (isCreating.value && draftCharacter.value) {
+  const activeCharacterAvatars = computed<Set<string>>(() => {
+    const members = chatStore.activeChat?.metadata?.members;
+    return new Set(members ?? []);
+  });
+  const activeCharacters = computed<Character[]>(() => {
+    return characters.value.filter((char) => activeCharacterAvatars.value.has(char.avatar));
+  });
+
+  const editFormCharacter = computed<Character | null>(() => {
+    if (isCreating.value) {
       return draftCharacter.value;
     }
-    if (activeCharacterIndex.value !== null && characters.value[activeCharacterIndex.value]) {
-      return characters.value[activeCharacterIndex.value];
+
+    if (uiStore.selectedCharacterAvatarForEditing) {
+      const editingCharacter = characters.value.find(
+        (char) => char.avatar === uiStore.selectedCharacterAvatarForEditing,
+      );
+      if (editingCharacter) {
+        return editingCharacter;
+      }
     }
+
     return null;
   });
 
-  const activeCharacterName = computed<string | null>(() => activeCharacter.value?.name ?? null);
   const totalTokens = computed(() => tokenCounts.value.total);
   const permanentTokens = computed(() => tokenCounts.value.permanent);
 
-  const displayableEntities = computed<Entity[]>(() => {
-    const groupStore = useGroupStore();
-
+  const displayableCharacters = computed<Character[]>(() => {
     // 1. Filter characters based on search term
     const lowerSearchTerm = searchTerm.value.toLowerCase();
     const filteredCharacters =
@@ -115,25 +127,11 @@ export const useCharacterStore = defineStore('character', () => {
       }
     });
 
-    const characterEntities: Entity[] = sortedCharacters.map((char) => ({
-      item: char,
-      // Find original index to use as a stable ID for selection
-      id: characters.value.findIndex((originalChar) => originalChar.avatar === char.avatar),
-      type: 'character',
-    }));
-
-    // TODO: Implement group filtering and sorting
-    const groupEntities: Entity[] = groupStore.groups.map((group) => ({
-      item: group,
-      id: group.id,
-      type: 'group',
-    }));
-
-    return [...characterEntities, ...groupEntities];
+    return sortedCharacters;
   });
 
-  const paginatedEntities = computed<Entity[]>(() => {
-    const totalItems = displayableEntities.value.length;
+  const paginatedCharacters = computed<Character[]>(() => {
+    const totalItems = displayableCharacters.value.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage.value);
 
     if (currentPage.value > totalPages && totalPages > 0) {
@@ -142,7 +140,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     const start = (currentPage.value - 1) * itemsPerPage.value;
     const end = start + itemsPerPage.value;
-    return displayableEntities.value.slice(start, end);
+    return displayableCharacters.value.slice(start, end);
   });
 
   const refreshCharactersDebounced = debounce(() => {
@@ -196,7 +194,6 @@ export const useCharacterStore = defineStore('character', () => {
   async function refreshCharacters() {
     try {
       const newCharacters = await fetchAllCharacters();
-      const previousAvatar = !isCreating.value ? activeCharacter.value?.avatar : null;
 
       for (const char of newCharacters) {
         char.name = DOMPurify.sanitize(char.name);
@@ -208,15 +205,6 @@ export const useCharacterStore = defineStore('character', () => {
 
       characters.value = newCharacters;
 
-      if (previousAvatar) {
-        const newIndex = characters.value.findIndex((c) => c.avatar === previousAvatar);
-        if (newIndex !== -1) {
-          activeCharacterIndex.value = newIndex;
-        } else {
-          toast.error(t('character.fetch.error'));
-          activeCharacterIndex.value = null;
-        }
-      }
       // TODO: refreshGroups()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -227,27 +215,18 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  async function selectCharacterById(index: number) {
-    if (characters.value[index] === undefined) return;
+  async function selectCharacterByAvatar(avatar: string) {
+    const character = characters.value.find((c) => c.avatar === avatar);
+    if (!character) {
+      return;
+    }
 
     // If we were creating, cancel it
     if (isCreating.value) {
       cancelCreating();
     }
 
-    const uiStore = useUiStore();
-    if (uiStore.isChatSaving) {
-      toast.info(t('character.switch.wait'));
-      return;
-    }
-    // TODO: Add group logic checks
-    if (activeCharacterIndex.value !== index) {
-      const chatStore = useChatStore();
-      await chatStore.clearChat();
-      // TODO: resetSelectedGroup();
-      activeCharacterIndex.value = index;
-      await chatStore.setActiveChatFile(activeCharacter.value!.chat!);
-    }
+    uiStore.selectedCharacterAvatarForEditing = avatar;
   }
 
   async function updateAndSaveCharacter(avatar: string, changes: Partial<Character>) {
@@ -275,7 +254,46 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  async function saveActiveCharacter(characterData: Partial<Character>) {
+  function getDifferences(oldChar: Character, newChar: Character): Partial<Character> | null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const diffs: Record<string, any> = {};
+
+    // 1. Map specific fields based on CHARACTER_FIELD_MAPPINGS
+    for (const [frontendKey, backendPath] of Object.entries(CHARACTER_FIELD_MAPPINGS)) {
+      const newValue = get(newChar, frontendKey);
+      const oldValue = get(oldChar, frontendKey);
+
+      // Only add if the value is present in the update data and different
+      if (newValue !== undefined && JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+        set(diffs, backendPath, newValue);
+        set(diffs, frontendKey, newValue);
+      }
+    }
+
+    // 2. Handle 'data' object changes generally (for fields not in mapping but still relevant)
+    if (newChar.data) {
+      const backendDataPath = 'data';
+      const newData = newChar.data;
+      const oldData = oldChar.data || {};
+
+      const ignoreKeys = ['extensions']; // Handled via mapping or specific logic
+
+      for (const key in newData) {
+        if (ignoreKeys.includes(key)) continue;
+
+        const newSubValue = newData[key];
+        const oldSubValue = oldData[key];
+
+        if (JSON.stringify(newSubValue) !== JSON.stringify(oldSubValue)) {
+          set(diffs, `${backendDataPath}.${key}`, newSubValue);
+        }
+      }
+    }
+
+    return Object.keys(diffs).length > 0 ? diffs : null;
+  }
+
+  async function saveCharacterOnEditForm(characterData: Character) {
     // Cannot auto-save if we are in creation mode
     if (isCreating.value) {
       // We update the draft state here
@@ -287,75 +305,41 @@ export const useCharacterStore = defineStore('character', () => {
       return;
     }
 
-    const avatar = activeCharacter.value?.avatar;
-    if (!avatar || !activeCharacter.value) {
+    const avatar = uiStore.selectedCharacterAvatarForEditing;
+    const character = characters.value.find((c) => c.avatar === avatar);
+    if (!avatar || !character) {
       toast.error(t('character.save.noActive'));
       return;
     }
 
-    const oldCharacter = activeCharacter.value;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const changes: Record<string, any> = {};
+    const changes = getDifferences(character, characterData);
 
-    // 1. Map specific fields based on CHARACTER_FIELD_MAPPINGS
-    for (const [frontendKey, backendPath] of Object.entries(CHARACTER_FIELD_MAPPINGS)) {
-      const newValue = get(characterData, frontendKey);
-      const oldValue = get(oldCharacter, frontendKey);
-
-      // Only add if the value is present in the update data and different
-      if (newValue !== undefined && JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
-        set(changes, backendPath, newValue);
-        set(changes, frontendKey, newValue);
-      }
-    }
-
-    // 2. Handle 'data' object changes generally (for fields not in mapping but still relevant)
-    if (characterData.data) {
-      const backendDataPath = 'data';
-      const newData = characterData.data;
-      const oldData = oldCharacter.data || {};
-
-      const ignoreKeys = ['extensions']; // Handled via mapping or specific logic
-
-      for (const key in newData) {
-        if (ignoreKeys.includes(key)) continue;
-
-        const newSubValue = newData[key];
-        const oldSubValue = oldData[key];
-
-        if (JSON.stringify(newSubValue) !== JSON.stringify(oldSubValue)) {
-          set(changes, `${backendDataPath}.${key}`, newSubValue);
-        }
-      }
-    }
-
-    if (Object.keys(changes).length > 0) {
+    if (changes) {
       await updateAndSaveCharacter(avatar, changes);
 
       if ('first_mes' in changes && changes.first_mes !== undefined) {
-        const chatStore = useChatStore();
-        if (chatStore.chat.length === 1 && !chatStore.chat[0].is_user) {
-          const updatedCharacterForGreeting = { ...activeCharacter.value, ...characterData } as Character;
+        if (chatStore.activeChat?.messages.length === 1 && !chatStore.activeChat.messages[0].is_user) {
+          const updatedCharacterForGreeting = { ...character, ...characterData } as Character;
           const newFirstMessageDetails = getFirstMessage(updatedCharacterForGreeting);
-          await chatStore.updateMessageObject(0, {
-            mes: newFirstMessageDetails.mes,
-            swipes: newFirstMessageDetails.swipes,
-            swipe_id: newFirstMessageDetails.swipe_id,
-            swipe_info: newFirstMessageDetails.swipe_info,
-          });
+          if (newFirstMessageDetails) {
+            await chatStore.updateMessageObject(0, {
+              mes: newFirstMessageDetails.mes,
+              swipes: newFirstMessageDetails.swipes,
+              swipe_id: newFirstMessageDetails.swipe_id,
+              swipe_info: newFirstMessageDetails.swipe_info,
+            });
+          }
         }
       }
     }
   }
 
-  const saveCharacterDebounced = debounce((characterData: Partial<Character>) => {
-    saveActiveCharacter(characterData);
+  const saveCharacterDebounced = debounce((characterData: Character) => {
+    saveCharacterOnEditForm(characterData);
   }, DEFAULT_SAVE_EDIT_TIMEOUT);
 
   async function importCharacter(file: File): Promise<string | undefined> {
-    const uiStore = useUiStore();
-    const groupStore = useGroupStore();
-    if (groupStore.isGroupGenerating || uiStore.isSendPress) {
+    if (uiStore.isSendPress) {
       toast.error(t('character.import.abortedMessage'), t('character.import.aborted'));
       throw new Error('Cannot import character while generating');
     }
@@ -447,15 +431,15 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  async function highlightCharacter(avatarFileName: string) {
-    const charIndex = characters.value.findIndex((c) => c.avatar === avatarFileName);
+  async function highlightCharacter(avatar: string) {
+    const charIndex = characters.value.findIndex((c) => c.avatar === avatar);
     if (charIndex === -1) {
-      console.warn(`Could not find imported character ${avatarFileName} in the list.`);
+      console.warn(`Could not find imported character ${avatar} in the list.`);
       return;
     }
 
-    await selectCharacterById(charIndex);
-    highlightedAvatar.value = avatarFileName;
+    await selectCharacterByAvatar(avatar);
+    highlightedAvatar.value = avatar;
 
     setTimeout(() => {
       highlightedAvatar.value = null;
@@ -464,10 +448,7 @@ export const useCharacterStore = defineStore('character', () => {
 
   function startCreating() {
     // Clear active selection
-    activeCharacterIndex.value = null;
-
-    // Prepare draft with defaults
-    draftCharacter.value = defaultsDeep({}, DEFAULT_CHARACTER) as Character;
+    uiStore.selectedCharacterAvatarForEditing = null;
 
     // Set creation mode
     isCreating.value = true;
@@ -478,14 +459,10 @@ export const useCharacterStore = defineStore('character', () => {
 
   function cancelCreating() {
     isCreating.value = false;
-    draftCharacter.value = null;
   }
 
   async function createNewCharacter(character: Character, file?: File) {
-    const uiStore = useUiStore();
-    const groupStore = useGroupStore();
-
-    if (groupStore.isGroupGenerating || uiStore.isSendPress) {
+    if (uiStore.isSendPress) {
       toast.error(t('character.import.abortedMessage'));
       return;
     }
@@ -538,12 +515,12 @@ export const useCharacterStore = defineStore('character', () => {
         const newCharIndex = characters.value.findIndex((c) => c.avatar === result.file_name);
         if (newCharIndex !== -1) {
           isCreating.value = false;
-          draftCharacter.value = null;
-          await selectCharacterById(newCharIndex);
+          draftCharacter.value = DEFAULT_CHARACTER;
+          await selectCharacterByAvatar(result.file_name);
           const createdChar = characters.value[newCharIndex];
           await nextTick();
           await eventEmitter.emit('character:created', createdChar);
-          highlightCharacter(createdChar.avatar);
+          await highlightCharacter(createdChar.avatar);
         }
       }
     } catch (error) {
@@ -556,25 +533,22 @@ export const useCharacterStore = defineStore('character', () => {
     try {
       const charName = characters.value.find((c) => c.avatar === avatar)?.name || avatar;
 
-      if (activeCharacter.value?.avatar === avatar) {
-        const chatStore = useChatStore();
-        await chatStore.clearChat();
-      }
-
       await apiDeleteCharacter(avatar, deleteChats);
+
+      // Delete chat is not going to work for root chats, so we handle it here
+      const isThereOnlyCharacter =
+        chatStore.activeChat?.metadata.members?.length === 1 && chatStore.activeChat.metadata.members[0] === avatar;
+      if (isThereOnlyCharacter) {
+        await chatStore.clearChat();
+        chatStore.activeChat = null;
+      }
 
       const index = characters.value.findIndex((c) => c.avatar === avatar);
       if (index !== -1) {
         characters.value.splice(index, 1);
       }
 
-      if (activeCharacterIndex.value !== null && characters.value.length > 0) {
-        if (activeCharacterIndex.value >= characters.value.length) {
-          activeCharacterIndex.value = null;
-        }
-      }
-
-      activeCharacterIndex.value = null;
+      uiStore.selectedCharacterAvatarForEditing = null;
 
       toast.success(t('character.delete.success', { name: charName }));
       await nextTick();
@@ -602,21 +576,21 @@ export const useCharacterStore = defineStore('character', () => {
 
   return {
     characters,
-    activeCharacterIndex,
+    activeCharacters,
+    activeCharacterAvatars,
     favoriteCharacterChecked,
-    activeCharacter,
-    activeCharacterName,
-    displayableEntities,
-    paginatedEntities,
+    displayableCharacters,
+    paginatedCharacters,
     currentPage,
     itemsPerPage,
     searchTerm,
     sortOrder,
     isCreating,
     draftCharacter,
+    editFormCharacter,
     refreshCharacters,
-    selectCharacterById,
-    saveActiveCharacter,
+    selectCharacterByAvatar,
+    saveCharacterOnEditForm,
     refreshCharactersDebounced,
     saveCharacterDebounced,
     tokenCounts,

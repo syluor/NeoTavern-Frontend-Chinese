@@ -5,6 +5,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
+import { listChats, listRecentChats } from '@/api/chat';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
@@ -45,8 +46,12 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
+
+  // TODO: We should have a more centralized way to refresh chat lists.
+  chatStore.chatInfos = await listChats();
+  chatStore.recentChats = await listRecentChats();
 });
 
 onUnmounted(() => {
@@ -55,7 +60,7 @@ onUnmounted(() => {
 
 // Watch for changes in the chat history to handle auto-scrolling.
 watch(
-  () => chatStore.chat,
+  () => chatStore.activeChat,
   () => {
     const el = messagesContainer.value;
     if (!el) return;
@@ -78,7 +83,12 @@ watch(
 <template>
   <div class="chat-interface">
     <div id="chat-messages-container" ref="messagesContainer" class="chat-interface-messages">
-      <ChatMessage v-for="(message, index) in chatStore.chat" :key="index" :message="message" :index="index" />
+      <ChatMessage
+        v-for="(message, index) in chatStore.activeChat?.messages"
+        :key="index"
+        :message="message"
+        :index="index"
+      />
       <div v-show="chatStore.isGenerating" class="chat-interface-typing-indicator">
         <span>{{ t('chat.typingIndicator') }}</span>
         <div class="dot dot1"></div>

@@ -31,39 +31,3 @@ export interface Character {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any>;
 }
-
-export interface Group {
-  disabled_members?: Array<string>;
-  chats: string[];
-  members: Array<Character['name']>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  past_metadata?: Record<string, any>;
-  id: string;
-  chat_id: string;
-}
-
-export interface Tag {
-  id: string;
-  name: string;
-  folder_type?: string;
-  filter_state?: string;
-  sort_order?: number;
-  color?: string;
-  color2?: string;
-  create_date?: number;
-  is_hidden_on_character_card?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  action?: Function;
-  class?: string;
-  icon?: string;
-  title?: string;
-}
-
-export interface Entity {
-  item: Character | Tag | Group;
-  id: string | number;
-  type: 'character' | 'tag' | 'group';
-  entities?: Entity[];
-  hidden?: number;
-  isUseless?: boolean;
-}

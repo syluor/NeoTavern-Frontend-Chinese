@@ -1,18 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref, markRaw } from 'vue';
-import type { MenuType, ZoomedAvatar, SidebarDefinition } from '../types';
+import type { ZoomedAvatar, SidebarDefinition, DrawerType } from '../types';
 
 export const useUiStore = defineStore('ui', () => {
   const isChatSaving = ref<boolean>(false);
   const isDeleteMode = ref<boolean>(false);
   const isSendPress = ref<boolean>(false);
-  const selectedButton = ref<MenuType | null>(null);
-  const menuType = ref<MenuType | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cropData = ref<any>(null); // TODO: Proper type
   const activePlayerName = ref<string | null>(null);
   const activePlayerAvatar = ref<string | null>(null);
   const zoomedAvatars = ref<ZoomedAvatar[]>([]);
+
+  const activeDrawer = ref<DrawerType | null>(null);
+
+  const selectedCharacterAvatarForEditing = ref<string | null>(null);
 
   const isLeftSidebarOpen = ref(false);
   const leftSidebarView = ref<string | null>(null);
@@ -112,12 +114,12 @@ export const useUiStore = defineStore('ui', () => {
     isChatSaving,
     isDeleteMode,
     isSendPress,
-    selectedButton,
-    menuType,
+    activeDrawer,
     cropData,
     activePlayerName,
     activePlayerAvatar,
     zoomedAvatars,
+    selectedCharacterAvatarForEditing,
 
     // Sidebar State
     isLeftSidebarOpen,

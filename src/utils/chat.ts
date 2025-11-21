@@ -8,17 +8,31 @@ function getRegexedString(str: string): string {
   return str;
 }
 
-export function getFirstMessage(character: Character): ChatMessage {
+export function getFirstMessage(character?: Character): ChatMessage | null {
+  if (!character) {
+    return null;
+  }
   const firstMes = character?.first_mes || '';
   const alternateGreetings = character?.data?.alternate_greetings;
 
   const message: ChatMessage = {
-    name: character.name,
+    name: character.name || '',
     is_user: false,
     is_system: false,
     send_date: getMessageTimeStamp(),
     mes: getRegexedString(firstMes),
     extra: {},
+    original_avatar: character.avatar,
+    swipe_id: 0,
+    swipes: firstMes ? [getRegexedString(firstMes)] : [],
+    swipe_info: firstMes
+      ? [
+          {
+            extra: {},
+            send_date: getMessageTimeStamp(),
+          },
+        ]
+      : [],
   };
 
   if (Array.isArray(alternateGreetings) && alternateGreetings.length > 0) {

@@ -19,7 +19,7 @@ const isScrolled = ref(false);
 const THUMBNAIL_COLUMNS_MIN = 2;
 const THUMBNAIL_COLUMNS_MAX = 8;
 
-const lockedBackgroundUrl = computed(() => chatStore.chatMetadata.custom_background);
+const lockedBackgroundUrl = computed(() => chatStore.activeChat?.metadata.custom_background);
 
 function triggerFileUpload() {
   fileInput.value?.click();

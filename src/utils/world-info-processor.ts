@@ -32,11 +32,14 @@ class WorldInfoBuffer {
   #depthBuffer: string[] = [];
   #recurseBuffer: string[] = [];
   #settings: WorldInfoSettings;
+  // @ts-expect-error unused
+  #characters: Character[];
   #character: Character;
   #persona: Persona;
-  constructor(chat: ChatMessage[], settings: WorldInfoSettings, character: Character, persona: Persona) {
+  constructor(chat: ChatMessage[], settings: WorldInfoSettings, characters: Character[], persona: Persona) {
     this.#settings = settings;
-    this.#character = character;
+    this.#characters = characters;
+    this.#character = characters[0]; // Assuming first character for now.
     this.#persona = persona;
     this.#initDepthBuffer(chat);
   }
@@ -99,6 +102,7 @@ class WorldInfoBuffer {
 // --- Main Processor ---
 export class WorldInfoProcessor {
   private chat: ChatMessage[];
+  private characters: Character[];
   private character: Character;
   private settings: WorldInfoSettings;
   private books: WorldInfoBook[];
@@ -106,9 +110,10 @@ export class WorldInfoProcessor {
   private persona: Persona;
   private tokenizer: Tokenizer;
 
-  constructor({ chat, character, settings, books, maxContext, persona, tokenizer }: WorldInfoOptions) {
+  constructor({ chat, characters, settings, books, maxContext, persona, tokenizer }: WorldInfoOptions) {
     this.chat = chat;
-    this.character = character;
+    this.characters = characters;
+    this.character = characters[0]; // Assuming first character for now
     this.settings = settings;
     this.books = books;
     this.persona = persona;
@@ -119,7 +124,7 @@ export class WorldInfoProcessor {
   public async process(): Promise<ProcessedWorldInfo> {
     const options: WorldInfoOptions = {
       chat: this.chat,
-      character: this.character,
+      characters: this.characters,
       settings: this.settings,
       books: this.books,
       persona: this.persona,
@@ -128,7 +133,7 @@ export class WorldInfoProcessor {
     };
     await eventEmitter.emit('world-info:processing-started', options);
 
-    const buffer = new WorldInfoBuffer(this.chat, this.settings, this.character, this.persona);
+    const buffer = new WorldInfoBuffer(this.chat, this.settings, this.characters, this.persona);
     const allActivatedEntries = new Set<ProcessingEntry>();
     let continueScanning = true;
     let loopCount = 0;
@@ -276,7 +281,6 @@ export class WorldInfoProcessor {
     const finalEntries = Array.from(allActivatedEntries).sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 
     for (const entry of finalEntries) {
-      // Populate triggered entries record
       if (!result.triggeredEntries[entry.world]) {
         result.triggeredEntries[entry.world] = [];
       }

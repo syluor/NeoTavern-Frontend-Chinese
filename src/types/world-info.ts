@@ -117,7 +117,7 @@ export interface ProcessedWorldInfo {
 
 export type WorldInfoOptions = {
   chat: ChatMessage[];
-  character: Character;
+  characters: Character[];
   settings: WorldInfoSettings;
   books: WorldInfoBook[];
   persona: Persona;

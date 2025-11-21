@@ -40,7 +40,7 @@ const editedReasoning = ref('');
 const isEditingReasoning = ref(false);
 const isReasoningCollapsed = ref(false);
 
-const isEditing = computed(() => chatStore.activeMessageEditIndex === props.index);
+const isEditing = computed(() => chatStore.activeMessageEditState?.index === props.index);
 const hasReasoning = computed(() => props.message.extra?.reasoning && props.message.extra.reasoning.trim().length > 0);
 const hasItemizedPrompt = computed(() => !!promptStore.getItemizedPrompt(props.index));
 
@@ -59,7 +59,7 @@ watch(isEditing, (editing) => {
 });
 
 const avatarUrls = computed(() => {
-  const character = characterStore.characters.find((c) => c.name === props.message.name);
+  const character = characterStore.characters.find((c) => c.avatar === props.message.original_avatar);
   return resolveAvatarUrls({
     type: 'avatar',
     file: character?.avatar,
@@ -102,7 +102,9 @@ const formattedReasoning = computed(() => {
   return formatReasoning(props.message);
 });
 
-const isLastMessage = computed(() => props.index === chatStore.chat.length - 1);
+const isLastMessage = computed(
+  () => !!chatStore.activeChat?.messages.length && props.index === chatStore.activeChat?.messages.length - 1,
+);
 const hasSwipes = computed(() => Array.isArray(props.message.swipes) && props.message.swipes.length >= 1);
 const canSwipe = computed(() => !props.message.is_user && hasSwipes.value && isLastMessage.value);
 

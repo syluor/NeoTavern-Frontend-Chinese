@@ -1,13 +1,36 @@
+import type { GroupGenerationHandlingMode, GroupReplyStrategy } from '../constants';
+
+export interface GroupMemberStatus {
+  muted: boolean;
+}
+
 export interface ChatMetadata {
-  integrity?: string;
+  integrity: string;
   custom_background?: string;
   chat_backgrounds?: string[];
+
+  members?: string[];
+
+  promptOverrides?: {
+    scenario?: string;
+  };
+
+  group?: {
+    config: {
+      replyStrategy: GroupReplyStrategy;
+      handlingMode: GroupGenerationHandlingMode;
+      allowSelfResponses: boolean;
+      autoMode: number; // seconds, 0 = disabled
+    };
+    members: Record<string, GroupMemberStatus>;
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface SwipeInfo {
-  send_date?: string;
+  send_date: string;
   gen_started?: string;
   gen_finished?: string;
   extra: {
@@ -18,19 +41,19 @@ export interface SwipeInfo {
 }
 
 export interface ChatMessage {
-  send_date?: string;
+  send_date: string;
   name: string;
   mes: string;
   gen_started?: string;
   gen_finished?: string;
-  is_user?: boolean;
-  is_system?: boolean;
+  is_user: boolean;
+  is_system: boolean; // I think we should rename this
   force_avatar?: string;
-  original_avatar?: string;
-  swipes?: string[];
-  swipe_info?: SwipeInfo[];
-  swipe_id?: number;
-  extra?: {
+  original_avatar: string; // Identifer, which is 'avatar' field in Character
+  swipes: string[]; // TODO: I had to make type-safe. But user message shouldn't have swipe stuff though. So we need to tweak this type.
+  swipe_info: SwipeInfo[];
+  swipe_id: number;
+  extra: {
     reasoning?: string;
     reasoning_duration?: number;
     reasoning_type?: string;
@@ -42,7 +65,6 @@ export interface ChatMessage {
 }
 
 export type ChatHeader = {
-  character_name: string;
   chat_metadata: ChatMetadata;
 };
 

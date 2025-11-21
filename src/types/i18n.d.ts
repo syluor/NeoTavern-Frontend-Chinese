@@ -12,31 +12,60 @@ export interface MessageSchema {
     extensions: string;
     personaManagement: string;
     characterManagement: string;
-    chatManagement: string;
+    recentChats: string;
   };
   formatting: {
     title: string;
     description: string;
   };
   chatManagement: {
-    title: string;
     newChat: string;
     createPrompt: string;
     renamePrompt: string;
     deleteConfirmTitle: string;
     deleteConfirmContent: string;
+    noRecentChats: string;
+    noChatsFound: string;
+    scenarioOverride: string;
+    scenarioOverridePlaceholder: string;
+    deleteSelectedConfirmContent: string;
+    deleteSuccess: string;
     actions: {
-      select: string;
       rename: string;
       delete: string;
     };
-    active: string;
     errors: {
-      fetch: string;
       create: string;
       rename: string;
       delete: string;
     };
+    tabs: {
+      chats: string;
+      group: string;
+      prompts: string;
+    };
+  };
+  group: {
+    peek: string;
+    forceTalk: string;
+    mute: string;
+    addMember: string;
+    replyStrategy: string;
+    strategies: {
+      manual: string;
+      natural: string;
+      list: string;
+      pooled: string;
+    };
+    handlingMode: string;
+    modes: {
+      swap: string;
+      joinExclude: string;
+      joinInclude: string;
+    };
+    allowSelfResponses: string;
+    autoMode: string;
+    autoModeHint: string;
   };
   personaManagement: {
     title: string;
@@ -254,6 +283,10 @@ export interface MessageSchema {
       description: string;
       noPrompts: string;
       newPrompt: string;
+      role: string;
+      content: string;
+      markerHint: string;
+      cannotDeleteMarker: string;
     };
     contextSize: {
       label: string;
@@ -364,6 +397,19 @@ export interface MessageSchema {
     by: string;
     reset: string;
     copied: string;
+    seconds: string;
+    remove: string;
+    dragToReorder: string;
+    toggle: string;
+    refresh: string;
+    messages: string;
+    noResults: string;
+    name: string;
+    select: string;
+    selected: string;
+    selectAll: string;
+    chat: string;
+    new: string;
   };
   popup: {
     cropAvatar: {
@@ -384,11 +430,14 @@ export interface MessageSchema {
     continue: string;
     send: string;
     loadError: string;
+    createError: string;
+    emptyLog: string;
     generate: {
       noPrompts: string;
       errorFallback: string;
       noModelError: string;
       noPersonaError: string;
+      noSpeaker: string;
     };
     buttons: {
       confirmEdit: string;
@@ -465,11 +514,7 @@ export interface MessageSchema {
       syncWarning: string;
     };
     fetch: {
-      error: string;
       overflowWarning: string;
-    };
-    switch: {
-      wait: string;
     };
     create: {
       success: string;
@@ -534,6 +579,8 @@ export interface MessageSchema {
     namePlaceholder: string;
     descriptionPlaceholder: string;
     firstMessagePlaceholder: string;
+    openLastChat: string;
+    startNewChat: string;
     tokenCounts: {
       title: string;
       total: string;

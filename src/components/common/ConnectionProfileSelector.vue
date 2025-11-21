@@ -28,5 +28,6 @@ const options = computed(() => {
 </script>
 
 <template>
-  <AppSelect v-model="selectedProfile" :options="options" />
+  <!-- @vue-ignore -->
+  <AppSelect v-model="selectedProfile!" :options="options" />
 </template>

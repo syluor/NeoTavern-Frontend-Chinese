@@ -15,6 +15,7 @@ import { formatMessage, formatReasoning } from '../../utils/markdown';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import PromptItemizationPopup from './PromptItemizationPopup.vue';
+import { AppIconButton, AppTextarea } from '../UI';
 
 const props = defineProps({
   message: {
@@ -239,49 +240,50 @@ async function showPromptItemization() {
 
         <!-- Buttons for Normal Mode -->
         <div v-show="!isEditing" class="message-buttons">
-          <i
+          <AppIconButton
             v-if="hasItemizedPrompt"
-            class="message-button fa-solid fa-square-poll-horizontal"
+            icon="fa-square-poll-horizontal"
             :title="t('chat.buttons.itemization')"
             @click="showPromptItemization"
-          ></i>
+          />
           <!-- TODO: Implement extra buttons dropdown -->
-          <i class="message-button fa-solid fa-ellipsis" title="Message Actions"></i>
+          <AppIconButton icon="fa-ellipsis" title="Message Actions" />
           <!-- TODO: Implement bookmark button -->
-          <i class="message-button fa-solid fa-flag" title="Bookmark"></i>
-          <i class="message-button fa-solid fa-pencil" title="Edit" @click="startEditing"></i>
-          <i
-            class="message-button fa-solid fa-trash-can delete"
+          <AppIconButton icon="fa-flag" title="Bookmark" />
+          <AppIconButton icon="fa-pencil" title="Edit" @click="startEditing" />
+          <AppIconButton
+            icon="fa-trash-can"
+            variant="danger"
             :title="t('chat.buttons.deleteMessage')"
             @click="handleDeleteClick"
-          ></i>
+          />
         </div>
 
         <!-- Buttons for Editing Mode -->
         <div v-show="isEditing" class="message-edit-actions">
-          <button
-            class="menu-button confirm fa-solid fa-check"
+          <AppIconButton
+            icon="fa-check"
+            variant="default"
+            class="confirm-btn"
             :title="t('chat.buttons.confirmEdit')"
             @click="saveEdit"
-          ></button>
-          <button
-            class="menu-button fa-solid fa-copy"
-            :title="t('chat.buttons.copyMessage')"
-            @click="copyMessage"
-          ></button>
-          <button
-            class="menu-button fa-solid fa-lightbulb"
-            :class="{ active: isEditingReasoning }"
+          />
+          <AppIconButton icon="fa-copy" :title="t('chat.buttons.copyMessage')" @click="copyMessage" />
+          <AppIconButton
+            icon="fa-lightbulb"
+            :active="isEditingReasoning"
             :title="t('chat.buttons.addReasoning')"
             @click="toggleReasoningEdit"
-          ></button>
-          <button class="menu-button fa-solid fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp"></button>
-          <button
-            class="menu-button fa-solid fa-chevron-down"
-            :title="t('chat.buttons.moveDown')"
-            @click="moveDown"
-          ></button>
-          <button class="menu-button cancel fa-solid fa-xmark" :title="t('common.cancel')" @click="cancelEdit"></button>
+          />
+          <AppIconButton icon="fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp" />
+          <AppIconButton icon="fa-chevron-down" :title="t('chat.buttons.moveDown')" @click="moveDown" />
+          <AppIconButton
+            icon="fa-xmark"
+            variant="danger"
+            class="cancel-btn"
+            :title="t('common.cancel')"
+            @click="cancelEdit"
+          />
         </div>
       </div>
 
@@ -296,14 +298,14 @@ async function showPromptItemization() {
       </div>
 
       <div v-show="!isEditing" class="message-content" v-html="formattedContent"></div>
+
       <div v-show="isEditing" class="message-edit-area">
         <transition name="expand">
           <div v-show="isEditingReasoning" class="message-reasoning-edit-area">
-            <label>{{ t('chat.reasoning.title') }}</label>
-            <textarea v-model="editedReasoning" class="text-pole"></textarea>
+            <AppTextarea v-model="editedReasoning" :label="t('chat.reasoning.title')" :rows="3" :resizable="true" />
           </div>
         </transition>
-        <textarea v-model="editedContent" class="text-pole"></textarea>
+        <AppTextarea v-model="editedContent" :rows="5" :resizable="true" />
       </div>
 
       <div v-if="canSwipe" class="message-footer">

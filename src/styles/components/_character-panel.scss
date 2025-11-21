@@ -7,7 +7,7 @@
 
   // Left Pane: Character Browser
   &-browser {
-    width: 350px;
+    width: var(--sidebar-width, 350px);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -15,6 +15,7 @@
     border-right: 1px solid var(--theme-border-color);
     padding: 5px;
     gap: 5px;
+    background-color: var(--theme-background-tint);
 
     // Only apply transitions when NOT actively resizing
     body:not(.is-resizing) & {
@@ -32,20 +33,24 @@
     display: flex;
     flex-direction: column;
     min-width: 0; // Prevents flex item from overflowing
+    background-color: var(--theme-background-tint);
   }
 
   // Collapsed State for Browser
   &.is-collapsed .character-panel-browser {
-    width: 0 !important; // Use !important to override inline style from resizer
+    width: 0 !important;
     padding: 5px 0;
     opacity: 0;
     overflow: hidden;
+    border-right: none;
   }
 
   &-browser-header {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--theme-border-color);
   }
 
   &-actions {
@@ -54,34 +59,25 @@
     align-items: center;
     flex-wrap: wrap;
 
-    .character-sort-order {
-      flex: 1;
-      border-radius: 5px;
-      margin: 0;
-      min-width: 75px;
-    }
-
-    .character-search-toggle {
-      padding-right: 15px;
-      font-size: 1.1em;
-      margin: 0 2px;
+    #extension-buttons-container {
+      display: contents;
     }
   }
 
   &-search-form {
     display: flex;
     gap: 5px;
-  }
-
-  &-search-input {
-    flex-grow: 1;
+    align-items: center;
   }
 
   &-character-list {
     flex-grow: 1;
     overflow-y: auto;
     height: 100%;
-    padding: 1px;
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   &-pagination {
@@ -89,16 +85,20 @@
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    padding: 1px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--theme-border-color);
   }
 
   // Divider and Collapse Button
   &-divider {
-    width: 12px;
+    // Virtual width handled by border/positioning
+    width: 10px;
+    margin-right: -5px;
+    z-index: 10;
     flex-shrink: 0;
     cursor: ew-resize;
     position: relative;
-    background-color: transparent; // Make it a hover target
+    background-color: transparent;
   }
 
   &-collapse-toggle {
@@ -106,18 +106,19 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 24px;
-    height: 48px;
+    width: 20px;
+    height: 40px;
     background-color: var(--theme-background-tint);
     border: 1px solid var(--theme-border-color);
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2em;
-    z-index: 10;
-    transition: background-color var(--animation-duration-2x);
+    font-size: 0.9em;
+    z-index: 20;
+    transition: background-color var(--animation-duration);
+    box-shadow: 0 2px 4px var(--theme-shadow-color);
 
     &:hover {
       background-color: var(--white-20a);
@@ -133,18 +134,25 @@
     height: 100%;
     gap: 20px;
     text-align: center;
-    opacity: 0.5;
+    opacity: 0.6;
     padding: 20px;
 
     .placeholder-icon {
-      font-size: 4em;
+      font-size: 5em;
+      opacity: 0.5;
     }
     .placeholder-title {
       font-size: 1.5em;
       font-weight: bold;
     }
     .placeholder-text {
-      max-width: 300px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .menu-button {
+      font-size: 1.1em;
+      padding: 8px 16px;
     }
   }
 }
@@ -152,18 +160,20 @@
 .character-item {
   display: flex;
   align-items: center;
-  padding: 5px;
+  padding: 6px;
   cursor: pointer;
-  border-radius: 10px;
-  margin-bottom: 1px;
+  border-radius: var(--base-border-radius);
   gap: 10px;
+  border: 1px solid transparent;
+  transition: background-color var(--animation-duration);
 
-  &:hover,
-  &.is-active {
+  &:hover {
     background-color: var(--white-20a);
   }
+
   &.is-active {
-    outline: 1px solid var(--theme-quote-color);
+    background-color: var(--white-20a);
+    border-color: var(--theme-quote-color);
   }
 
   &-avatar {
@@ -175,22 +185,26 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center center;
+      object-position: center top;
       border-radius: var(--avatar-border-radius-round);
       border: 1px solid var(--theme-border-color);
-      box-shadow: 0 0 5px var(--black-50a);
+      box-shadow: 0 1px 3px var(--black-30a);
     }
   }
 
   &-content {
     flex-grow: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   &-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 5px;
+    width: 100%;
   }
 
   &-name {
@@ -198,21 +212,24 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex-grow: 1;
+    font-size: 0.95em;
   }
 
   &-fav-icon {
     color: var(--color-golden);
     filter: drop-shadow(1px 1px 2px black);
-    font-size: 14px;
+    font-size: 0.8em;
     flex-shrink: 0;
   }
 
   &-description {
-    font-size: calc(var(--font-size-main) * 0.8);
+    font-size: 0.8em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
-    margin-top: -2px;
+    opacity: 0.7;
+    margin-top: 2px;
   }
 }

@@ -36,8 +36,6 @@ export const defaultWorldInfoSettings: WorldInfoSettings = {
   world_info_max_recursion_steps: 0,
 };
 
-const WI_SORT_ORDER_KEY = 'world_info_sort_order';
-
 export const useWorldInfoStore = defineStore('world-info', () => {
   const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
@@ -54,8 +52,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const loadingBooks = ref<Set<string>>(new Set());
 
   const sortOrder = computed({
-    get: () => settingsStore.getAccountItem(WI_SORT_ORDER_KEY) ?? 'order:asc',
-    set: (value) => settingsStore.setAccountItem(WI_SORT_ORDER_KEY, value),
+    get: () => settingsStore.settings.account.worldInfoSortOrder ?? 'order:asc',
+    set: (value) => (settingsStore.settings.account.worldInfoSortOrder = value),
   });
 
   const settings = computed({

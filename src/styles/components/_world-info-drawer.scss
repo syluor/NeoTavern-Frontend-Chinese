@@ -62,17 +62,25 @@
 
   .browser-item-actions {
     display: flex;
-    gap: 8px;
+    gap: 2px;
     opacity: 0;
     transition: opacity var(--animation-duration-2x);
 
-    i:hover {
-      color: var(--color-warning);
+    // Overwrite icon button sizing for this compact list
+    .menu-button-icon {
+      padding: 3px;
+      font-size: 1em;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+        color: var(--color-warning);
+      }
     }
   }
 
   .browser-item:hover .browser-item-actions {
-    opacity: 0.7;
+    opacity: 1;
   }
 
   .lorebook-group-entries {
@@ -97,10 +105,16 @@
     &-row {
       display: flex;
       gap: 5px;
-      align-items: center;
+      align-items: flex-start;
 
-      input.text-pole {
+      .app-input-wrapper,
+      .app-select-wrapper {
         flex-grow: 1;
+        margin: 0;
+      }
+
+      .menu-button-icon {
+        flex-shrink: 0;
       }
     }
   }

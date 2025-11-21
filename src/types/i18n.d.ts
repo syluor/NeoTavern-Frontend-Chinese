@@ -51,6 +51,8 @@ export interface MessageSchema {
     mute: string;
     addMember: string;
     replyStrategy: string;
+    members: string;
+    configuration: string;
     strategies: {
       manual: string;
       natural: string;
@@ -148,8 +150,6 @@ export interface MessageSchema {
     deleteBook: string;
     refresh: string;
     searchPlaceholder: string;
-    selectEntryPlaceholderTitle: string;
-    selectEntryPlaceholderText: string;
     sorting: {
       title: string;
       titleAsc: string;
@@ -424,7 +424,6 @@ export interface MessageSchema {
   chat: {
     inputPlaceholder: string;
     options: string;
-    extensions: string;
     continue: string;
     send: string;
     loadError: string;
@@ -565,7 +564,6 @@ export interface MessageSchema {
     delete: string;
     more: string;
     searchTags: string;
-    viewAllTags: string;
     creatorNotes: string;
     toggleStyles: string;
     toggleSpoiler: string;
@@ -573,7 +571,6 @@ export interface MessageSchema {
     detailsHidden: string;
     description: string;
     firstMessage: string;
-    expandEditor: string;
     namePlaceholder: string;
     descriptionPlaceholder: string;
     firstMessagePlaceholder: string;
@@ -583,7 +580,6 @@ export interface MessageSchema {
       title: string;
       total: string;
       permanent: string;
-      warningTooltip: string;
     };
     stats: {
       title: string;

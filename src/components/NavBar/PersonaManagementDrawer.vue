@@ -7,6 +7,7 @@ import { getThumbnailUrl } from '../../utils/image';
 import Pagination from '../Common/Pagination.vue';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { AppButton, AppIconButton, AppInput, AppSelect, AppCheckbox, AppTextarea } from '../UI';
 
 const { t } = useStrictI18n();
 const personaStore = usePersonaStore();
@@ -19,6 +20,12 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const isGridView = ref(false);
 const avatarInput = ref<HTMLInputElement | null>(null);
+const fileImportInput = ref<HTMLInputElement | null>(null);
+
+const sortOptions = [
+  { label: 'A-Z', value: 'asc' },
+  { label: 'Z-A', value: 'desc' },
+];
 
 const filteredPersonas = computed(() => {
   let personas = [...personaStore.personas];
@@ -40,6 +47,10 @@ const paginatedPersonas = computed(() => {
   const end = start + itemsPerPage.value;
   return filteredPersonas.value.slice(start, end);
 });
+
+function triggerImport() {
+  fileImportInput.value?.click();
+}
 
 function handleFileImport(event: Event) {
   // TODO
@@ -90,35 +101,24 @@ onMounted(() => {
         </a>
       </h3>
       <div class="persona-drawer-header-actions">
-        <div class="menu-button">
-          <i class="fa-solid fa-ranking-star"></i>
-          <span>{{ t('personaManagement.usageStats') }}</span>
-        </div>
-        <div class="menu-button">
-          <i class="fa-solid fa-file-export"></i>
-          <span>{{ t('personaManagement.backup') }}</span>
-        </div>
-        <label class="menu-button">
-          <i class="fa-solid fa-file-import"></i>
-          <span>{{ t('personaManagement.restore') }}</span>
-          <input type="file" accept=".json" hidden @change="handleFileImport" />
-        </label>
+        <AppButton icon="fa-ranking-star">{{ t('personaManagement.usageStats') }}</AppButton>
+        <AppButton icon="fa-file-export">{{ t('personaManagement.backup') }}</AppButton>
+        <AppButton icon="fa-file-import" @click="triggerImport">
+          {{ t('personaManagement.restore') }}
+        </AppButton>
+        <input ref="fileImportInput" type="file" accept=".json" hidden @change="handleFileImport" />
       </div>
     </div>
     <div class="persona-drawer-content">
       <!-- Left Column -->
       <div class="persona-drawer-column--left">
         <div class="persona-drawer-list-controls">
-          <div class="menu-button" @click="personaStore.createPersona">
-            <i class="fa-solid fa-person-circle-question fa-fw"></i>
-            <span>{{ t('personaManagement.create') }}</span>
-          </div>
-          <input v-model="searchTerm" class="text-pole" type="search" :placeholder="t('common.search')" />
-          <select v-model="sortOrder" class="text-pole">
-            <option value="asc">A-Z</option>
-            <option value="desc">Z-A</option>
-          </select>
-          <div class="menu-button fa-solid fa-table-cells-large" @click="isGridView = !isGridView"></div>
+          <AppButton icon="fa-person-circle-question" @click="personaStore.createPersona">
+            {{ t('personaManagement.create') }}
+          </AppButton>
+          <AppInput v-model="searchTerm" type="search" :placeholder="t('common.search')" />
+          <AppSelect v-model="sortOrder" :options="sortOptions" />
+          <AppIconButton icon="fa-table-cells-large" @click="isGridView = !isGridView" />
         </div>
         <Pagination
           v-if="filteredPersonas.length > 0"
@@ -154,69 +154,60 @@ onMounted(() => {
           <div class="persona-editor-controls">
             <h5 class="persona-editor-name">{{ personaStore.activePersona?.name ?? '' }}</h5>
             <div class="buttons_block">
-              <div
-                class="menu-button fa-solid fa-pencil"
+              <AppIconButton
+                icon="fa-pencil"
                 :title="t('personaManagement.actions.rename')"
                 @click="personaStore.updateActivePersonaName"
-              ></div>
-              <div class="menu-button fa-solid fa-sync" :title="t('personaManagement.actions.syncName')"></div>
-              <div class="menu-button fa-solid fa-globe" :title="t('personaManagement.actions.lore')"></div>
-              <div
-                class="menu-button fa-solid fa-image"
+              />
+              <AppIconButton icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
+              <AppIconButton icon="fa-globe" :title="t('personaManagement.actions.lore')" />
+              <AppIconButton
+                icon="fa-image"
                 :title="t('personaManagement.actions.changeImage')"
                 @click="triggerAvatarUpload"
-              ></div>
+              />
               <input ref="avatarInput" type="file" accept="image/*" hidden @change="handleAvatarChange" />
-              <div class="menu-button fa-solid fa-clone" :title="t('personaManagement.actions.duplicate')"></div>
-              <div
-                class="menu-button fa-solid fa-skull red_button"
+              <AppIconButton icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
+              <AppIconButton
+                variant="danger"
+                icon="fa-skull"
                 :title="t('personaManagement.actions.delete')"
                 @click="handleDelete"
-              ></div>
+              />
             </div>
           </div>
 
-          <label>{{ t('personaManagement.description.label') }}</label>
-          <textarea
-            class="text-pole"
-            rows="6"
+          <AppTextarea
+            :model-value="personaStore.activePersona?.description ?? ''"
+            :label="t('personaManagement.description.label')"
+            :rows="6"
             :placeholder="t('personaManagement.description.placeholder')"
-            :value="personaStore.activePersona?.description ?? ''"
-            @input="personaStore.updateActivePersonaField('description', ($event.target as HTMLTextAreaElement).value)"
-          ></textarea>
+            @update:model-value="personaStore.updateActivePersonaField('description', $event)"
+          />
           <!-- TODO: Add token counter -->
 
           <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
           <div class="persona-editor-connections">
-            <div class="menu-button">
-              <i class="icon fa-solid fa-crown fa-fw"></i>
-              <span>{{ t('personaManagement.connections.default') }}</span>
-            </div>
-            <div class="menu-button">
-              <i class="icon fa-solid fa-unlock fa-fw"></i>
-              <span>{{ t('personaManagement.connections.character') }}</span>
-            </div>
-            <div class="menu-button">
-              <i class="icon fa-solid fa-unlock fa-fw"></i>
-              <span>{{ t('personaManagement.connections.chat') }}</span>
-            </div>
+            <AppButton icon="fa-crown">{{ t('personaManagement.connections.default') }}</AppButton>
+            <AppButton icon="fa-unlock">{{ t('personaManagement.connections.character') }}</AppButton>
+            <AppButton icon="fa-unlock">{{ t('personaManagement.connections.chat') }}</AppButton>
           </div>
           <!-- TODO: Connections List -->
 
           <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
           <div class="persona-editor-global-settings">
-            <label class="checkbox-label">
-              <input v-model="settingsStore.settings.persona.showNotifications" type="checkbox" />
-              <span>{{ t('personaManagement.globalSettings.showNotifications') }}</span>
-            </label>
-            <label class="checkbox-label">
-              <input v-model="settingsStore.settings.persona.allowMultiConnections" type="checkbox" />
-              <span>{{ t('personaManagement.globalSettings.allowMultiConnections') }}</span>
-            </label>
-            <label class="checkbox-label">
-              <input v-model="settingsStore.settings.persona.autoLock" type="checkbox" />
-              <span>{{ t('personaManagement.globalSettings.autoLock') }}</span>
-            </label>
+            <AppCheckbox
+              v-model="settingsStore.settings.persona.showNotifications"
+              :label="t('personaManagement.globalSettings.showNotifications')"
+            />
+            <AppCheckbox
+              v-model="settingsStore.settings.persona.allowMultiConnections"
+              :label="t('personaManagement.globalSettings.allowMultiConnections')"
+            />
+            <AppCheckbox
+              v-model="settingsStore.settings.persona.autoLock"
+              :label="t('personaManagement.globalSettings.autoLock')"
+            />
           </div>
         </div>
       </div>

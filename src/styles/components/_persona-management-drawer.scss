@@ -61,11 +61,16 @@
   &-list-controls {
     display: flex;
     gap: 5px;
-    align-items: center;
+    align-items: flex-start;
 
-    .text-pole {
-      margin: 0;
+    .app-input-wrapper {
       flex-grow: 1;
+    }
+
+    .menu-button,
+    .app-select-wrapper,
+    .menu-button-icon {
+      flex-shrink: 0;
     }
   }
 }

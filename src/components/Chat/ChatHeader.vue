@@ -6,6 +6,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { getThumbnailUrl } from '@/utils/image';
 import { useChatStore } from '@/stores/chat.store';
 import { formatTimeStamp } from '@/utils/date';
+import { AppIconButton } from '../UI';
 
 const uiStore = useUiStore();
 const characterStore = useCharacterStore();
@@ -37,8 +38,6 @@ const lastMessageDate = computed(() => {
   return formatTimeStamp(lastMsg.send_date || lastMsg.gen_finished || Date.now());
 });
 
-const isFullScreen = computed(() => settingsStore.getAccountItem('chat_full_screen') === 'true');
-
 function handleCharacterClick() {
   if (isGroup.value) {
     uiStore.toggleRightSidebar('chat-management');
@@ -49,7 +48,7 @@ function handleCharacterClick() {
 }
 
 function toggleFullScreen() {
-  settingsStore.setAccountItem('chat_full_screen', (!isFullScreen.value).toString());
+  settingsStore.settings.account.chatFullScreen = !settingsStore.settings.account.chatFullScreen;
 }
 </script>
 
@@ -57,13 +56,14 @@ function toggleFullScreen() {
   <header class="chat-header">
     <div class="chat-header-group left">
       <template v-for="[id, def] in uiStore.leftSidebarRegistry" :key="id">
-        <i
+        <AppIconButton
           v-if="def.icon"
-          class="chat-header-icon fa-solid"
-          :class="[def.icon, { active: uiStore.leftSidebarView === id }]"
+          class="chat-header-icon"
+          :icon="def.icon"
+          :active="uiStore.leftSidebarView === id"
           :title="def.title"
           @click="uiStore.toggleLeftSidebar(id)"
-        ></i>
+        />
       </template>
     </div>
 
@@ -95,20 +95,22 @@ function toggleFullScreen() {
     </div>
 
     <div class="chat-header-group right">
-      <i
-        class="chat-header-icon fa-solid"
-        :class="isFullScreen ? 'fa-compress active' : 'fa-expand'"
+      <AppIconButton
+        class="chat-header-icon"
+        :icon="settingsStore.settings.account.chatFullScreen ? 'fa-compress' : 'fa-expand'"
+        :active="settingsStore.settings.account.chatFullScreen"
         title="Toggle Full Screen"
         @click="toggleFullScreen"
-      ></i>
+      />
       <template v-for="([id, def], index) in uiStore.rightSidebarRegistry" :key="index">
-        <i
+        <AppIconButton
           v-if="def.icon"
-          class="chat-header-icon fa-solid"
-          :class="[def.icon, { active: uiStore.rightSidebarView === id }]"
+          class="chat-header-icon"
+          :icon="def.icon"
+          :active="uiStore.rightSidebarView === id"
           :title="def.title"
           @click="uiStore.toggleRightSidebar(id)"
-        ></i>
+        />
       </template>
     </div>
   </header>

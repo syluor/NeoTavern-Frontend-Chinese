@@ -10,6 +10,7 @@ import { POPUP_TYPE, POPUP_RESULT, type ChatInfo } from '../../types';
 import { listRecentChats, deleteChat } from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import Pagination from '../Common/Pagination.vue';
+import { AppIconButton, AppButton } from '../UI';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
@@ -17,18 +18,16 @@ const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 
 // Persistence for page size
-const STORAGE_KEY = 'recent_chats_page_size';
-const savedSize = settingsStore.getAccountItem(STORAGE_KEY);
 
 const currentPage = ref(1);
-const itemsPerPage = ref(savedSize ? parseInt(savedSize, 10) : 10);
+const itemsPerPage = ref(settingsStore.settings.account.recentChatsPageSize ?? 10);
 
 // Selection Mode
 const isSelectionMode = ref(false);
 const selectedChats = ref<Set<string>>(new Set());
 
 watch(itemsPerPage, (newVal) => {
-  settingsStore.setAccountItem(STORAGE_KEY, newVal.toString());
+  settingsStore.settings.account.recentChatsPageSize = newVal;
   currentPage.value = 1;
 });
 
@@ -148,33 +147,24 @@ onMounted(() => {
     <div class="recent-chats-header">
       <h3>{{ t('navbar.recentChats') }}</h3>
       <div class="recent-chats-actions">
-        <button
-          class="menu-button-icon fa-solid"
-          :class="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
+        <AppIconButton
+          :icon="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
           :title="isSelectionMode ? t('common.cancel') : t('common.select')"
           @click="toggleSelectionMode"
-        ></button>
-        <button
-          class="menu-button-icon fa-solid fa-rotate-right"
-          :title="t('common.refresh')"
-          @click="refresh"
-        ></button>
+        />
+        <AppIconButton icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
       </div>
     </div>
 
-    <div v-if="isSelectionMode" class="recent-chats-selection-bar">
+    <div v-show="isSelectionMode" class="recent-chats-selection-bar">
       <div class="selection-info">{{ selectedChats.size }} {{ t('common.selected') }}</div>
       <div class="selection-actions">
-        <button class="menu-button small" @click="selectAllVisible">
+        <AppButton class="small" @click="selectAllVisible">
           {{ t('common.selectAll') }}
-        </button>
-        <button
-          class="menu-button menu-button--danger small"
-          :disabled="selectedChats.size === 0"
-          @click="deleteSelected"
-        >
+        </AppButton>
+        <AppButton variant="danger" class="small" :disabled="selectedChats.size === 0" @click="deleteSelected">
           <i class="fa-solid fa-trash"></i>
-        </button>
+        </AppButton>
       </div>
     </div>
 
@@ -205,7 +195,7 @@ onMounted(() => {
             <img :src="getChatAvatar(chat) as string" onerror="this.src='img/ai4.png'" />
           </template>
 
-          <div v-if="isSelectionMode" class="selection-checkbox">
+          <div v-show="isSelectionMode" class="selection-checkbox">
             <i v-if="selectedChats.has(chat.file_id)" class="fa-solid fa-check"></i>
           </div>
         </div>

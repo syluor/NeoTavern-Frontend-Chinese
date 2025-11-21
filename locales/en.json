@@ -48,6 +48,8 @@
     "mute": "Mute/Unmute",
     "addMember": "Add Member",
     "replyStrategy": "Reply Strategy",
+    "members": "Members",
+    "configuration": "Configuration",
     "strategies": {
       "manual": "Manual",
       "natural": "Natural Order",
@@ -145,8 +147,6 @@
     "deleteBook": "Delete Lorebook '{bookName}'",
     "refresh": "Refresh",
     "searchPlaceholder": "Search Lorebooks...",
-    "selectEntryPlaceholderTitle": "Select an Item",
-    "selectEntryPlaceholderText": "Select a lorebook entry or Global Settings from the list to begin editing.",
     "sorting": {
       "title": "Sort entries by",
       "titleAsc": "Title A-Z",
@@ -421,7 +421,6 @@
   "chat": {
     "inputPlaceholder": "Type a message, or /? for help",
     "options": "Options",
-    "extensions": "Extensions",
     "continue": "Continue the last message",
     "send": "Send a message",
     "loadError": "Failed to load chat.",
@@ -562,7 +561,6 @@
     "delete": "Delete Character",
     "more": "More...",
     "searchTags": "Search / Create tags",
-    "viewAllTags": "View all tags",
     "creatorNotes": "Creator's Notes",
     "toggleStyles": "Allow / Forbid global styles",
     "toggleSpoiler": "Show / Hide Description and First Message",
@@ -570,7 +568,6 @@
     "detailsHidden": "Character details are hidden.",
     "description": "Description",
     "firstMessage": "First message",
-    "expandEditor": "Expand the editor",
     "namePlaceholder": "Enter character name here",
     "descriptionPlaceholder": "Describe your character's physical and mental traits here.",
     "firstMessagePlaceholder": "This will be the first message from the character that starts every chat.",
@@ -579,8 +576,7 @@
     "tokenCounts": {
       "title": "Token counts may be inaccurate and provided just for reference.",
       "total": "Total tokens",
-      "permanent": "Permanent",
-      "warningTooltip": "About Token 'Limits'"
+      "permanent": "Permanent"
     },
     "stats": {
       "title": "Click for stats!"

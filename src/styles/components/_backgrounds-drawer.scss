@@ -24,9 +24,14 @@
       flex-grow: 1;
     }
 
-    .menu-button,
-    .text_pole {
-      margin: 0;
+    // Override margins for specific UI components in header
+    .app-input-wrapper,
+    .app-select-wrapper {
+      margin-bottom: 0;
+    }
+
+    .app-input-wrapper {
+      flex-grow: 1;
     }
   }
 
@@ -204,7 +209,7 @@
     transform-origin: top right;
     transition: all var(--animation-duration) ease-out;
 
-    .menu-button {
+    .menu-button-icon {
       width: 24px;
       height: 24px;
       font-size: 0.9em;

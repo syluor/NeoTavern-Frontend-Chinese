@@ -14,12 +14,12 @@
     flex-shrink: 0;
     border-bottom: 1px solid var(--theme-border-color);
     padding-bottom: 10px;
-  }
 
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
   }
 
   &-manual-input-note {
@@ -27,12 +27,16 @@
     opacity: 0.8;
     text-align: center;
     margin-bottom: 10px;
+    color: var(--theme-text-color);
   }
 
   &-docs-link {
     font-size: 1.3em;
     opacity: 0.7;
     color: var(--theme-text-color);
+    text-decoration: none;
+    transition: opacity var(--animation-duration);
+
     &:hover {
       opacity: 1;
     }
@@ -57,12 +61,13 @@
     background: transparent;
     border: none;
     color: var(--theme-text-color);
-    padding: 5px 10px;
+    padding: 6px 12px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: var(--base-border-radius);
     opacity: 0.6;
     font-weight: bold;
-    transition: all 0.2s;
+    transition: all var(--animation-duration);
+    font-size: 0.95em;
 
     &:hover {
       opacity: 0.9;
@@ -83,9 +88,12 @@
   align-items: center;
   margin-bottom: 5px;
   font-size: 1.1em;
+  color: var(--theme-text-color);
 }
 
 .preset-manager {
+  margin-bottom: 20px;
+
   &-actions {
     display: flex;
     gap: 5px;
@@ -94,17 +102,18 @@
   &-controls {
     display: flex;
     gap: 5px;
-    align-items: flex-start;
+    align-items: center;
   }
 }
 
 .toggle-description {
   font-size: 0.9em;
   opacity: 0.7;
-  margin-left: 24px;
+  margin-left: 24px; // Align with checkbox text
   margin-top: 2px;
+  color: var(--theme-text-color);
 }
 
 .mt-1 {
-  margin-top: 0.25rem;
+  margin-top: 5px;
 }

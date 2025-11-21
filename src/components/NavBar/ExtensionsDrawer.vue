@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useExtensionStore } from '../../stores/extension.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useResizable } from '../../composables/useResizable';
+import { AppIconButton, AppInput, AppCheckbox, AppToggle } from '../UI';
 
 const { t } = useStrictI18n();
 const extensionStore = useExtensionStore();
@@ -11,7 +12,7 @@ const browserPane = ref<HTMLElement | null>(null);
 const dividerEl = ref<HTMLElement | null>(null);
 const isBrowserCollapsed = ref(false); // TODO: load from account storage
 
-useResizable(browserPane, dividerEl, { storageKey: 'extensions_browser_width', initialWidth: 250 });
+useResizable(browserPane, dividerEl, { storageKey: 'extensionsBrowserWidth', initialWidth: 250 });
 
 const notifyOnUpdates = ref(false); // TODO: Connect this to settings
 
@@ -39,18 +40,15 @@ onMounted(() => {
     <div id="extensions-browser" ref="browserPane" class="extensions-panel-browser">
       <div class="extensions-panel-browser-header">
         <div style="display: flex; gap: 5px">
-          <div class="menu-button" :title="t('extensions.manage')" @click="manageExtensions">
-            <i class="fa-solid fa-cubes"></i>
-          </div>
-          <div class="menu-button" :title="t('extensions.install')" @click="installExtension">
-            <i class="fa-solid fa-cloud-arrow-down"></i>
-          </div>
-          <label class="checkbox-label" style="margin-left: auto; font-size: 0.9em; cursor: pointer">
-            <input v-model="notifyOnUpdates" type="checkbox" />
-            <span>{{ t('extensions.notifyUpdates') }}</span>
-          </label>
+          <AppIconButton icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
+          <AppIconButton icon="fa-cloud-arrow-down" :title="t('extensions.install')" @click="installExtension" />
+          <AppCheckbox
+            v-model="notifyOnUpdates"
+            :label="t('extensions.notifyUpdates')"
+            style="margin-left: auto; font-size: 0.9em"
+          />
         </div>
-        <input v-model="extensionStore.searchTerm" class="text-pole" type="search" :placeholder="t('common.search')" />
+        <AppInput v-model="extensionStore.searchTerm" type="search" :placeholder="t('common.search')" />
       </div>
 
       <div class="extensions-panel-list">
@@ -69,15 +67,11 @@ onMounted(() => {
               {{ t('common.by') }} {{ extension.manifest.author }}
             </div>
           </div>
-          <div class="extension-item-actions">
-            <label class="toggle-switch" @click.stop>
-              <input
-                type="checkbox"
-                :checked="extension.isActive"
-                @change="extensionStore.toggleExtension(extension.id, ($event.target as HTMLInputElement).checked)"
-              />
-              <span class="slider"></span>
-            </label>
+          <div class="extension-item-actions" @click.stop>
+            <AppToggle
+              :model-value="extension.isActive"
+              @update:model-value="(val) => extensionStore.toggleExtension(extension.id, val)"
+            />
           </div>
         </div>
       </div>

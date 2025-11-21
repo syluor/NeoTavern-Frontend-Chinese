@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import type { ItemizedPrompt, PromptTokenBreakdown, WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
+import { AppButton } from '../UI';
 
 const props = defineProps<{
   data: ItemizedPrompt;
@@ -168,27 +169,24 @@ const fmt = (n: number) => n.toLocaleString();
 
     <!-- Actions -->
     <div class="pi-actions">
-      <button class="menu-button" @click="toggleRaw">
-        <i class="fa-solid fa-square-poll-horizontal"></i>
+      <AppButton icon="fa-square-poll-horizontal" @click="toggleRaw">
         {{ t('chat.itemization.showRaw') }}
-      </button>
-      <button v-if="hasWiEntries" class="menu-button" @click="toggleWorldInfo">
-        <i class="fa-solid fa-book-journal-whills"></i>
+      </AppButton>
+      <AppButton v-if="hasWiEntries" icon="fa-book-journal-whills" @click="toggleWorldInfo">
         {{ t('chat.itemization.showWorldInfo') }}
-      </button>
-      <button class="menu-button" @click="copyPrompt">
-        <i class="fa-solid fa-copy"></i>
+      </AppButton>
+      <AppButton icon="fa-copy" @click="copyPrompt">
         {{ t('chat.itemization.copy') }}
-      </button>
+      </AppButton>
     </div>
 
     <!-- Raw Prompt Viewer -->
-    <div v-if="showRaw" class="pi-raw-viewer">
+    <div v-show="showRaw" class="pi-raw-viewer">
       <pre>{{ rawMessages }}</pre>
     </div>
 
     <!-- WI Viewer -->
-    <div v-if="showWorldInfo" class="pi-wi-viewer">
+    <div v-show="showWorldInfo" class="pi-wi-viewer">
       <div v-for="(entries, book) in wiEntries" :key="book" class="pi-wi-book">
         <h4>{{ book }}</h4>
         <ul>

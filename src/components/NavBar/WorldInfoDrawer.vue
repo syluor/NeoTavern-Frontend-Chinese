@@ -6,6 +6,7 @@ import { useResizable } from '../../composables/useResizable';
 import WorldInfoEntryEditor from './WorldInfoEntryEditor.vue';
 import WorldInfoGlobalSettings from './WorldInfoGlobalSettings.vue';
 import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
+import { AppIconButton, AppInput, AppSelect } from '../UI';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
@@ -15,7 +16,7 @@ const dividerEl = ref<HTMLElement | null>(null);
 const isBrowserCollapsed = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-useResizable(browserPane, dividerEl, { storageKey: 'worldinfo_browser_width', initialWidth: 350 });
+useResizable(browserPane, dividerEl, { storageKey: 'worldinfoBrowserWidth', initialWidth: 350 });
 
 onMounted(() => {
   if (worldInfoStore.bookNames.length === 0) {
@@ -53,6 +54,14 @@ const filteredBookNames = computed(() => {
     return worldInfoStore.filteredAndSortedEntries(name).length > 0;
   });
 });
+
+const sortOptions = computed(() => [
+  { value: 'order:asc', label: t('worldInfo.sorting.orderAsc') },
+  { value: 'comment:asc', label: t('worldInfo.sorting.titleAsc') },
+  { value: 'comment:desc', label: t('worldInfo.sorting.titleDesc') },
+  { value: 'uid:asc', label: t('worldInfo.sorting.uidAsc') },
+  { value: 'uid:desc', label: t('worldInfo.sorting.uidDesc') },
+]);
 </script>
 
 <template>
@@ -61,33 +70,18 @@ const filteredBookNames = computed(() => {
     <div ref="browserPane" class="character-panel-browser">
       <div class="character-panel-browser-header world-info-controls">
         <div class="world-info-controls-row">
-          <div
-            class="menu-button fa-solid fa-plus"
-            :title="t('worldInfo.newWorld')"
-            @click="worldInfoStore.createNewBook"
-          ></div>
-          <div class="menu-button fa-solid fa-file-import" :title="t('worldInfo.import')" @click="triggerImport"></div>
+          <AppIconButton icon="fa-plus" :title="t('worldInfo.newWorld')" @click="worldInfoStore.createNewBook" />
+          <AppIconButton icon="fa-file-import" :title="t('worldInfo.import')" @click="triggerImport" />
           <input ref="fileInput" type="file" accept=".json" hidden @change="handleFileImport" />
-          <div
-            class="menu-button fa-solid fa-sync"
-            :title="t('worldInfo.refresh')"
-            @click="worldInfoStore.refresh"
-          ></div>
+          <AppIconButton icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.refresh" />
         </div>
         <div class="world-info-controls-row">
-          <input
+          <AppInput
             v-model="worldInfoStore.browserSearchTerm"
-            class="text-pole"
             type="search"
             :placeholder="t('worldInfo.searchPlaceholder')"
           />
-          <select v-model="worldInfoStore.sortOrder" class="text-pole" :title="t('worldInfo.sorting.title')">
-            <option value="order:asc">{{ t('worldInfo.sorting.orderAsc') }}</option>
-            <option value="comment:asc">{{ t('worldInfo.sorting.titleAsc') }}</option>
-            <option value="comment:desc">{{ t('worldInfo.sorting.titleDesc') }}</option>
-            <option value="uid:asc">{{ t('worldInfo.sorting.uidAsc') }}</option>
-            <option value="uid:desc">{{ t('worldInfo.sorting.uidDesc') }}</option>
-          </select>
+          <AppSelect v-model="worldInfoStore.sortOrder" :title="t('worldInfo.sorting.title')" :options="sortOptions" />
         </div>
       </div>
 
@@ -115,31 +109,31 @@ const filteredBookNames = computed(() => {
               <span class="browser-item-name">{{ bookName }}</span>
             </div>
             <div class="browser-item-actions">
-              <i
-                class="fa-solid fa-plus"
+              <AppIconButton
+                icon="fa-plus"
                 :title="t('worldInfo.newEntryInBook', { bookName })"
                 @click.stop="worldInfoStore.createNewEntry(bookName)"
-              ></i>
-              <i
-                class="fa-solid fa-file-export"
+              />
+              <AppIconButton
+                icon="fa-file-export"
                 :title="t('worldInfo.export')"
                 @click.stop="worldInfoStore.exportBook(bookName)"
-              ></i>
-              <i
-                class="fa-solid fa-clone"
+              />
+              <AppIconButton
+                icon="fa-clone"
                 :title="t('worldInfo.duplicate')"
                 @click.stop="worldInfoStore.duplicateBook(bookName)"
-              ></i>
-              <i
-                class="fa-solid fa-pencil"
+              />
+              <AppIconButton
+                icon="fa-pencil"
                 :title="t('worldInfo.rename')"
                 @click.stop="worldInfoStore.renameBook(bookName)"
-              ></i>
-              <i
-                class="fa-solid fa-trash-can"
+              />
+              <AppIconButton
+                icon="fa-trash-can"
                 :title="t('worldInfo.deleteBook', { bookName })"
                 @click.stop="worldInfoStore.deleteBook(bookName)"
-              ></i>
+              />
             </div>
           </div>
 
@@ -194,11 +188,6 @@ const filteredBookNames = computed(() => {
         :model-value="worldInfoStore.selectedEntry ?? undefined"
         @update:model-value="updateEntry"
       />
-      <div v-show="!worldInfoStore.selectedEntry" class="character-panel-editor-placeholder">
-        <div class="placeholder-icon fa-solid fa-book-atlas"></div>
-        <h2 class="placeholder-title">{{ t('worldInfo.selectEntryPlaceholderTitle') }}</h2>
-        <p class="placeholder-text">{{ t('worldInfo.selectEntryPlaceholderText') }}</p>
-      </div>
     </div>
   </div>
 </template>

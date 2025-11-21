@@ -83,7 +83,7 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
       </div>
 
       <div v-for="(settings, category) in groupedSettings" :key="category" class="user-settings-drawer-category">
-        <CollapsibleSection :title="category" :initially-open="!searchTerm">
+        <CollapsibleSection :title="category" :is-open="!searchTerm">
           <div class="user-settings-list">
             <div v-for="setting in settings" :key="setting.id" class="user-settings-drawer-setting">
               <!-- Checkbox Layout (Label on right) -->

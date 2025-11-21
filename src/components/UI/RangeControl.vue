@@ -56,4 +56,3 @@ function update(val: number | string) {
     </div>
   </div>
 </template>
-

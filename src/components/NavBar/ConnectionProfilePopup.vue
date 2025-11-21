@@ -1,3 +1,5 @@
+<!-- TODO: Convert to ConnectionProfile and use with popup.show({component: ConnectionProfile}) -->
+
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useApiStore } from '../../stores/api.store';
@@ -5,6 +7,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ConnectionProfile } from '../../types';
 import { toast } from '../../composables/useToast';
+import { AppInput, AppCheckbox, AppButton } from '../UI';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -113,42 +116,33 @@ function save() {
 
       <div class="connection-profile-form">
         <div class="form-group">
-          <label for="profileName">{{ t('apiConnections.profileManagement.profileName') }}</label>
-          <input id="profileName" v-model="profileName" type="text" class="text-pole" />
+          <AppInput
+            v-model="profileName"
+            :label="t('apiConnections.profileManagement.profileName')"
+            class="text-pole"
+          />
         </div>
 
         <h4>{{ t('apiConnections.profileManagement.fieldsToInclude') }}</h4>
 
         <div class="fields-grid">
-          <label class="checkbox-label field-item">
-            <input v-model="includeApi" type="checkbox" />
-            <span>{{ t('apiConnections.api') }}</span>
-          </label>
+          <AppCheckbox v-model="includeApi" :label="t('apiConnections.api')" />
           <div class="field-value">{{ currentApi }}</div>
 
-          <label class="checkbox-label field-item">
-            <input v-model="includeSource" type="checkbox" />
-            <span>{{ t('apiConnections.source') }}</span>
-          </label>
+          <AppCheckbox v-model="includeSource" :label="t('apiConnections.source')" />
           <div class="field-value">{{ currentSource }}</div>
 
-          <label class="checkbox-label field-item">
-            <input v-model="includeModel" type="checkbox" />
-            <span>{{ modelLabel }}</span>
-          </label>
+          <AppCheckbox v-model="includeModel" :label="modelLabel" />
           <div class="field-value">{{ currentModel }}</div>
 
-          <label class="checkbox-label field-item">
-            <input v-model="includeSampler" type="checkbox" />
-            <span>{{ t('aiConfig.presets.chatCompletion.label') }}</span>
-          </label>
+          <AppCheckbox v-model="includeSampler" :label="t('aiConfig.presets.chatCompletion.label')" />
           <div class="field-value">{{ currentSampler }}</div>
         </div>
       </div>
 
       <div class="popup-controls">
-        <button class="menu-button menu-button--confirm" @click="save">{{ t('common.save') }}</button>
-        <button class="menu-button" @click="close">{{ t('common.cancel') }}</button>
+        <AppButton variant="confirm" @click="save">{{ t('common.save') }}</AppButton>
+        <AppButton @click="close">{{ t('common.cancel') }}</AppButton>
       </div>
     </div>
   </dialog>

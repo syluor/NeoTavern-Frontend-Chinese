@@ -7,6 +7,7 @@ import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useResizable } from '../../composables/useResizable';
 import { useSettingsStore } from '../../stores/settings.store';
+import { AppIconButton, AppInput, AppSelect } from '../UI';
 
 const { t } = useStrictI18n();
 
@@ -18,19 +19,10 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const characterListEl = ref<HTMLElement | null>(null);
 const highlightedItemRef = ref<HTMLElement | null>(null);
 
-// --- Collapsible & Resizable State ---
-const BROWSER_COLLAPSED_KEY = 'character_browser_collapsed';
-const BROWSER_WIDTH_KEY = 'character_browser_width';
-
-const isBrowserCollapsed = ref(settingsStore.getAccountItem(BROWSER_COLLAPSED_KEY) === 'true');
 const browserPane = ref<HTMLElement | null>(null);
 const dividerEl = ref<HTMLElement | null>(null);
 
-useResizable(browserPane, dividerEl, { storageKey: BROWSER_WIDTH_KEY });
-
-watch(isBrowserCollapsed, (newValue) => {
-  settingsStore.setAccountItem(BROWSER_COLLAPSED_KEY, String(newValue));
-});
+useResizable(browserPane, dividerEl, { storageKey: 'characterBrowserWidth' });
 
 // Watch for a character being highlighted by the store
 watch(
@@ -81,55 +73,57 @@ async function handleFileImport(event: Event) {
   }
 }
 
+const sortOptions = [
+  { value: 'name:asc', label: t('characterPanel.sorting.nameAsc') },
+  { value: 'name:desc', label: t('characterPanel.sorting.nameDesc') },
+  { value: 'create_date:desc', label: t('characterPanel.sorting.newest') },
+  { value: 'create_date:asc', label: t('characterPanel.sorting.oldest') },
+  { value: 'fav:desc', label: t('characterPanel.sorting.favorites') },
+];
+
 onMounted(() => {
   characterStore.refreshCharacters();
 });
 </script>
 
 <template>
-  <div class="character-panel" :class="{ 'is-collapsed': isBrowserCollapsed }">
+  <div class="character-panel" :class="{ 'is-collapsed': !settingsStore.settings.account.characterBrowserExpanded }">
     <!-- Left Pane: Character Browser -->
     <div ref="browserPane" class="character-panel-browser">
       <div class="character-panel-browser-header">
         <div class="character-panel-actions">
-          <div
-            :title="t('characterPanel.createNew')"
-            class="menu-button fa-solid fa-user-plus"
-            @click="createNew"
-          ></div>
-          <div
-            :title="t('characterPanel.importFile')"
-            class="menu-button fa-solid fa-file-import"
-            @click="triggerImport"
-          ></div>
+          <AppIconButton icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
+          <AppIconButton icon="fa-file-import" :title="t('characterPanel.importFile')" @click="triggerImport" />
+
           <input ref="fileInput" type="file" accept=".json,.png" multiple hidden @change="handleFileImport" />
-          <div :title="t('characterPanel.importUrl')" class="menu-button fa-solid fa-cloud-arrow-down"></div>
-          <div :title="t('characterPanel.createGroup')" class="menu-button fa-solid fa-users-gear"></div>
+
+          <AppIconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
+          <AppIconButton icon="fa-users-gear" :title="t('characterPanel.createGroup')" />
+
           <div id="extension-buttons-container"></div>
-          <div
-            class="menu-button-icon fa-fw fa-solid fa-search character-search-toggle"
+
+          <AppIconButton
+            icon="fa-search"
             :title="t('characterPanel.searchToggle')"
             @click="isSearchActive = !isSearchActive"
-          ></div>
-        </div>
-        <div v-show="isSearchActive" id="character-search-form" class="character-panel-search-form">
-          <input
-            v-model="characterStore.searchTerm"
-            class="text-pole character-panel-search-input"
-            type="search"
-            :placeholder="t('characterPanel.searchPlaceholder')"
           />
-          <select
-            v-model="characterStore.sortOrder"
-            class="text-pole character-sort-order"
-            :title="t('characterPanel.sorting.title')"
-          >
-            <option value="name:asc">{{ t('characterPanel.sorting.nameAsc') }}</option>
-            <option value="name:desc">{{ t('characterPanel.sorting.nameDesc') }}</option>
-            <option value="create_date:desc">{{ t('characterPanel.sorting.newest') }}</option>
-            <option value="create_date:asc">{{ t('characterPanel.sorting.oldest') }}</option>
-            <option value="fav:desc">{{ t('characterPanel.sorting.favorites') }}</option>
-          </select>
+        </div>
+
+        <div v-show="isSearchActive" id="character-search-form" class="character-panel-search-form">
+          <div style="flex-grow: 1">
+            <AppInput
+              v-model="characterStore.searchTerm"
+              type="search"
+              :placeholder="t('characterPanel.searchPlaceholder')"
+            />
+          </div>
+          <div style="min-width: 140px">
+            <AppSelect
+              v-model="characterStore.sortOrder"
+              :options="sortOptions"
+              :title="t('characterPanel.sorting.title')"
+            />
+          </div>
         </div>
       </div>
 
@@ -144,7 +138,9 @@ onMounted(() => {
       </div>
 
       <div id="character-list" ref="characterListEl" class="character-panel-character-list">
-        <div v-if="characterStore.paginatedCharacters.length === 0">{{ t('common.loading') }}</div>
+        <div v-if="characterStore.paginatedCharacters.length === 0" style="padding: 10px; opacity: 0.7">
+          {{ t('common.loading') }}
+        </div>
         <template v-for="character in characterStore.paginatedCharacters" :key="character.id">
           <div
             :ref="
@@ -182,10 +178,20 @@ onMounted(() => {
     <div ref="dividerEl" class="character-panel-divider">
       <div
         class="character-panel-collapse-toggle"
-        :title="isBrowserCollapsed ? t('characterPanel.expandBrowser') : t('characterPanel.collapseBrowser')"
-        @click="isBrowserCollapsed = !isBrowserCollapsed"
+        :title="
+          !settingsStore.settings.account.characterBrowserExpanded
+            ? t('characterPanel.expandBrowser')
+            : t('characterPanel.collapseBrowser')
+        "
+        @click="
+          settingsStore.settings.account.characterBrowserExpanded =
+            !settingsStore.settings.account.characterBrowserExpanded
+        "
       >
-        <i class="fa-solid" :class="isBrowserCollapsed ? 'fa-angles-right' : 'fa-angles-left'"></i>
+        <i
+          class="fa-solid"
+          :class="!settingsStore.settings.account.characterBrowserExpanded ? 'fa-angles-right' : 'fa-angles-left'"
+        ></i>
       </div>
     </div>
 

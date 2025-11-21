@@ -7,6 +7,7 @@ import { cloneDeep } from 'lodash-es';
 import { toast } from '../../composables/useToast';
 import type { MessageRole } from '@/types';
 import DraggableList from '../Common/DraggableList.vue';
+import { AppButton, AppIconButton, AppInput, AppSelect, AppTextarea } from '../UI';
 
 const settingsStore = useSettingsStore();
 const { t } = useStrictI18n();
@@ -48,6 +49,12 @@ const displayPrompts = computed<DisplayPrompt[]>(() => {
 
   return result;
 });
+
+const roleOptions = [
+  { label: 'System', value: 'system' },
+  { label: 'User', value: 'user' },
+  { label: 'Assistant', value: 'assistant' },
+];
 
 function saveChanges(newDisplayList: DisplayPrompt[]) {
   // 1. Update Definitions (Prompt[])
@@ -116,7 +123,7 @@ function toggleEnabled(index: number) {
 }
 
 // When editing fields (name, content, etc), we need to update the definition in the store
-function updatePromptField(index: number, field: keyof Prompt, value: string | MessageRole) {
+function updatePromptField(index: number, field: keyof Prompt, value: string | number | MessageRole) {
   const newList = cloneDeep(displayPrompts.value);
   // @ts-expect-error Dynamic assignment
   newList[index][field] = value;
@@ -140,10 +147,9 @@ function getBadgeClass(role?: string) {
 <template>
   <div class="prompt-manager">
     <div class="prompt-manager-header">
-      <button class="menu-button" @click="createNewPrompt">
-        <i class="fa-solid fa-plus"></i>
+      <AppButton icon="fa-plus" @click="createNewPrompt">
         {{ t('aiConfig.promptManager.newPrompt') }}
-      </button>
+      </AppButton>
     </div>
 
     <div class="prompt-manager-list-container">
@@ -161,6 +167,7 @@ function getBadgeClass(role?: string) {
               disabled: !prompt.enabled,
               'is-editing': editingIdentifier === prompt.identifier,
             }"
+            :data-identifier="prompt.identifier"
           >
             <!-- Header Row -->
             <div class="prompt-item-header">
@@ -180,57 +187,43 @@ function getBadgeClass(role?: string) {
               </div>
 
               <div class="prompt-item-actions">
-                <button
-                  class="menu-button-icon fa-solid"
-                  :class="prompt.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"
+                <AppIconButton
+                  :icon="prompt.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"
                   :title="t('common.toggle')"
                   @click.stop="toggleEnabled(index)"
-                ></button>
+                />
 
-                <button
-                  class="menu-button-icon fa-solid fa-trash menu-button--danger"
+                <AppIconButton
+                  icon="fa-trash"
+                  variant="danger"
                   :disabled="!!prompt.marker"
                   @click.stop="deletePrompt(prompt.identifier)"
-                ></button>
+                />
               </div>
             </div>
 
             <!-- Editor Row (Expandable) -->
             <div v-show="editingIdentifier === prompt.identifier" class="prompt-item-editor">
-              <label>
-                {{ t('common.name') }}
-                <input
-                  :value="prompt.name"
-                  class="text-pole"
-                  @input="updatePromptField(index, 'name', ($event.target as HTMLInputElement).value)"
-                />
-              </label>
+              <AppInput
+                :model-value="prompt.name"
+                :label="t('common.name')"
+                @update:model-value="(v) => updatePromptField(index, 'name', v)"
+              />
 
               <template v-if="!prompt.marker">
-                <label>
-                  {{ t('aiConfig.promptManager.role') }}
-                  <select
-                    :value="prompt.role"
-                    class="text-pole"
-                    @change="
-                      updatePromptField(index, 'role', ($event.target as HTMLSelectElement).value as MessageRole)
-                    "
-                  >
-                    <option value="system">System</option>
-                    <option value="user">User</option>
-                    <option value="assistant">Assistant</option>
-                  </select>
-                </label>
+                <AppSelect
+                  :model-value="prompt.role || 'system'"
+                  :options="roleOptions"
+                  :label="t('aiConfig.promptManager.role')"
+                  @update:model-value="(v) => updatePromptField(index, 'role', v as MessageRole)"
+                />
 
-                <label>
-                  {{ t('aiConfig.promptManager.content') }}
-                  <textarea
-                    :value="prompt.content"
-                    class="text-pole"
-                    rows="5"
-                    @input="updatePromptField(index, 'content', ($event.target as HTMLTextAreaElement).value)"
-                  ></textarea>
-                </label>
+                <AppTextarea
+                  :model-value="prompt.content || ''"
+                  :label="t('aiConfig.promptManager.content')"
+                  :rows="5"
+                  @update:model-value="(v) => updatePromptField(index, 'content', v)"
+                />
               </template>
               <div v-else class="prompt-empty-state" style="padding: 5px; font-size: 0.9em">
                 {{ t('aiConfig.promptManager.markerHint') }}

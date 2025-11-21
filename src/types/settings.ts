@@ -1,5 +1,7 @@
 import {
+  CharacterSortOption,
   ReasoningEffort,
+  WorldInfoSortOption,
   type OpenrouterMiddleoutType,
   type SendOnEnterOptions,
   type TagImportSetting,
@@ -182,19 +184,6 @@ export interface LegacyOaiPresetSettings {
   openrouter_providers?: string[];
 }
 
-export type AccountStorageKey =
-  | 'character_browser_collapsed'
-  | 'character_browser_width'
-  | 'worldinfo_browser_width'
-  | 'world_info_sort_order'
-  | 'character_sort_order'
-  | 'extensions_browser_width'
-  | 'chat_full_screen'
-  | 'recent_chats_page_size'
-  | 'add_member_page_size';
-
-export type AccountStorageState = Partial<Record<AccountStorageKey, string>>;
-
 export interface Settings {
   ui: {
     background: {
@@ -257,7 +246,20 @@ export interface Settings {
     };
   };
   worldInfo: WorldInfoSettings;
-  account: AccountStorageState;
+  account: {
+    characterBrowserExpanded: boolean;
+    characterBrowserWidth: number;
+    worldinfoBrowserWidth: number;
+    characterSortOrder: CharacterSortOption;
+    worldInfoSortOrder: WorldInfoSortOption;
+    extensionsBrowserWidth: number;
+    chatFullScreen: boolean;
+    recentChatsPageSize: number;
+    addMemberPageSize: number;
+    addMemberExpanded: boolean;
+    groupMembersExpanded: boolean;
+    groupConfigExpanded: boolean;
+  };
   disabledExtensions: string[];
   extensionSettings: Record<string, Record<string, never>>;
 }
@@ -292,7 +294,6 @@ export interface LegacySettings {
   };
   oai_settings: LegacyOaiSettings;
   world_info_settings: WorldInfoSettings;
-  account_storage: AccountStorageState;
   username?: string;
   user_avatar?: string;
   main_api?: string;

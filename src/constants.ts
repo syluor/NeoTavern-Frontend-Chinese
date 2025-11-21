@@ -4,6 +4,7 @@ import {
   type Prompt,
   type PromptOrderConfig,
   type SamplerSettings,
+  type Settings,
 } from './types';
 
 export enum OpenrouterMiddleoutType {
@@ -237,4 +238,34 @@ export const DEFAULT_CHARACTER: Character = {
       role: depth_prompt_role_default,
     },
   },
+};
+
+export enum CharacterSortOption {
+  NAME_ASC = 'name:asc',
+  NAME_DESC = 'name:desc',
+  CREATE_DATE_DESC = 'create_date:desc',
+  CREATE_DATE_ASC = 'create_date:asc',
+  FAV_DESC = 'fav:desc',
+}
+
+export enum WorldInfoSortOption {
+  ORDER_ASC = 'order:asc',
+  COMMENT_ASC = 'comment:asc',
+  COMMENT_DESC = 'comment:desc',
+  UID_ASC = 'uid:asc',
+  UID_DESC = 'uid:desc',
+}
+export const defaultAccountSettings: Settings['account'] = {
+  characterBrowserExpanded: true,
+  characterBrowserWidth: 200,
+  worldinfoBrowserWidth: 200,
+  characterSortOrder: CharacterSortOption.NAME_ASC,
+  worldInfoSortOrder: WorldInfoSortOption.ORDER_ASC,
+  extensionsBrowserWidth: 200,
+  chatFullScreen: false,
+  recentChatsPageSize: 20,
+  addMemberPageSize: 20,
+  addMemberExpanded: true,
+  groupMembersExpanded: true,
+  groupConfigExpanded: true,
 };

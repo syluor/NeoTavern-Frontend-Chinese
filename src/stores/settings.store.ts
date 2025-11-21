@@ -7,6 +7,7 @@ import {
   defaultProviderModels,
   OpenrouterMiddleoutType,
   TokenizerType,
+  defaultAccountSettings,
 } from '../constants';
 import { isMobile } from '../utils/browser';
 import {
@@ -14,7 +15,6 @@ import {
   type LegacySettings,
   type SettingDefinition,
   type SettingsPath,
-  type AccountStorageKey,
   type Persona,
   type ConnectionProfile,
 } from '../types';
@@ -72,7 +72,7 @@ function createDefaultSettings(): Settings {
     },
   };
   defaultSettings.worldInfo = defaultWorldInfoSettings;
-  defaultSettings.account = {};
+  defaultSettings.account = defaultAccountSettings;
   defaultSettings.disabledExtensions = [];
   defaultSettings.extensionSettings = {};
   defaultSettings.persona = {
@@ -245,8 +245,8 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
       selectedConnectionProfile: legacy.extension_settings?.connectionManager?.selected,
       tokenizer: TokenizerType.AUTO,
     },
+    account: defaultAccountSettings,
     worldInfo: legacy.world_info_settings,
-    account: legacy.account_storage,
     disabledExtensions: [],
     extensionSettings: {}, // Since old extensions not going to work, start fresh
   };
@@ -305,18 +305,6 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setSetting<P extends SettingsPath>(id: P, value: SettingsValue<P>) {
     set(settings.value, id, value);
-    saveSettingsDebounced();
-  }
-
-  function getAccountItem(key: AccountStorageKey): string | null {
-    return settings.value.account?.[key] ?? null;
-  }
-
-  function setAccountItem(key: AccountStorageKey, value: string) {
-    if (!settings.value.account) {
-      settings.value.account = {};
-    }
-    settings.value.account[key] = value;
     saveSettingsDebounced();
   }
 
@@ -389,7 +377,5 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsInitializing,
     getSetting,
     setSetting,
-    getAccountItem,
-    setAccountItem,
   };
 });

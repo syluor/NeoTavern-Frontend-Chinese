@@ -4,8 +4,9 @@ import { useBackgroundStore } from '../../stores/background.store';
 import { useChatStore } from '../../stores/chat.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { getThumbnailUrl } from '../../utils/image';
-import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { POPUP_RESULT, POPUP_TYPE, type BackgroundFitting } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
+import { AppButton, AppIconButton, AppSelect, AppInput } from '../UI';
 
 const { t } = useStrictI18n();
 const backgroundStore = useBackgroundStore();
@@ -92,6 +93,14 @@ watch(
   { immediate: true },
 );
 
+const fittingOptions = computed<{ label: string; value: BackgroundFitting }[]>(() => [
+  { label: t('backgrounds.fittingOptions.classic'), value: 'classic' },
+  { label: t('backgrounds.fittingOptions.cover'), value: 'cover' },
+  { label: t('backgrounds.fittingOptions.contain'), value: 'contain' },
+  { label: t('backgrounds.fittingOptions.stretch'), value: 'stretch' },
+  { label: t('backgrounds.fittingOptions.center'), value: 'center' },
+]);
+
 onMounted(() => {
   backgroundStore.initialize();
   scrollableContent.value?.addEventListener('scroll', handleScroll);
@@ -102,28 +111,21 @@ onMounted(() => {
   <div class="backgrounds-drawer">
     <div class="backgrounds-drawer-header">
       <div class="backgrounds-drawer-header-row">
-        <label class="menu-button" @click="triggerFileUpload">
-          <i class="fa-solid fa-plus"></i>
-          <span>{{ t('backgrounds.add') }}</span>
-        </label>
+        <AppButton icon="fa-plus" @click="triggerFileUpload">
+          {{ t('backgrounds.add') }}
+        </AppButton>
         <input ref="fileInput" type="file" accept="image/*" hidden @change="handleFileSelected" />
         <span class="expander"></span>
-        <select v-model="backgroundStore.fitting" class="text-pole" :title="t('backgrounds.fitting')">
-          <option value="classic">{{ t('backgrounds.fittingOptions.classic') }}</option>
-          <option value="cover">{{ t('backgrounds.fittingOptions.cover') }}</option>
-          <option value="contain">{{ t('backgrounds.fittingOptions.contain') }}</option>
-          <option value="stretch">{{ t('backgrounds.fittingOptions.stretch') }}</option>
-          <option value="center">{{ t('backgrounds.fittingOptions.center') }}</option>
-        </select>
-        <div class="menu-button" :title="t('backgrounds.autoSelectTooltip')">
-          <i class="fa-solid fa-wand-magic"></i>
-          <span>{{ t('backgrounds.autoSelect') }}</span>
+        <div style="width: 120px">
+          <AppSelect v-model="backgroundStore.fitting" :options="fittingOptions" :title="t('backgrounds.fitting')" />
         </div>
+        <AppButton icon="fa-wand-magic" :title="t('backgrounds.autoSelectTooltip')">
+          {{ t('backgrounds.autoSelect') }}
+        </AppButton>
       </div>
       <div class="backgrounds-drawer-header-row">
-        <input
+        <AppInput
           v-model="backgroundStore.searchTerm"
-          class="text-pole"
           type="search"
           :placeholder="t('backgrounds.searchPlaceholder')"
         />
@@ -134,22 +136,18 @@ onMounted(() => {
       <div class="heading-container">
         <h3>{{ t('backgrounds.systemBackgrounds') }}</h3>
         <div class="heading-controls">
-          <button
-            class="menu-button"
+          <AppIconButton
+            icon="fa-minus"
             :title="t('backgrounds.zoomIn')"
             :disabled="backgroundStore.thumbnailColumns <= THUMBNAIL_COLUMNS_MIN"
             @click="zoomIn"
-          >
-            <i class="fa-solid fa-minus"></i>
-          </button>
-          <button
-            class="menu-button"
+          />
+          <AppIconButton
+            icon="fa-plus"
             :title="t('backgrounds.zoomOut')"
             :disabled="backgroundStore.thumbnailColumns >= THUMBNAIL_COLUMNS_MAX"
             @click="zoomOut"
-          >
-            <i class="fa-solid fa-plus"></i>
-          </button>
+          />
         </div>
       </div>
       <div class="backgrounds-drawer-grid">
@@ -169,26 +167,26 @@ onMounted(() => {
             <div class="background-item-title">{{ getBgFileName(bg) }}</div>
           </div>
           <div class="background-item-menu">
-            <div
-              class="menu-button fa-solid fa-lock"
+            <AppIconButton
+              icon="fa-lock"
               :title="t('backgrounds.actions.lock')"
               @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
-            ></div>
-            <div
-              class="menu-button fa-solid fa-lock-open"
+            />
+            <AppIconButton
+              icon="fa-lock-open"
               :title="t('backgrounds.actions.unlock')"
               @click.stop="backgroundStore.unlockBackground()"
-            ></div>
-            <div
-              class="menu-button fa-solid fa-pen-to-square"
+            />
+            <AppIconButton
+              icon="fa-pen-to-square"
               :title="t('backgrounds.actions.rename')"
               @click.stop="handleRename(bg)"
-            ></div>
-            <div
-              class="menu-button fa-solid fa-trash-can"
+            />
+            <AppIconButton
+              icon="fa-trash-can"
               :title="t('backgrounds.actions.delete')"
               @click.stop="handleDelete(bg, false)"
-            ></div>
+            />
           </div>
         </div>
       </div>

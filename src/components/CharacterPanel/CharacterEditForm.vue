@@ -3,17 +3,26 @@ import { ref, computed, onUnmounted, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useChatStore } from '../../stores/chat.store';
-import type { Character, MessageRole } from '../../types';
+import type { Character } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { slideTransitionHooks } from '../../utils/dom';
 import { default_avatar } from '../../constants';
 import { toast } from '../../composables/useToast';
 import { usePopupStore } from '../../stores/popup.store';
 import { cloneDeep, set } from 'lodash-es';
 import { humanizedDateTime } from '../../utils/date';
+import {
+  AppInput,
+  AppTextarea,
+  AppButton,
+  AppIconButton,
+  AppSelect,
+  TagInput,
+  CollapsibleSection,
+  RangeControl,
+} from '../UI';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -56,9 +65,6 @@ const avatarPreviewUrl = ref<string | null>(null);
 const selectedAvatarFile = ref<File | null>(null);
 const isSubmitting = ref(false);
 
-// --- Transition Hooks ---
-const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slideTransitionHooks;
-
 const localCharacter = ref<Character | null>(null);
 
 watch(
@@ -84,15 +90,6 @@ watch(
   },
   { deep: true },
 );
-
-const joinedTags = computed({
-  get: () => characterStore.editFormCharacter?.tags?.join(', ') || '',
-  set: (value) => {
-    if (characterStore.editFormCharacter) {
-      characterStore.editFormCharacter.tags = value.split(',').map((t) => t.trim());
-    }
-  },
-});
 
 onUnmounted(() => {
   revokePreviewUrl();
@@ -240,20 +237,42 @@ const displayAvatarUrl = computed(() => {
   }
   return getThumbnailUrl('avatar', characterStore.editFormCharacter.avatar);
 });
+
+const roleOptions = computed(() => [
+  { value: 'system', label: t('characterEditor.advanced.roles.system') },
+  { value: 'user', label: t('characterEditor.advanced.roles.user') },
+  { value: 'assistant', label: t('characterEditor.advanced.roles.assistant') },
+]);
+
+const moreOptions = computed(() => [
+  { value: 'default', label: t('characterEditor.more'), disabled: true },
+  { value: 'linkWorldInfo', label: t('characterEditor.moreOptions.linkWorldInfo') },
+  { value: 'importCardLore', label: t('characterEditor.moreOptions.importCardLore') },
+  { value: 'characterSettingsOverrides', label: t('characterEditor.moreOptions.characterSettingsOverrides') },
+  { value: 'convertToPersona', label: t('characterEditor.moreOptions.convertToPersona') },
+  { value: 'rename', label: t('characterEditor.moreOptions.rename') },
+  { value: 'linkToSource', label: t('characterEditor.moreOptions.linkToSource') },
+  { value: 'replaceUpdate', label: t('characterEditor.moreOptions.replaceUpdate') },
+  { value: 'importTags', label: t('characterEditor.moreOptions.importTags') },
+  { value: 'setAsWelcomeAssistant', label: t('characterEditor.moreOptions.setAsWelcomeAssistant') },
+]);
+
+function handleMoreAction(action: string) {
+  console.log('Selected action:', action);
+}
 </script>
 
 <template>
   <div v-if="localCharacter" class="character-edit-form">
     <form id="character-editor-form" action="javascript:void(null);" method="post" enctype="multipart/form-data">
       <div id="character-editor-header" class="character-edit-form-header">
-        <div id="character-editor-name-container" class="character-edit-form-header-main">
+        <div id="character-editor-name-container" class="character-edit-form-header-main" style="flex-grow: 1">
           <h2 v-show="!isCreating" class="interactable" tabindex="0">{{ localCharacter.name }}</h2>
-          <input
+          <AppInput
             v-show="isCreating"
             v-model="localCharacter.name"
-            class="text-pole"
             :placeholder="t('characterEditor.namePlaceholder')"
-            style="font-size: 1.2em; font-weight: bold"
+            class="font-bold text-lg"
           />
         </div>
         <div class="character-edit-form-header-info">
@@ -272,22 +291,7 @@ const displayAvatarUrl = computed(() => {
               </small>
             </div>
           </div>
-          <!-- TODO: Implement token warning visibility logic -->
-          <a
-            v-show="!isCreating"
-            id="character-editor-token-warning"
-            class="menu-button-icon fa-solid fa-triangle-exclamation"
-            style="display: none"
-            href="https://docs.sillytavern.app/usage/core-concepts/characterdesign/#character-tokens"
-            target="_blank"
-            :title="t('characterEditor.tokenCounts.warningTooltip')"
-          ></a>
-          <i
-            v-show="!isCreating"
-            id="character-editor-stats-button"
-            class="menu-button-icon fa-solid fa-ranking-star"
-            :title="t('characterEditor.stats.title')"
-          ></i>
+          <AppIconButton v-show="!isCreating" icon="fa-ranking-star" :title="t('characterEditor.stats.title')" />
         </div>
       </div>
 
@@ -313,13 +317,12 @@ const displayAvatarUrl = computed(() => {
         <div class="character-edit-form-controls">
           <!-- Creation Controls -->
           <div v-show="isCreating" class="character-edit-form-buttons">
-            <button class="menu-button menu-button--confirm" :disabled="isSubmitting" @click="handleCreate">
-              <i v-show="isSubmitting" class="fa-solid fa-spinner fa-spin"></i>
+            <AppButton variant="confirm" :loading="isSubmitting" @click="handleCreate">
               {{ t('common.save') }}
-            </button>
-            <button class="menu-button" :disabled="isSubmitting" @click="characterStore.cancelCreating">
+            </AppButton>
+            <AppButton :disabled="isSubmitting" @click="characterStore.cancelCreating">
               {{ t('common.cancel') }}
-            </button>
+            </AppButton>
           </div>
 
           <div
@@ -327,432 +330,300 @@ const displayAvatarUrl = computed(() => {
             class="character-primary-actions"
             style="display: flex; gap: 5px; margin-bottom: 5px"
           >
-            <button
-              class="menu-button menu-button--confirm"
-              style="flex: 1"
+            <AppButton
+              variant="confirm"
+              icon="fa-comments"
+              class="flex-1"
               :title="t('characterEditor.openLastChat')"
               @click="openLastChat"
             >
-              <i class="fa-solid fa-comments"></i> {{ t('common.chat') }}
-            </button>
-            <button
-              class="menu-button"
-              style="flex: 1"
-              :title="t('characterEditor.startNewChat')"
-              @click="createNewChat"
-            >
-              <i class="fa-solid fa-plus"></i> {{ t('common.new') }}
-            </button>
+              {{ t('common.chat') }}
+            </AppButton>
+            <AppButton icon="fa-plus" class="flex-1" :title="t('characterEditor.startNewChat')" @click="createNewChat">
+              {{ t('common.new') }}
+            </AppButton>
           </div>
 
           <div v-show="!isCreating" class="character-edit-form-buttons">
-            <div
-              class="menu-button fa-solid fa-star"
+            <AppIconButton
+              icon="fa-star"
+              :active="!!localCharacter.fav"
               :class="{ 'is-favorite': localCharacter.fav }"
               :title="t('characterEditor.favorite')"
               @click="toggleFavorite"
-            ></div>
-            <div class="menu-button fa-solid fa-globe" :title="t('characterEditor.lore')"></div>
-            <div class="menu-button fa-solid fa-passport" :title="t('characterEditor.chatLore')"></div>
-            <div class="menu-button fa-solid fa-face-smile" :title="t('characterEditor.personas')"></div>
-            <div class="menu-button fa-solid fa-file-export" :title="t('characterEditor.export')"></div>
-            <div class="menu-button fa-solid fa-clone" :title="t('characterEditor.duplicate')"></div>
-            <div
-              class="menu-button fa-solid fa-skull menu-button--danger"
+            />
+            <AppIconButton icon="fa-globe" :title="t('characterEditor.lore')" />
+            <AppIconButton icon="fa-passport" :title="t('characterEditor.chatLore')" />
+            <AppIconButton icon="fa-face-smile" :title="t('characterEditor.personas')" />
+            <AppIconButton icon="fa-file-export" :title="t('characterEditor.export')" />
+            <AppIconButton icon="fa-clone" :title="t('characterEditor.duplicate')" />
+            <AppIconButton
+              icon="fa-skull"
+              variant="danger"
               :title="t('characterEditor.delete')"
               @click="handleDelete"
-            ></div>
+            />
           </div>
 
-          <label v-show="!isCreating">
-            <select class="text-pole">
-              <option value="default" disabled selected>{{ t('characterEditor.more') }}</option>
-              <option>{{ t('characterEditor.moreOptions.linkWorldInfo') }}</option>
-              <option>{{ t('characterEditor.moreOptions.importCardLore') }}</option>
-              <option>{{ t('characterEditor.moreOptions.characterSettingsOverrides') }}</option>
-              <option>{{ t('characterEditor.moreOptions.convertToPersona') }}</option>
-              <option>{{ t('characterEditor.moreOptions.rename') }}</option>
-              <option>{{ t('characterEditor.moreOptions.linkToSource') }}</option>
-              <option>{{ t('characterEditor.moreOptions.replaceUpdate') }}</option>
-              <option>{{ t('characterEditor.moreOptions.importTags') }}</option>
-              <option>{{ t('characterEditor.moreOptions.setAsWelcomeAssistant') }}</option>
-            </select>
-          </label>
+          <div v-show="!isCreating">
+            <AppSelect :model-value="'default'" :options="moreOptions" @update:model-value="handleMoreAction" />
+          </div>
         </div>
       </div>
 
       <div class="character-edit-form-tags-block">
-        <div class="tag-controls">
-          <input class="text-pole" :placeholder="t('characterEditor.searchTags')" />
-          <div class="menu-button fa-solid fa-tags" :title="t('characterEditor.viewAllTags')"></div>
-        </div>
-        <div class="tags">
-          <span v-for="tag in localCharacter.tags" :key="tag" class="tag">{{ tag }}</span>
-        </div>
+        <TagInput v-model="localCharacter.tags!" :placeholder="t('characterEditor.searchTags')" />
       </div>
 
       <!-- Creator's Notes Inline Drawer -->
-      <div class="inline-drawer">
-        <div class="inline-drawer-header" @click="isCreatorNotesOpen = !isCreatorNotesOpen">
-          <span class="inline-drawer-header-title">{{ t('characterEditor.creatorNotes') }}</span>
-          <div
-            class="menu-button fa-solid fa-palette fa-fw"
-            :title="t('characterEditor.toggleStyles')"
-            @click.stop="() => {}"
-          ></div>
-          <div
-            class="menu-button fa-solid fa-eye fa-fw"
-            :title="t('characterEditor.toggleSpoiler')"
-            @click.stop="peekSpoilerMode"
-          ></div>
-          <i
-            class="fa-solid fa-circle-chevron-down inline-drawer-header-icon"
-            :class="{ 'is-open': isCreatorNotesOpen }"
-          ></i>
+      <CollapsibleSection v-model:is-open="isCreatorNotesOpen!" :title="t('characterEditor.creatorNotes')">
+        <template #actions>
+          <AppIconButton icon="fa-palette" :title="t('characterEditor.toggleStyles')" @click.stop="() => {}" />
+          <AppIconButton icon="fa-eye" :title="t('characterEditor.toggleSpoiler')" @click.stop="peekSpoilerMode" />
+        </template>
+
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div v-show="localCharacter.data?.creator_notes" v-html="localCharacter?.data?.creator_notes"></div>
+        <div v-show="!localCharacter.data?.creator_notes">
+          {{ t('characterEditor.noCreatorNotes') }}
         </div>
-        <Transition
-          name="slide-js"
-          @before-enter="beforeEnter"
-          @enter="enter"
-          @after-enter="afterEnter"
-          @before-leave="beforeLeave"
-          @leave="leave"
-          @after-leave="afterLeave"
-        >
-          <div v-show="isCreatorNotesOpen">
-            <div class="inline-drawer-content">
-              <!-- TODO: We should make sure this is sanitized when we loading the character eslint-disable-next-line vue/no-v-html -->
-              <div v-show="localCharacter.data?.creator_notes" v-html="localCharacter?.data?.creator_notes"></div>
-              <div v-show="!localCharacter.data?.creator_notes">
-                {{ t('characterEditor.noCreatorNotes') }}
-              </div>
-            </div>
-          </div>
-        </Transition>
-      </div>
+      </CollapsibleSection>
 
       <small v-show="areDetailsHidden">{{ t('characterEditor.detailsHidden') }}</small>
 
       <div v-show="!areDetailsHidden" class="character-edit-form-main-content">
-        <div class="form-section form-section--text-area" data-field-name="description">
-          <label for="description_textarea">
-            <span>{{ t('characterEditor.description') }}</span>
-            <i
-              class="editor-maximize-icon fa-solid fa-maximize"
-              :title="t('characterEditor.expandEditor')"
-              @click="openMaximizeEditor('description', t('characterEditor.description'))"
-            ></i>
-          </label>
-          <textarea
-            id="description_textarea"
-            class="text-pole"
-            rows="12"
-            :value="localCharacter.description"
+        <div class="form-section" data-field-name="description">
+          <AppTextarea
+            v-model="localCharacter.description!"
+            :label="t('characterEditor.description')"
+            :rows="12"
             :placeholder="t('characterEditor.descriptionPlaceholder')"
-            @input="localCharacter.description = ($event.target as HTMLTextAreaElement).value"
-          ></textarea>
-          <div class="token-counter">
-            {{ t('common.tokens') }}: <span>{{ tokenCounts['description'] || 0 }}</span>
+            @maximize="openMaximizeEditor('description', t('characterEditor.description'))"
+          >
+            <template #footer>
+              <div class="token-counter">
+                {{ t('common.tokens') }}: <span>{{ tokenCounts['description'] || 0 }}</span>
+              </div>
+            </template>
+          </AppTextarea>
+        </div>
+
+        <div class="form-section" data-field-name="first_mes">
+          <AppTextarea
+            v-model="localCharacter.first_mes!"
+            :label="t('characterEditor.firstMessage')"
+            :rows="10"
+            :placeholder="t('characterEditor.firstMessagePlaceholder')"
+            @maximize="openMaximizeEditor('first_mes', t('characterEditor.firstMessage'))"
+          >
+            <template #footer>
+              <div class="token-counter">
+                {{ t('common.tokens') }}: <span>{{ tokenCounts['first_mes'] || 0 }}</span>
+              </div>
+            </template>
+          </AppTextarea>
+        </div>
+
+        <hr />
+
+        <div class="form-section" data-field-name="personality">
+          <AppTextarea
+            v-model="localCharacter.personality!"
+            :label="t('characterEditor.advanced.personality')"
+            :rows="4"
+            :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
+            @maximize="openMaximizeEditor('personality', t('characterEditor.advanced.personality'))"
+          >
+            <template #footer>
+              <div class="token-counter">
+                {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
+              </div>
+            </template>
+          </AppTextarea>
+        </div>
+
+        <div class="form-section" data-field-name="scenario">
+          <AppTextarea
+            v-model="localCharacter.scenario!"
+            :label="t('characterEditor.advanced.scenario')"
+            :rows="4"
+            :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
+            @maximize="openMaximizeEditor('scenario', t('characterEditor.advanced.scenario'))"
+          >
+            <template #footer>
+              <div class="token-counter">
+                {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
+              </div>
+            </template>
+          </AppTextarea>
+        </div>
+
+        <div class="form-section character-note" data-field-name="data.depth_prompt.prompt">
+          <div v-if="localCharacter.data?.depth_prompt" class="character-note-main">
+            <AppTextarea
+              v-model="localCharacter.data.depth_prompt.prompt"
+              :label="t('characterEditor.advanced.characterNote')"
+              :rows="5"
+              :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
+              @maximize="openMaximizeEditor('data.depth_prompt.prompt', t('characterEditor.advanced.characterNote'))"
+            />
+          </div>
+          <div v-if="localCharacter.data?.depth_prompt" class="character-note-controls">
+            <AppInput
+              v-model="localCharacter.data.depth_prompt.depth"
+              type="number"
+              :min="0"
+              :max="9999"
+              :label="t('characterEditor.advanced.depth')"
+            />
+            <AppSelect
+              v-model="localCharacter.data.depth_prompt.role"
+              :options="roleOptions"
+              :label="t('characterEditor.advanced.role')"
+            />
           </div>
         </div>
 
-        <div class="form-section form-section--text-area" data-field-name="first_mes">
-          <label for="firstmessage_textarea">
-            <span>{{ t('characterEditor.firstMessage') }}</span>
-            <i
-              class="editor-maximize-icon fa-solid fa-maximize"
-              :title="t('characterEditor.expandEditor')"
-              @click="openMaximizeEditor('first_mes', t('characterEditor.firstMessage'))"
-            ></i>
-          </label>
-          <textarea
-            id="firstmessage_textarea"
-            class="text-pole"
-            rows="10"
-            :value="localCharacter.first_mes"
-            :placeholder="t('characterEditor.firstMessagePlaceholder')"
-            @input="localCharacter.first_mes = ($event.target as HTMLTextAreaElement).value"
-          ></textarea>
-          <div class="token-counter">
-            {{ t('common.tokens') }}: <span>{{ tokenCounts['first_mes'] || 0 }}</span>
-          </div>
-        </div>
-        <hr />
-        <div class="form-section" data-field-name="personality">
-          <label>
-            <span>{{ t('characterEditor.advanced.personality') }}</span>
-            <i
-              class="editor-maximize-icon fa-solid fa-maximize"
-              :title="t('characterEditor.expandEditor')"
-              @click="openMaximizeEditor('personality', t('characterEditor.advanced.personality'))"
-            ></i>
-          </label>
-          <textarea
-            :value="localCharacter.personality"
-            class="text-pole"
-            rows="4"
-            :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
-            @input="localCharacter.personality = ($event.target as HTMLTextAreaElement).value"
-          ></textarea>
-          <div class="token-counter">
-            {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
-          </div>
-        </div>
-        <div class="form-section" data-field-name="scenario">
-          <label>
-            <span>{{ t('characterEditor.advanced.scenario') }}</span>
-            <i
-              class="editor-maximize-icon fa-solid fa-maximize"
-              :title="t('characterEditor.expandEditor')"
-              @click="openMaximizeEditor('scenario', t('characterEditor.advanced.scenario'))"
-            ></i>
-          </label>
-          <textarea
-            :value="localCharacter.scenario"
-            class="text-pole"
-            rows="4"
-            :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
-            @input="localCharacter.scenario = ($event.target as HTMLTextAreaElement).value"
-          ></textarea>
-          <div class="token-counter">
-            {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
-          </div>
-        </div>
-        <div class="form-section character-note" data-field-name="data.depth_prompt.prompt">
-          <div class="character-note-main">
-            <label>
-              <span>{{ t('characterEditor.advanced.characterNote') }}</span>
-              <i
-                class="editor-maximize-icon fa-solid fa-maximize"
-                :title="t('characterEditor.expandEditor')"
-                @click="openMaximizeEditor('data.depth_prompt.prompt', t('characterEditor.advanced.characterNote'))"
-              ></i>
-            </label>
-            <!-- @vue-ignore -->
-            <textarea
-              :value="localCharacter.data.depth_prompt?.prompt"
-              class="text-pole"
-              rows="5"
-              :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
-              @input="localCharacter.data.depth_prompt.prompt = ($event.target as HTMLTextAreaElement).value"
-            ></textarea>
-          </div>
-          <div class="character-note-controls">
-            <label>{{ t('characterEditor.advanced.depth') }}</label>
-            <!-- @vue-ignore -->
-            <input
-              :value="localCharacter.data.depth_prompt?.depth"
-              type="number"
-              min="0"
-              max="9999"
-              class="text-pole"
-              @input="localCharacter.data.depth_prompt.depth = ($event.target as HTMLInputElement).valueAsNumber"
-            />
-            <label>{{ t('characterEditor.advanced.role') }}</label>
-            <!-- @vue-ignore -->
-            <select
-              :value="localCharacter.data.depth_prompt?.role"
-              class="text-pole"
-              @change="updateValue('data.depth_prompt.role', ($event.target as HTMLSelectElement).value as MessageRole)"
-            >
-              <option value="system">{{ t('characterEditor.advanced.roles.system') }}</option>
-              <option value="user">{{ t('characterEditor.advanced.roles.user') }}</option>
-              <option value="assistant">{{ t('characterEditor.advanced.roles.assistant') }}</option>
-            </select>
-          </div>
-        </div>
         <div class="form-section">
-          <label>{{ t('characterEditor.advanced.talkativeness') }}</label>
-          <small>{{ t('characterEditor.advanced.talkativenessHint') }}</small>
-          <input
-            :value="localCharacter.talkativeness"
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            @input="localCharacter.talkativeness = ($event.target as HTMLInputElement).valueAsNumber"
-          />
-          <div class="slider-hint">
-            <span>{{ t('characterEditor.advanced.talkativenessShy') }}</span>
-            <span>{{ t('characterEditor.advanced.talkativenessNormal') }}</span>
-            <span>{{ t('characterEditor.advanced.talkativenessChatty') }}</span>
-          </div>
-        </div>
-        <hr />
-        <div class="form-section" data-field-name="mes_example">
-          <label>
-            <span>{{ t('characterEditor.advanced.dialogueExamples') }}</span>
-            <i
-              class="editor-maximize-icon fa-solid fa-maximize"
-              :title="t('characterEditor.expandEditor')"
-              @click="openMaximizeEditor('mes_example', t('characterEditor.advanced.dialogueExamples'))"
-            ></i>
-          </label>
-          <small>{{ t('characterEditor.advanced.dialogueExamplesHint') }}</small>
-          <textarea
-            :value="localCharacter.mes_example"
-            class="text-pole"
-            rows="6"
-            :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
-            @input="localCharacter.mes_example = ($event.target as HTMLTextAreaElement).value"
-          ></textarea>
-          <div class="token-counter">
-            {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
-          </div>
-        </div>
-        <hr />
-        <div class="inline-drawer">
-          <div class="inline-drawer-header" @click="isPromptOverridesOpen = !isPromptOverridesOpen">
-            <h4 class="inline-drawer-header-title">
-              {{ t('characterEditor.advanced.promptOverrides') }}
-              <small>{{ t('characterEditor.advanced.promptOverridesHint') }}</small>
-            </h4>
-            <i
-              class="fa-solid fa-circle-chevron-down inline-drawer-header-icon"
-              :class="{ 'is-open': isPromptOverridesOpen }"
-            ></i>
-          </div>
-          <Transition
-            name="slide-js"
-            @before-enter="beforeEnter"
-            @enter="enter"
-            @after-enter="afterEnter"
-            @before-leave="beforeLeave"
-            @leave="leave"
-            @after-leave="afterLeave"
+          <RangeControl
+            v-model="localCharacter.talkativeness!"
+            :min="0"
+            :max="1"
+            :step="0.05"
+            :label="t('characterEditor.advanced.talkativeness')"
           >
-            <div v-show="isPromptOverridesOpen">
-              <div class="inline-drawer-content inline-drawer-content--column">
-                <small>{{ t('characterEditor.advanced.promptHint') }}</small>
-                <div data-field-name="data.system_prompt">
-                  <label>
-                    <span>{{ t('characterEditor.advanced.mainPrompt') }}</span>
-                    <i
-                      class="editor-maximize-icon fa-solid fa-maximize"
-                      :title="t('characterEditor.expandEditor')"
-                      @click="openMaximizeEditor('data.system_prompt', t('characterEditor.advanced.mainPrompt'))"
-                    ></i>
-                  </label>
-                  <textarea
-                    :value="localCharacter.data?.system_prompt"
-                    class="text-pole"
-                    rows="3"
-                    :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
-                    @input="localCharacter.data!.system_prompt = ($event.target as HTMLTextAreaElement).value"
-                  ></textarea>
+            <template #addon>
+              <div class="slider-hint">
+                <span>{{ t('characterEditor.advanced.talkativenessShy') }}</span>
+                <span>{{ t('characterEditor.advanced.talkativenessNormal') }}</span>
+                <span>{{ t('characterEditor.advanced.talkativenessChatty') }}</span>
+              </div>
+            </template>
+          </RangeControl>
+          <small style="margin-top: -5px; opacity: 0.7">{{ t('characterEditor.advanced.talkativenessHint') }}</small>
+        </div>
+
+        <hr />
+
+        <div class="form-section" data-field-name="mes_example">
+          <small>{{ t('characterEditor.advanced.dialogueExamplesHint') }}</small>
+          <AppTextarea
+            v-model="localCharacter.mes_example!"
+            :label="t('characterEditor.advanced.dialogueExamples')"
+            :rows="6"
+            :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
+            @maximize="openMaximizeEditor('mes_example', t('characterEditor.advanced.dialogueExamples'))"
+          >
+            <template #footer>
+              <div class="token-counter">
+                {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
+              </div>
+            </template>
+          </AppTextarea>
+        </div>
+
+        <hr />
+
+        <CollapsibleSection
+          v-model:is-open="isPromptOverridesOpen"
+          :title="t('characterEditor.advanced.promptOverrides')"
+          :subtitle="t('characterEditor.advanced.promptOverridesHint')"
+        >
+          <div class="inline-drawer-content--column">
+            <small>{{ t('characterEditor.advanced.promptHint') }}</small>
+            <div v-if="localCharacter.data" data-field-name="data.system_prompt">
+              <AppTextarea
+                v-model="localCharacter.data.system_prompt!"
+                :label="t('characterEditor.advanced.mainPrompt')"
+                :rows="3"
+                :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
+                @maximize="openMaximizeEditor('data.system_prompt', t('characterEditor.advanced.mainPrompt'))"
+              >
+                <template #footer>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
                   </div>
-                </div>
-                <div data-field-name="data.post_history_instructions">
-                  <label>
-                    <span>{{ t('characterEditor.advanced.postHistoryInstructions') }}</span>
-                    <i
-                      class="editor-maximize-icon fa-solid fa-maximize"
-                      :title="t('characterEditor.expandEditor')"
-                      @click="
-                        openMaximizeEditor(
-                          'data.post_history_instructions',
-                          t('characterEditor.advanced.postHistoryInstructions'),
-                        )
-                      "
-                    ></i>
-                  </label>
-                  <textarea
-                    :value="localCharacter.data?.post_history_instructions"
-                    class="text-pole"
-                    rows="3"
-                    :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
-                    @input="
-                      localCharacter.data!.post_history_instructions = ($event.target as HTMLTextAreaElement).value
-                    "
-                  ></textarea>
+                </template>
+              </AppTextarea>
+            </div>
+
+            <div v-if="localCharacter.data" data-field-name="data.post_history_instructions">
+              <AppTextarea
+                v-model="localCharacter.data.post_history_instructions!"
+                :label="t('characterEditor.advanced.postHistoryInstructions')"
+                :rows="3"
+                :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
+                @maximize="
+                  openMaximizeEditor(
+                    'data.post_history_instructions',
+                    t('characterEditor.advanced.postHistoryInstructions'),
+                  )
+                "
+              >
+                <template #footer>
                   <div class="token-counter">
                     {{ t('common.tokens') }}: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
                   </div>
-                </div>
-              </div>
+                </template>
+              </AppTextarea>
             </div>
-          </Transition>
-        </div>
-        <hr />
-        <div class="inline-drawer">
-          <div class="inline-drawer-header" @click="isMetadataOpen = !isMetadataOpen">
-            <h4 class="inline-drawer-header-title">
-              {{ t('characterEditor.advanced.metadata') }}
-              <small>{{ t('characterEditor.advanced.metadataHint') }}</small>
-            </h4>
-            <i
-              class="fa-solid fa-circle-chevron-down inline-drawer-header-icon"
-              :class="{ 'is-open': isMetadataOpen }"
-            ></i>
           </div>
-          <Transition
-            name="slide-js"
-            @before-enter="beforeEnter"
-            @enter="enter"
-            @after-enter="afterEnter"
-            @before-leave="beforeLeave"
-            @leave="leave"
-            @after-leave="afterLeave"
-          >
-            <div v-show="isMetadataOpen">
-              <div class="inline-drawer-content inline-drawer-content--column">
-                <small>{{ t('characterEditor.advanced.metadataOptional') }}</small>
-                <div class="form-row">
-                  <div class="form-column">
-                    <label>{{ t('characterEditor.advanced.createdBy') }}</label>
-                    <textarea
-                      :value="localCharacter.data?.creator"
-                      class="text-pole"
-                      rows="2"
-                      :placeholder="t('characterEditor.advanced.createdByPlaceholder')"
-                      @input="localCharacter.data!.creator = ($event.target as HTMLTextAreaElement).value"
-                    ></textarea>
-                  </div>
-                  <div class="form-column">
-                    <label>{{ t('characterEditor.advanced.characterVersion') }}</label>
-                    <textarea
-                      :value="localCharacter.data?.character_version"
-                      class="text-pole"
-                      rows="2"
-                      :placeholder="t('characterEditor.advanced.characterVersionPlaceholder')"
-                      @input="localCharacter.data!.character_version = ($event.target as HTMLTextAreaElement).value"
-                    ></textarea>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-column" data-field-name="data.creator_notes">
-                    <label>
-                      <span>{{ t('characterEditor.advanced.creatorNotes') }}</span>
-                      <i
-                        class="editor-maximize-icon fa-solid fa-maximize"
-                        :title="t('characterEditor.expandEditor')"
-                        @click="openMaximizeEditor('data.creator_notes', t('characterEditor.advanced.creatorNotes'))"
-                      ></i>
-                    </label>
-                    <textarea
-                      :value="localCharacter.data?.creator_notes"
-                      class="text-pole"
-                      rows="4"
-                      :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
-                      @input="localCharacter.data!.creator_notes = ($event.target as HTMLTextAreaElement).value"
-                    ></textarea>
-                  </div>
-                  <div class="form-column">
-                    <label>{{ t('characterEditor.advanced.tagsToEmbed') }}</label>
-                    <textarea
-                      v-model="joinedTags"
-                      class="text-pole"
-                      rows="4"
-                      :placeholder="t('characterEditor.advanced.tagsToEmbedPlaceholder')"
-                    ></textarea>
-                  </div>
-                </div>
+        </CollapsibleSection>
+
+        <hr />
+
+        <CollapsibleSection
+          v-model:is-open="isMetadataOpen"
+          :title="t('characterEditor.advanced.metadata')"
+          :subtitle="t('characterEditor.advanced.metadataHint')"
+        >
+          <div class="inline-drawer-content--column">
+            <small>{{ t('characterEditor.advanced.metadataOptional') }}</small>
+            <div class="form-row">
+              <div class="form-column">
+                <AppTextarea
+                  v-if="localCharacter.data"
+                  v-model="localCharacter.data.creator!"
+                  :label="t('characterEditor.advanced.createdBy')"
+                  :rows="2"
+                  :placeholder="t('characterEditor.advanced.createdByPlaceholder')"
+                />
+              </div>
+              <div class="form-column">
+                <AppTextarea
+                  v-if="localCharacter.data"
+                  v-model="localCharacter.data.character_version!"
+                  :label="t('characterEditor.advanced.characterVersion')"
+                  :rows="2"
+                  :placeholder="t('characterEditor.advanced.characterVersionPlaceholder')"
+                />
               </div>
             </div>
-          </Transition>
-        </div>
+            <div class="form-row">
+              <div class="form-column" data-field-name="data.creator_notes">
+                <AppTextarea
+                  v-if="localCharacter.data"
+                  v-model="localCharacter.data.creator_notes!"
+                  :label="t('characterEditor.advanced.creatorNotes')"
+                  :rows="4"
+                  :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
+                  @maximize="openMaximizeEditor('data.creator_notes', t('characterEditor.advanced.creatorNotes'))"
+                />
+              </div>
+              <div class="form-column">
+                <AppTextarea
+                  :model-value="localCharacter.tags?.join(', ') || ''"
+                  :label="t('characterEditor.advanced.tagsToEmbed')"
+                  :rows="4"
+                  :placeholder="t('characterEditor.advanced.tagsToEmbedPlaceholder')"
+                  @update:model-value="
+                    (v) => (localCharacter ? (localCharacter.tags = v.split(',').map((s: string) => s.trim())) : null)
+                  "
+                />
+              </div>
+            </div>
+          </div>
+        </CollapsibleSection>
       </div>
     </form>
 
@@ -768,3 +639,21 @@ const displayAvatarUrl = computed(() => {
     />
   </div>
 </template>
+
+<style scoped lang="scss">
+.is-favorite {
+  color: var(--color-golden);
+  filter: drop-shadow(0 0 3px var(--color-golden));
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+.text-lg {
+  font-size: 1.2em;
+}
+</style>

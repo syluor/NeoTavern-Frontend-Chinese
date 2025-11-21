@@ -4,26 +4,41 @@ import { slideTransitionHooks } from '@/utils/dom';
 
 interface Props {
   title: string;
-  initiallyOpen?: boolean;
+  /**
+   * Controlled state. Use v-model:is-open="var" in parent.
+   */
+  isOpen?: boolean;
   subtitle?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initiallyOpen: false,
+  isOpen: undefined,
   subtitle: '',
 });
 
-const isOpen = ref(props.initiallyOpen);
+const emit = defineEmits(['update:isOpen']);
+
+// Internal state.
+// If controlled (isOpen defined), sync with it.
+const internalIsOpen = ref(props.isOpen);
+
 const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slideTransitionHooks;
 
-function toggle() {
-  isOpen.value = !isOpen.value;
-}
-
+// Watch for external updates (Controlled Mode)
 watch(
-  () => props.initiallyOpen,
-  (val) => (isOpen.value = val),
+  () => props.isOpen,
+  (val) => {
+    if (val !== undefined) {
+      internalIsOpen.value = val;
+    }
+  },
 );
+
+function toggle() {
+  const newValue = !internalIsOpen.value;
+  internalIsOpen.value = newValue;
+  emit('update:isOpen', newValue);
+}
 </script>
 
 <template>
@@ -39,7 +54,7 @@ watch(
         <slot name="actions" />
       </div>
 
-      <i class="fa-solid fa-circle-chevron-down inline-drawer-icon" :class="{ 'is-open': isOpen }"></i>
+      <i class="fa-solid fa-circle-chevron-down inline-drawer-icon" :class="{ 'is-open': internalIsOpen }"></i>
     </div>
 
     <Transition
@@ -51,7 +66,7 @@ watch(
       @leave="leave"
       @after-leave="afterLeave"
     >
-      <div v-show="isOpen" class="drawer-wrapper">
+      <div v-show="internalIsOpen" class="drawer-wrapper">
         <div class="inline-drawer-content">
           <slot />
         </div>

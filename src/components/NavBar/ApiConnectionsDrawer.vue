@@ -7,6 +7,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
 import ConnectionProfileSelector from '../Common/ConnectionProfileSelector.vue';
 import { OpenrouterMiddleoutType, TokenizerType } from '../../constants';
+import { AppButton, AppCheckbox, AppIconButton, AppInput, AppSelect } from '../UI';
 
 const { t } = useStrictI18n();
 
@@ -39,6 +40,58 @@ const openrouterProvidersString = computed({
   },
 });
 
+const mainApiOptions = computed(() => [
+  { label: t('apiConnections.chatCompletion'), value: 'openai' },
+  { label: t('apiConnections.textCompletion'), value: 'textgenerationwebui', disabled: true },
+  { label: t('apiConnections.novel'), value: 'novel', disabled: true },
+  { label: t('apiConnections.horde'), value: 'koboldhorde', disabled: true },
+  { label: t('apiConnections.kobold'), value: 'kobold', disabled: true },
+]);
+
+const claudeModelOptions = [
+  { label: 'claude-3-5-sonnet-20240620', value: 'claude-3-5-sonnet-20240620' },
+  { label: 'claude-3-opus-20240229', value: 'claude-3-opus-20240229' },
+  { label: 'claude-3-haiku-20240307', value: 'claude-3-haiku-20240307' },
+];
+
+const mistralModelOptions = [
+  { label: 'mistral-large-latest', value: 'mistral-large-latest' },
+  { label: 'mistral-small-latest', value: 'mistral-small-latest' },
+];
+
+const groqModelOptions = [
+  { label: 'llama3-70b-8192', value: 'llama3-70b-8192' },
+  { label: 'llama3-8b-8192', value: 'llama3-8b-8192' },
+  { label: 'gemma-7b-it', value: 'gemma-7b-it' },
+  { label: 'mixtral-8x7b-32768', value: 'mixtral-8x7b-32768' },
+];
+
+const middleoutOptions = computed(() => [
+  { label: t('apiConnections.middleout.on'), value: OpenrouterMiddleoutType.ON },
+  { label: t('apiConnections.middleout.off'), value: OpenrouterMiddleoutType.OFF },
+  { label: t('apiConnections.middleout.auto'), value: OpenrouterMiddleoutType.AUTO },
+]);
+
+const tokenizerOptions = computed(() => [
+  { label: t('apiConnections.tokenizers.auto'), value: TokenizerType.AUTO },
+  { label: t('apiConnections.tokenizers.none'), value: TokenizerType.NONE },
+  { label: t('apiConnections.tokenizers.gpt4o'), value: TokenizerType.GPT4O },
+  { label: t('apiConnections.tokenizers.gpt35'), value: TokenizerType.GPT35 },
+  { label: t('apiConnections.tokenizers.gpt2'), value: TokenizerType.GPT2 },
+  { label: t('apiConnections.tokenizers.gemma'), value: TokenizerType.GEMMA },
+  { label: t('apiConnections.tokenizers.deepseek'), value: TokenizerType.DEEPSEEK },
+  { label: t('apiConnections.tokenizers.llama'), value: TokenizerType.LLAMA },
+  { label: t('apiConnections.tokenizers.llama3'), value: TokenizerType.LLAMA3 },
+  { label: t('apiConnections.tokenizers.mistral'), value: TokenizerType.MISTRAL },
+  { label: t('apiConnections.tokenizers.nemo'), value: TokenizerType.NEMO },
+  { label: t('apiConnections.tokenizers.claude'), value: TokenizerType.CLAUDE },
+  { label: t('apiConnections.tokenizers.jamba'), value: TokenizerType.JAMBA },
+  { label: t('apiConnections.tokenizers.commandr'), value: TokenizerType.COMMANDR },
+  { label: t('apiConnections.tokenizers.commanda'), value: TokenizerType.COMMANDA },
+  { label: t('apiConnections.tokenizers.qwen2'), value: TokenizerType.QWEN2 },
+  { label: t('apiConnections.tokenizers.yi'), value: TokenizerType.YI },
+]);
+
 onMounted(() => {
   apiStore.initialize();
 });
@@ -51,31 +104,31 @@ onMounted(() => {
         <h3>{{ t('apiConnections.profile') }}</h3>
         <div class="preset-manager-controls">
           <ConnectionProfileSelector v-model="apiStore.selectedConnectionProfileName" />
-          <div
-            class="menu-button-icon fa-solid fa-file-circle-plus"
+          <AppIconButton
+            icon="fa-file-circle-plus"
             :title="t('apiConnections.profileManagement.create')"
             @click="isProfilePopupVisible = true"
-          ></div>
-          <div
-            class="menu-button-icon fa-solid fa-pencil"
+          />
+          <AppIconButton
+            icon="fa-pencil"
             :title="t('apiConnections.profileManagement.rename')"
             @click="apiStore.renameConnectionProfile"
-          ></div>
-          <div
-            class="menu-button-icon fa-solid fa-trash-can"
+          />
+          <AppIconButton
+            icon="fa-trash-can"
             :title="t('apiConnections.profileManagement.delete')"
             @click="apiStore.deleteConnectionProfile"
-          ></div>
-          <div
-            class="menu-button-icon fa-solid fa-file-import"
+          />
+          <AppIconButton
+            icon="fa-file-import"
             :title="t('apiConnections.profileManagement.import')"
             @click="apiStore.importConnectionProfiles"
-          ></div>
-          <div
-            class="menu-button-icon fa-solid fa-file-export"
+          />
+          <AppIconButton
+            icon="fa-file-export"
             :title="t('apiConnections.profileManagement.export')"
             @click="apiStore.exportConnectionProfile"
-          ></div>
+          />
         </div>
       </div>
 
@@ -83,22 +136,13 @@ onMounted(() => {
 
       <div class="api-connections-drawer-section">
         <h3>{{ t('apiConnections.api') }}</h3>
-        <select
-          class="text-pole"
-          :value="settingsStore.settings.api.main"
-          @change="settingsStore.settings.api.main = ($event.target as HTMLSelectElement).value"
-        >
-          <option value="openai">{{ t('apiConnections.chatCompletion') }}</option>
-          <option value="textgenerationwebui" disabled>{{ t('apiConnections.textCompletion') }}</option>
-          <option value="novel" disabled>{{ t('apiConnections.novel') }}</option>
-          <option value="koboldhorde" disabled>{{ t('apiConnections.horde') }}</option>
-          <option value="kobold" disabled>{{ t('apiConnections.kobold') }}</option>
-        </select>
+        <AppSelect v-model="settingsStore.settings.api.main" :options="mainApiOptions" />
       </div>
 
       <div v-show="settingsStore.settings.api.main === 'openai'">
         <div class="api-connections-drawer-section">
           <h4>{{ t('apiConnections.source') }}</h4>
+          <!-- Native select required for optgroup support -->
           <select
             class="text-pole"
             :value="settingsStore.settings.api.chatCompletionSource"
@@ -146,7 +190,7 @@ onMounted(() => {
             <h4>{{ t('apiConnections.openaiKey') }}</h4>
             <div class="api-connections-drawer-input-group">
               <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
             <div class="neutral_warning">
               {{ t('apiConnections.keyPrivacy') }}
@@ -185,8 +229,7 @@ onMounted(() => {
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.claudeKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
             <div class="neutral_warning">
               {{ t('apiConnections.keyPrivacy') }}
@@ -194,20 +237,11 @@ onMounted(() => {
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.claudeModel') }}</h4>
-            <select
-              class="text-pole"
-              :value="settingsStore.settings.api.selectedProviderModels.claude"
-              @change="
-                settingsStore.setSetting(
-                  'api.selectedProviderModels.claude',
-                  ($event.target as HTMLSelectElement).value,
-                )
-              "
-            >
-              <option value="claude-3-5-sonnet-20240620">claude-3-5-sonnet-20240620</option>
-              <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
-              <option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option>
-            </select>
+            <AppSelect
+              :model-value="settingsStore.settings.api.selectedProviderModels.claude"
+              :options="claudeModelOptions"
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.claude', $event)"
+            />
           </div>
         </form>
 
@@ -216,8 +250,7 @@ onMounted(() => {
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.openrouterKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
             <div class="neutral_warning">
               {{ t('apiConnections.keyPrivacy') }}
@@ -241,69 +274,42 @@ onMounted(() => {
                 <option v-for="model in models" :key="model.id" :value="model.id">{{ model.name }}</option>
               </optgroup>
             </select>
-            <input
+            <AppInput
               v-show="!hasOpenRouterGroupedModels"
-              type="text"
-              class="text-pole"
+              :model-value="settingsStore.settings.api.selectedProviderModels.openrouter"
               placeholder="google/gemini-pro-1.5"
-              :value="settingsStore.settings.api.selectedProviderModels.openrouter"
-              @input="
-                settingsStore.setSetting(
-                  'api.selectedProviderModels.openrouter',
-                  ($event.target as HTMLInputElement).value,
-                )
-              "
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.openrouter', String($event))"
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.openrouterOptions') }}</h4>
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                :checked="settingsStore.settings.api.providerSpecific.openrouter.useFallback"
-                @change="
-                  settingsStore.setSetting(
-                    'api.providerSpecific.openrouter.useFallback',
-                    ($event.target as HTMLInputElement).checked,
-                  )
-                "
-              />
-              <span>{{ t('apiConnections.openrouterUseFallback') }}</span>
-            </label>
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                :checked="settingsStore.settings.api.providerSpecific.openrouter.allowFallbacks"
-                @change="
-                  settingsStore.setSetting(
-                    'api.providerSpecific.openrouter.allowFallbacks',
-                    ($event.target as HTMLInputElement).checked,
-                  )
-                "
-              />
-              <span>{{ t('apiConnections.openrouterAllowFallbacks') }}</span>
-            </label>
-            <!-- TODO: Provider list -->
+            <AppCheckbox
+              :model-value="settingsStore.settings.api.providerSpecific.openrouter.useFallback"
+              :label="t('apiConnections.openrouterUseFallback')"
+              @update:model-value="
+                settingsStore.setSetting('api.providerSpecific.openrouter.useFallback', Boolean($event))
+              "
+            />
+            <AppCheckbox
+              :model-value="settingsStore.settings.api.providerSpecific.openrouter.allowFallbacks"
+              :label="t('apiConnections.openrouterAllowFallbacks')"
+              @update:model-value="
+                settingsStore.setSetting('api.providerSpecific.openrouter.allowFallbacks', Boolean($event))
+              "
+            />
             <div class="range-block">
               <div class="range-block-title">{{ t('apiConnections.openrouterFallbackProviders') }}</div>
-              <input v-model="openrouterProvidersString" type="text" class="text-pole" />
+              <AppInput v-model="openrouterProvidersString" />
             </div>
             <div class="range-block">
               <div class="range-block-title">{{ t('apiConnections.openrouterMiddleout') }}</div>
-              <select
-                class="text-pole"
-                :value="settingsStore.settings.api.providerSpecific.openrouter.middleout"
-                @change="
-                  settingsStore.setSetting(
-                    'api.providerSpecific.openrouter.middleout',
-                    ($event.target as HTMLSelectElement).value as any,
-                  )
+              <AppSelect
+                :model-value="settingsStore.settings.api.providerSpecific.openrouter.middleout"
+                :options="middleoutOptions"
+                @update:model-value="
+                  settingsStore.setSetting('api.providerSpecific.openrouter.middleout', $event as any)
                 "
-              >
-                <option :value="OpenrouterMiddleoutType.ON">{{ t('apiConnections.middleout.on') }}</option>
-                <option :value="OpenrouterMiddleoutType.OFF">{{ t('apiConnections.middleout.off') }}</option>
-                <option :value="OpenrouterMiddleoutType.AUTO">{{ t('apiConnections.middleout.auto') }}</option>
-              </select>
+              />
             </div>
           </div>
         </div>
@@ -313,25 +319,16 @@ onMounted(() => {
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.mistralaiKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.mistralaiModel') }}</h4>
-            <select
-              class="text-pole"
-              :value="settingsStore.settings.api.selectedProviderModels.mistralai"
-              @change="
-                settingsStore.setSetting(
-                  'api.selectedProviderModels.mistralai',
-                  ($event.target as HTMLSelectElement).value,
-                )
-              "
-            >
-              <option value="mistral-large-latest">mistral-large-latest</option>
-              <option value="mistral-small-latest">mistral-small-latest</option>
-            </select>
+            <AppSelect
+              :model-value="settingsStore.settings.api.selectedProviderModels.mistralai"
+              :options="mistralModelOptions"
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.mistralai', $event)"
+            />
           </div>
         </form>
 
@@ -340,24 +337,16 @@ onMounted(() => {
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.groqKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.groqModel') }}</h4>
-            <select
-              class="text-pole"
-              :value="settingsStore.settings.api.selectedProviderModels.groq"
-              @change="
-                settingsStore.settings.api.selectedProviderModels.groq = ($event.target as HTMLSelectElement).value
-              "
-            >
-              <option value="llama3-70b-8192">llama3-70b-8192</option>
-              <option value="llama3-8b-8192">llama3-8b-8192</option>
-              <option value="gemma-7b-it">gemma-7b-it</option>
-              <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
-            </select>
+            <AppSelect
+              :model-value="settingsStore.settings.api.selectedProviderModels.groq"
+              :options="groqModelOptions"
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.groq', $event)"
+            />
           </div>
         </form>
 
@@ -365,31 +354,22 @@ onMounted(() => {
         <form v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.CUSTOM">
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.customUrl') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
-              :value="settingsStore.settings.api.providerSpecific.custom.url"
-              @input="
-                settingsStore.settings.api.providerSpecific.custom.url = ($event.target as HTMLInputElement).value
-              "
+            <AppInput
+              :model-value="settingsStore.settings.api.providerSpecific.custom.url"
+              @update:model-value="settingsStore.settings.api.providerSpecific.custom.url = String($event)"
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.customModel') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
-              :value="settingsStore.settings.api.selectedProviderModels.custom"
-              @input="
-                settingsStore.settings.api.selectedProviderModels.custom = ($event.target as HTMLInputElement).value
-              "
+            <AppInput
+              :model-value="settingsStore.settings.api.selectedProviderModels.custom"
+              @update:model-value="settingsStore.settings.api.selectedProviderModels.custom = String($event)"
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.customKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
           </div>
         </form>
@@ -399,65 +379,42 @@ onMounted(() => {
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureKey') }}</h4>
             <div class="api-connections-drawer-input-group">
-              <!-- TODO: Add secret management -->
-              <div class="menu-button fa-solid fa-key fa-fw" :title="t('apiConnections.manageKeys')"></div>
+              <AppButton icon="fa-key" :title="t('apiConnections.manageKeys')" />
             </div>
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureBaseUrl') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
-              :value="settingsStore.settings.api.providerSpecific.azure_openai.baseUrl"
-              @input="
-                settingsStore.setSetting(
-                  'api.providerSpecific.azure_openai.baseUrl',
-                  ($event.target as HTMLInputElement).value,
-                )
+            <AppInput
+              :model-value="settingsStore.settings.api.providerSpecific.azure_openai.baseUrl"
+              @update:model-value="
+                settingsStore.setSetting('api.providerSpecific.azure_openai.baseUrl', String($event))
               "
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureDeploymentName') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
-              :value="settingsStore.settings.api.providerSpecific.azure_openai.deploymentName"
-              @input="
-                settingsStore.setSetting(
-                  'api.providerSpecific.azure_openai.deploymentName',
-                  ($event.target as HTMLInputElement).value,
-                )
+            <AppInput
+              :model-value="settingsStore.settings.api.providerSpecific.azure_openai.deploymentName"
+              @update:model-value="
+                settingsStore.setSetting('api.providerSpecific.azure_openai.deploymentName', String($event))
               "
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureApiVersion') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
-              :value="settingsStore.settings.api.providerSpecific.azure_openai.apiVersion"
-              @input="
-                settingsStore.setSetting(
-                  'api.providerSpecific.azure_openai.apiVersion',
-                  ($event.target as HTMLInputElement).value,
-                )
+            <AppInput
+              :model-value="settingsStore.settings.api.providerSpecific.azure_openai.apiVersion"
+              @update:model-value="
+                settingsStore.setSetting('api.providerSpecific.azure_openai.apiVersion', String($event))
               "
             />
           </div>
           <div class="api-connections-drawer-section">
             <h4>{{ t('apiConnections.azureModel') }}</h4>
-            <input
-              type="text"
-              class="text-pole"
+            <AppInput
+              :model-value="settingsStore.settings.api.selectedProviderModels.azure_openai"
               placeholder="This is the model name inside your deployment"
-              :value="settingsStore.settings.api.selectedProviderModels.azure_openai"
-              @input="
-                settingsStore.setSetting(
-                  'api.selectedProviderModels.azure_openai',
-                  ($event.target as HTMLInputElement).value,
-                )
-              "
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.azure_openai', String($event))"
             />
           </div>
         </form>
@@ -467,44 +424,22 @@ onMounted(() => {
         <!-- Tokenizer Selection -->
         <div class="api-connections-drawer-section">
           <h4>{{ t('apiConnections.tokenizer') }}</h4>
-          <select
-            class="text-pole"
-            :value="settingsStore.settings.api.tokenizer"
-            @change="settingsStore.settings.api.tokenizer = ($event.target as HTMLSelectElement).value as any"
-          >
-            <option :value="TokenizerType.AUTO">{{ t('apiConnections.tokenizers.auto') }}</option>
-            <option :value="TokenizerType.NONE">{{ t('apiConnections.tokenizers.none') }}</option>
-            <option :value="TokenizerType.GPT4O">{{ t('apiConnections.tokenizers.gpt4o') }}</option>
-            <option :value="TokenizerType.GPT35">{{ t('apiConnections.tokenizers.gpt35') }}</option>
-            <option :value="TokenizerType.GPT2">{{ t('apiConnections.tokenizers.gpt2') }}</option>
-            <option :value="TokenizerType.GEMMA">{{ t('apiConnections.tokenizers.gemma') }}</option>
-            <option :value="TokenizerType.DEEPSEEK">{{ t('apiConnections.tokenizers.deepseek') }}</option>
-            <option :value="TokenizerType.LLAMA">{{ t('apiConnections.tokenizers.llama') }}</option>
-            <option :value="TokenizerType.LLAMA3">{{ t('apiConnections.tokenizers.llama3') }}</option>
-            <option :value="TokenizerType.MISTRAL">{{ t('apiConnections.tokenizers.mistral') }}</option>
-            <option :value="TokenizerType.NEMO">{{ t('apiConnections.tokenizers.nemo') }}</option>
-            <option :value="TokenizerType.CLAUDE">{{ t('apiConnections.tokenizers.claude') }}</option>
-            <option :value="TokenizerType.JAMBA">{{ t('apiConnections.tokenizers.jamba') }}</option>
-            <option :value="TokenizerType.COMMANDR">{{ t('apiConnections.tokenizers.commandr') }}</option>
-            <option :value="TokenizerType.COMMANDA">{{ t('apiConnections.tokenizers.commanda') }}</option>
-            <option :value="TokenizerType.QWEN2">{{ t('apiConnections.tokenizers.qwen2') }}</option>
-            <option :value="TokenizerType.YI">{{ t('apiConnections.tokenizers.yi') }}</option>
-          </select>
+          <AppSelect
+            :model-value="settingsStore.settings.api.tokenizer"
+            :options="tokenizerOptions"
+            @update:model-value="settingsStore.settings.api.tokenizer = $event as any"
+          />
         </div>
 
         <div class="api-connections-drawer-section">
           <div class="api-connections-drawer-actions">
-            <button
-              class="menu-button"
+            <AppButton
+              :loading="apiStore.isConnecting"
               :disabled="apiStore.isConnecting"
-              :class="{ disabled: apiStore.isConnecting }"
               @click.prevent="apiStore.connect"
             >
-              <i v-show="apiStore.isConnecting" class="fa-solid fa-spinner fa-spin"></i>
-              <span v-show="!apiStore.isConnecting">{{
-                apiStore.isConnecting ? t('apiConnections.connecting') : t('apiConnections.connect')
-              }}</span>
-            </button>
+              {{ apiStore.isConnecting ? t('apiConnections.connecting') : t('apiConnections.connect') }}
+            </AppButton>
           </div>
           <div class="online_status">
             <div

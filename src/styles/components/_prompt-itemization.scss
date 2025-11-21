@@ -85,7 +85,7 @@
     }
     &.description {
       background-color: salmon;
-    } // If split
+    }
     &.wi {
       background-color: gold;
     }
@@ -166,13 +166,6 @@
     gap: 10px;
     margin-top: 10px;
     flex-wrap: wrap;
-
-    .menu-button {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      width: auto;
-    }
   }
 
   .pi-raw-viewer,

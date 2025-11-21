@@ -23,6 +23,7 @@ export function activate(api: ExtensionAPI<ChatTranslationSettings>) {
 
     if (buttonsContainer.querySelector('.translation-button')) return;
 
+    // TODO: Use AppIconButton component instead of raw <i> element for better consistency?
     const btn = document.createElement('i');
     btn.className = 'message-button fa-solid fa-globe translation-button';
     btn.title = 'Translate Message';

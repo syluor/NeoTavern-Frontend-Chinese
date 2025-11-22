@@ -534,7 +534,6 @@ export interface MessageSchema {
     createNew: string;
     importFile: string;
     importUrl: string;
-    createGroup: string;
     searchToggle: string;
     searchPlaceholder: string;
     sorting: {

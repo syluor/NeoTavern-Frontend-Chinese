@@ -90,7 +90,6 @@ onMounted(() => {
             @change="handleFileImport"
           />
           <AppIconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
-          <AppIconButton icon="fa-users-gear" :title="t('characterPanel.createGroup')" />
 
           <div id="extension-buttons-container"></div>
 

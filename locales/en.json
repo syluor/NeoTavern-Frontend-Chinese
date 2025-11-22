@@ -531,7 +531,6 @@
     "createNew": "Create New Character",
     "importFile": "Import Character from File",
     "importUrl": "Import content from external URL",
-    "createGroup": "Create New Chat Group",
     "searchToggle": "Toggle search bar",
     "searchPlaceholder": "Search...",
     "sorting": {

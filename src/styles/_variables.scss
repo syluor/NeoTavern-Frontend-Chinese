@@ -115,6 +115,10 @@ $base-border-radius-rounded: 10px;
   --header-height: 50px;
   --layout-message-right-spacing: 30px;
 
+  --base-border-radius: #{$base-border-radius};
+  --base-border-radius-round: #{$base-border-radius-round};
+  --base-border-radius-rounded: #{$base-border-radius-rounded};
+
   // Sidebars (Dynamic)
   --sidebar-left-width: var(--sidebar-width);
   --sidebar-right-width: var(--sidebar-width);

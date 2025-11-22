@@ -232,7 +232,7 @@ async function removeMember(avatar: string) {
       <!-- Tab: Chats -->
       <div v-show="activeTab === 'chats'" class="chat-management-tab-content">
         <div class="chat-management-actions">
-          <AppSearch v-model="chatSearchTerm" :placeholder="t('common.search')">
+          <AppSearch v-model="chatSearchTerm" :placeholder="t('common.search')" style="margin-top: 5px">
             <template #actions>
               <AppButton v-show="characterStore.activeCharacters.length > 0" icon="fa-plus" @click="createNewChat()">
                 {{ t('chatManagement.newChat') }}

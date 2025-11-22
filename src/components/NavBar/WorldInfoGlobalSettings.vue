@@ -3,8 +3,8 @@ import { computed } from 'vue';
 import { useWorldInfoStore, defaultWorldInfoSettings } from '../../stores/world-info.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { WorldInfoInsertionStrategy } from '../../types';
-import { AppButton, AppCheckbox, AppSelect, RangeControl } from '../UI';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Button, Checkbox, Select, RangeControl } from '../UI';
+import FormItem from '../UI/FormItem.vue';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
@@ -31,19 +31,19 @@ const bookOptions = computed(() => {
   <div class="world-info-global-settings">
     <div class="editor-header">
       <h3>{{ t('worldInfo.globalSettings') }}</h3>
-      <AppButton @click="resetToDefaults">{{ t('common.resetToDefaults') }}</AppButton>
+      <Button @click="resetToDefaults">{{ t('common.resetToDefaults') }}</Button>
     </div>
 
     <div class="settings-section">
-      <AppFormItem :description="t('worldInfo.activeWorldsHint')">
-        <AppSelect
+      <FormItem :description="t('worldInfo.activeWorldsHint')">
+        <Select
           v-model="worldInfoStore.activeBookNames"
           :options="bookOptions"
           multiple
           :label="t('worldInfo.activeWorlds')"
           :placeholder="t('common.none')"
         />
-      </AppFormItem>
+      </FormItem>
     </div>
 
     <hr />
@@ -73,32 +73,32 @@ const bookOptions = computed(() => {
           />
         </div>
         <div class="wi-settings-grid-checkboxes">
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_include_names"
             :label="t('worldInfo.includeNames')"
             :title="t('worldInfo.includeNamesHint')"
           />
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_recursive"
             :label="t('worldInfo.recursiveScan')"
             :title="t('worldInfo.recursiveScanHint')"
           />
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_case_sensitive"
             :label="t('worldInfo.caseSensitive')"
             :title="t('worldInfo.caseSensitiveHint')"
           />
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_match_whole_words"
             :label="t('worldInfo.matchWholeWords')"
             :title="t('worldInfo.matchWholeWordsHint')"
           />
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_use_group_scoring"
             :label="t('worldInfo.useGroupScoring')"
             :title="t('worldInfo.useGroupScoringHint')"
           />
-          <AppCheckbox
+          <Checkbox
             v-model="worldInfoStore.settings.world_info_overflow_alert"
             :label="t('worldInfo.alertOnOverflow')"
             :title="t('worldInfo.alertOnOverflowHint')"
@@ -111,14 +111,14 @@ const bookOptions = computed(() => {
 
     <div class="settings-section">
       <h4>{{ t('worldInfo.advancedSettings') }}</h4>
-      <AppFormItem>
-        <AppSelect
+      <FormItem>
+        <Select
           v-model="worldInfoStore.settings.world_info_character_strategy"
           :label="t('worldInfo.insertionStrategy')"
           :title="t('worldInfo.insertionStrategyHint')"
           :options="strategyOptions"
         />
-      </AppFormItem>
+      </FormItem>
     </div>
   </div>
 </template>

@@ -4,9 +4,9 @@ import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ValueForPath } from '../../types/utils';
-import { AppSelect, AppCheckbox, RangeControl, CollapsibleSection } from '../../components/UI';
-import AppSearch from '../UI/AppSearch.vue';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Select, Checkbox, RangeControl, CollapsibleSection } from '../../components/UI';
+import Search from '../UI/Search.vue';
+import FormItem from '../UI/FormItem.vue';
 import type { I18nKey } from '@/types/i18n';
 
 const { t } = useStrictI18n();
@@ -75,7 +75,7 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
     </div>
 
     <div style="margin-bottom: 10px">
-      <AppSearch v-model="searchTerm" :placeholder="t('userSettings.searchPlaceholder')" />
+      <Search v-model="searchTerm" :placeholder="t('userSettings.searchPlaceholder')" />
     </div>
 
     <div class="user-settings-drawer-content">
@@ -89,7 +89,7 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
             <div v-for="setting in settings" :key="setting.id">
               <!-- Checkbox -->
               <div v-if="setting.widget === 'checkbox'">
-                <AppCheckbox
+                <Checkbox
                   :model-value="getSettingValue(setting.id) as boolean"
                   :label="t(setting.label)"
                   :description="setting.description ? t(setting.description) : undefined"
@@ -99,14 +99,14 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
 
               <!-- Standard Inputs (Horizontal Layout) -->
               <template v-else>
-                <AppFormItem
+                <FormItem
                   :label="t(setting.label)"
                   :description="setting.description ? t(setting.description) : undefined"
                   horizontal
                 >
                   <!-- Select -->
                   <div v-if="setting.widget === 'select'" style="width: 220px">
-                    <AppSelect
+                    <Select
                       :model-value="getSettingValue(setting.id)"
                       :options="formatOptions(setting.options || [])"
                       @update:model-value="(val) => updateSetting(setting.id, val)"
@@ -123,7 +123,7 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
                       @update:model-value="(val) => updateSetting(setting.id, val)"
                     />
                   </div>
-                </AppFormItem>
+                </FormItem>
               </template>
             </div>
           </div>

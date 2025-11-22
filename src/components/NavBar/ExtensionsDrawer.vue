@@ -2,9 +2,9 @@
 import { onMounted, ref } from 'vue';
 import { useExtensionStore } from '../../stores/extension.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { AppIconButton, AppToggle } from '../UI';
-import AppSearch from '../UI/AppSearch.vue';
-import AppListItem from '../UI/AppListItem.vue';
+import { IconButton, Toggle } from '../UI';
+import Search from '../UI/Search.vue';
+import ListItem from '../UI/ListItem.vue';
 import SplitPane from '../Common/SplitPane.vue';
 import EmptyState from '../Common/EmptyState.vue';
 
@@ -41,16 +41,16 @@ onMounted(() => {
     <template #side>
       <div class="extensions-panel-browser-header">
         <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 5px">
-          <AppIconButton icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
-          <AppIconButton icon="fa-cloud-arrow-down" :title="t('extensions.install')" @click="installExtension" />
-          <AppToggle v-model="notifyOnUpdates" :title="t('extensions.notifyUpdates')" style="margin-left: auto" />
+          <IconButton icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
+          <IconButton icon="fa-cloud-arrow-down" :title="t('extensions.install')" @click="installExtension" />
+          <Toggle v-model="notifyOnUpdates" :title="t('extensions.notifyUpdates')" style="margin-left: auto" />
         </div>
-        <AppSearch v-model="extensionStore.searchTerm" :placeholder="t('common.search')" />
+        <Search v-model="extensionStore.searchTerm" :placeholder="t('common.search')" />
       </div>
 
       <div class="extensions-panel-list">
         <div v-for="extension in extensionStore.filteredExtensions" :key="extension.id">
-          <AppListItem
+          <ListItem
             :active="extensionStore.selectedExtensionId === extension.id"
             :data-extension-id="extension.id"
             @click="extensionStore.selectExtension(extension.id)"
@@ -66,13 +66,13 @@ onMounted(() => {
             </template>
             <template #end>
               <div @click.stop>
-                <AppToggle
+                <Toggle
                   :model-value="extension.isActive"
                   @update:model-value="(val) => extensionStore.toggleExtension(extension.id, val)"
                 />
               </div>
             </template>
-          </AppListItem>
+          </ListItem>
         </div>
       </div>
     </template>

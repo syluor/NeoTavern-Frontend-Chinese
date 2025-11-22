@@ -6,7 +6,7 @@ import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
 import { listChats, listRecentChats } from '@/api/chat';
-import { AppIconButton } from '../UI';
+import { IconButton } from '../UI';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
@@ -102,7 +102,7 @@ watch(
       <div id="chat-form" class="chat-form">
         <div class="chat-form-inner">
           <div class="chat-form-actions-left">
-            <AppIconButton
+            <IconButton
               id="chat-options-button"
               class="chat-form-button"
               icon="fa-bars"
@@ -119,7 +119,7 @@ watch(
             @keydown="handleKeydown"
           ></textarea>
           <div class="chat-form-actions-right">
-            <AppIconButton
+            <IconButton
               v-show="chatStore.isGenerating"
               class="chat-form-button"
               icon="fa-stop"
@@ -127,7 +127,7 @@ watch(
               @click="chatStore.abortGeneration"
             />
             <div v-show="!chatStore.isGenerating" style="display: contents">
-              <AppIconButton
+              <IconButton
                 class="chat-form-button"
                 icon="fa-paper-plane"
                 :title="t('chat.send')"

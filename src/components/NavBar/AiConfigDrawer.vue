@@ -8,9 +8,9 @@ import { POPUP_TYPE } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import PromptManager from '../AiConfig/PromptManager.vue';
-import { AppIconButton, AppSelect, AppInput, AppTextarea, AppCheckbox, RangeControl } from '../../components/UI';
-import AppTabs from '../UI/AppTabs.vue';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { IconButton, Select, Input, Textarea, Checkbox, RangeControl } from '../../components/UI';
+import Tabs from '../UI/Tabs.vue';
+import FormItem from '../UI/FormItem.vue';
 
 const { t } = useStrictI18n();
 const apiStore = useApiStore();
@@ -66,7 +66,7 @@ onMounted(() => {
 <template>
   <div class="ai-config-drawer">
     <div class="ai-config-drawer-header">
-      <AppTabs
+      <Tabs
         v-model="activeTab"
         style="margin-bottom: 0; border-bottom: none"
         :options="[
@@ -76,7 +76,7 @@ onMounted(() => {
       />
 
       <div class="header-actions">
-        <AppIconButton
+        <IconButton
           :icon="isPanelPinned ? 'fa-lock' : 'fa-unlock'"
           :title="t('characterPanel.pinToggle')"
           @click="isPanelPinned = !isPanelPinned"
@@ -101,17 +101,17 @@ onMounted(() => {
               <div class="standout-header">
                 <strong>{{ item.label ? t(item.label) : '' }}</strong>
                 <div class="preset-manager-actions">
-                  <AppIconButton
+                  <IconButton
                     icon="fa-file-import"
                     :title="t('aiConfig.presets.import')"
                     @click="apiStore.importPreset()"
                   />
-                  <AppIconButton
+                  <IconButton
                     icon="fa-file-export"
                     :title="t('aiConfig.presets.export')"
                     @click="apiStore.exportPreset(settingsStore.getSetting(item.id))"
                   />
-                  <AppIconButton
+                  <IconButton
                     icon="fa-trash-can"
                     variant="danger"
                     :title="t('aiConfig.presets.delete')"
@@ -121,23 +121,23 @@ onMounted(() => {
               </div>
               <div class="preset-manager-controls">
                 <div style="flex-grow: 1">
-                  <AppSelect
+                  <Select
                     :model-value="settingsStore.getSetting(item.id)"
                     :options="apiStore.presets.map((p) => ({ label: p.name, value: p.name }))"
                     @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
                   />
                 </div>
-                <AppIconButton
+                <IconButton
                   icon="fa-save"
                   :title="t('aiConfig.presets.update')"
                   @click="apiStore.updateCurrentPreset(settingsStore.getSetting(item.id))"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-pencil"
                   :title="t('aiConfig.presets.rename')"
                   @click="apiStore.renamePreset(settingsStore.getSetting(item.id))"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-file-circle-plus"
                   :title="t('aiConfig.presets.saveAs')"
                   @click="handleNewPreset()"
@@ -157,7 +157,7 @@ onMounted(() => {
               >
                 <template v-if="item.maxUnlockedId && item.unlockLabel" #addon>
                   <div class="mt-1">
-                    <AppCheckbox
+                    <Checkbox
                       :model-value="!!settingsStore.getSetting(item.maxUnlockedId)"
                       :label="t(item.unlockLabel)"
                       :title="item.unlockTooltip ? t(item.unlockTooltip) : ''"
@@ -169,8 +169,8 @@ onMounted(() => {
             </div>
 
             <!-- Number Input -->
-            <AppFormItem v-if="item.widget === 'number-input' && item.id" :label="item.label ? t(item.label) : ''">
-              <AppInput
+            <FormItem v-if="item.widget === 'number-input' && item.id" :label="item.label ? t(item.label) : ''">
+              <Input
                 type="number"
                 :model-value="settingsStore.getSetting(item.id)"
                 :min="item.min"
@@ -178,23 +178,23 @@ onMounted(() => {
                 :step="item.step"
                 @update:model-value="(val) => settingsStore.setSetting(item.id!, Number(val))"
               />
-            </AppFormItem>
+            </FormItem>
 
             <!-- Textarea -->
-            <AppFormItem
+            <FormItem
               v-if="item.widget === 'textarea' && item.id"
               :label="item.label ? t(item.label) : ''"
               :description="item.description ? t(item.description) : undefined"
             >
-              <AppTextarea
+              <Textarea
                 :model-value="settingsStore.getSetting(item.id)"
                 @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
               />
-            </AppFormItem>
+            </FormItem>
 
             <!-- Checkbox -->
             <div v-if="item.widget === 'checkbox' && item.id">
-              <AppCheckbox
+              <Checkbox
                 :label="item.label ? t(item.label) : ''"
                 :model-value="!!settingsStore.getSetting(item.id)"
                 :description="item.description ? t(item.description) : undefined"
@@ -203,22 +203,22 @@ onMounted(() => {
             </div>
 
             <!-- Select Input -->
-            <AppFormItem
+            <FormItem
               v-if="item.widget === 'select' && item.id && item.options"
               :label="item.label ? t(item.label) : ''"
             >
-              <AppSelect
+              <Select
                 :model-value="settingsStore.getSetting(item.id)"
                 :options="item.options.map((o) => ({ label: t(o.label), value: o.value }))"
                 :title="item.infoTooltip ? t(item.infoTooltip) : undefined"
                 @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
               />
-            </AppFormItem>
+            </FormItem>
 
             <!-- Info Display -->
             <div
               v-if="item.widget === 'info-display' && item.description"
-              class="app-form-item-description"
+              class="form-item-description"
               style="margin-bottom: 10px"
             >
               {{ t(item.description) }}

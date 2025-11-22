@@ -5,11 +5,11 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import WorldInfoEntryEditor from './WorldInfoEntryEditor.vue';
 import WorldInfoGlobalSettings from './WorldInfoGlobalSettings.vue';
 import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
-import { AppIconButton, AppSelect } from '../UI';
+import { IconButton, Select } from '../UI';
 import SplitPane from '../Common/SplitPane.vue';
-import AppSearch from '../UI/AppSearch.vue';
-import AppListItem from '../UI/AppListItem.vue';
-import AppFileInput from '../UI/AppFileInput.vue';
+import Search from '../UI/Search.vue';
+import ListItem from '../UI/ListItem.vue';
+import FileInput from '../UI/FileInput.vue';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
@@ -66,41 +66,32 @@ const sortOptions = computed(() => [
     <template #side>
       <div class="character-panel-browser-header world-info-controls">
         <div class="world-info-controls-row" style="margin-bottom: 5px">
-          <AppIconButton icon="fa-plus" :title="t('worldInfo.newWorld')" @click="worldInfoStore.createNewBook" />
-          <AppFileInput
-            accept=".json"
-            icon="fa-file-import"
-            :label="t('worldInfo.import')"
-            @change="handleFileImport"
-          />
-          <AppIconButton icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.refresh" />
+          <IconButton icon="fa-plus" :title="t('worldInfo.newWorld')" @click="worldInfoStore.createNewBook" />
+          <FileInput accept=".json" icon="fa-file-import" :label="t('worldInfo.import')" @change="handleFileImport" />
+          <IconButton icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.refresh" />
         </div>
         <div class="world-info-controls-row">
-          <AppSearch v-model="worldInfoStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
+          <Search v-model="worldInfoStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
             <template #actions>
-              <AppSelect
-                v-model="worldInfoStore.sortOrder"
-                :title="t('worldInfo.sorting.title')"
-                :options="sortOptions"
-              />
+              <Select v-model="worldInfoStore.sortOrder" :title="t('worldInfo.sorting.title')" :options="sortOptions" />
             </template>
-          </AppSearch>
+          </Search>
         </div>
       </div>
 
       <div class="character-panel-character-list">
-        <AppListItem
+        <ListItem
           :active="worldInfoStore.selectedItemId === 'global-settings'"
           @click="worldInfoStore.selectItem('global-settings')"
         >
           <template #start><i class="fa-solid fa-cogs" style="opacity: 0.7"></i></template>
           <template #default>{{ t('worldInfo.globalSettings') }}</template>
-        </AppListItem>
+        </ListItem>
 
         <hr class="panel-divider" />
 
         <div v-for="bookName in filteredBookNames" :key="bookName" class="lorebook-group">
-          <AppListItem class="is-book" @click="worldInfoStore.toggleBookExpansion(bookName)">
+          <ListItem class="is-book" @click="worldInfoStore.toggleBookExpansion(bookName)">
             <template #start>
               <i
                 class="fa-solid fa-chevron-right browser-item-chevron"
@@ -113,34 +104,34 @@ const sortOptions = computed(() => [
             </template>
             <template #end>
               <div class="browser-item-actions" @click.stop>
-                <AppIconButton
+                <IconButton
                   icon="fa-plus"
                   :title="t('worldInfo.newEntryInBook', { bookName })"
                   @click.stop="worldInfoStore.createNewEntry(bookName)"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-file-export"
                   :title="t('worldInfo.export')"
                   @click.stop="worldInfoStore.exportBook(bookName)"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-clone"
                   :title="t('worldInfo.duplicate')"
                   @click.stop="worldInfoStore.duplicateBook(bookName)"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-pencil"
                   :title="t('worldInfo.rename')"
                   @click.stop="worldInfoStore.renameBook(bookName)"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-trash-can"
                   :title="t('worldInfo.deleteBook', { bookName })"
                   @click.stop="worldInfoStore.deleteBook(bookName)"
                 />
               </div>
             </template>
-          </AppListItem>
+          </ListItem>
 
           <!--
             TODO: v-if is used here instead of v-show for performance.
@@ -154,14 +145,14 @@ const sortOptions = computed(() => [
                 </div>
                 <div v-else>
                   <div v-for="entry in worldInfoStore.filteredAndSortedEntries(bookName)" :key="entry.uid">
-                    <AppListItem
+                    <ListItem
                       :active="worldInfoStore.selectedItemId === `${bookName}/${entry.uid}`"
                       @click="worldInfoStore.selectItem(`${bookName}/${entry.uid}`)"
                     >
                       <template #default>
                         <span style="font-size: 0.95em">{{ entry.comment || '[Untitled Entry]' }}</span>
                       </template>
-                    </AppListItem>
+                    </ListItem>
                   </div>
                 </div>
               </div>

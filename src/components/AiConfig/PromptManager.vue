@@ -7,8 +7,8 @@ import { cloneDeep } from 'lodash-es';
 import { toast } from '../../composables/useToast';
 import type { MessageRole } from '@/types';
 import DraggableList from '../Common/DraggableList.vue';
-import { AppButton, AppIconButton, AppInput, AppSelect, AppTextarea } from '../UI';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Button, IconButton, Input, Select, Textarea } from '../UI';
+import FormItem from '../UI/FormItem.vue';
 import EmptyState from '../Common/EmptyState.vue';
 
 const settingsStore = useSettingsStore();
@@ -141,9 +141,9 @@ function getBadgeClass(role?: string) {
 <template>
   <div class="prompt-manager">
     <div class="prompt-manager-header">
-      <AppButton icon="fa-plus" @click="createNewPrompt">
+      <Button icon="fa-plus" @click="createNewPrompt">
         {{ t('aiConfig.promptManager.newPrompt') }}
-      </AppButton>
+      </Button>
     </div>
 
     <div class="prompt-manager-list-container">
@@ -181,13 +181,13 @@ function getBadgeClass(role?: string) {
               </div>
 
               <div class="prompt-item-actions">
-                <AppIconButton
+                <IconButton
                   :icon="prompt.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"
                   :title="t('common.toggle')"
                   @click.stop="toggleEnabled(index)"
                 />
 
-                <AppIconButton
+                <IconButton
                   icon="fa-trash"
                   variant="danger"
                   :disabled="!!prompt.marker"
@@ -198,26 +198,26 @@ function getBadgeClass(role?: string) {
 
             <!-- Editor Row (Expandable) -->
             <div v-show="editingIdentifier === prompt.identifier" class="prompt-item-editor">
-              <AppFormItem :label="t('common.name')">
-                <AppInput :model-value="prompt.name" @update:model-value="(v) => updatePromptField(index, 'name', v)" />
-              </AppFormItem>
+              <FormItem :label="t('common.name')">
+                <Input :model-value="prompt.name" @update:model-value="(v) => updatePromptField(index, 'name', v)" />
+              </FormItem>
 
               <template v-if="!prompt.marker">
-                <AppFormItem :label="t('aiConfig.promptManager.role')">
-                  <AppSelect
+                <FormItem :label="t('aiConfig.promptManager.role')">
+                  <Select
                     :model-value="prompt.role || 'system'"
                     :options="roleOptions"
                     @update:model-value="(v) => updatePromptField(index, 'role', v as MessageRole)"
                   />
-                </AppFormItem>
+                </FormItem>
 
-                <AppFormItem :label="t('aiConfig.promptManager.content')">
-                  <AppTextarea
+                <FormItem :label="t('aiConfig.promptManager.content')">
+                  <Textarea
                     :model-value="prompt.content || ''"
                     :rows="5"
                     @update:model-value="(v) => updatePromptField(index, 'content', v)"
                   />
-                </AppFormItem>
+                </FormItem>
               </template>
               <div v-else class="prompt-empty-state" style="padding: 5px; font-size: 0.9em">
                 {{ t('aiConfig.promptManager.markerHint') }}

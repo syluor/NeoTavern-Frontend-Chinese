@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 defineProps<{
   modelValue: string;
@@ -8,11 +9,11 @@ const emit = defineEmits(['update:modelValue']);
 </script>
 
 <template>
-  <div class="app-tabs">
+  <div class="tabs">
     <button
       v-for="tab in options"
       :key="tab.value"
-      class="app-tab-button"
+      class="tab-button"
       :class="{ active: modelValue === tab.value }"
       @click="emit('update:modelValue', tab.value)"
     >

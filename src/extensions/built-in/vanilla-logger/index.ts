@@ -58,7 +58,7 @@ export function activate(api: ExtensionAPI) {
     const savedState = settings.get(SETTING_KEY) ?? false;
     setEffect(savedState);
 
-    api.ui.mountComponent(wrapper, MountableComponent.AppCheckbox, {
+    api.ui.mountComponent(wrapper, MountableComponent.Checkbox, {
       label: 'Enable High Visibility Mode',
       description: 'Highlights the chat area with a red border.',
       modelValue: savedState,

@@ -3,7 +3,7 @@ import Navbar from './components/NavBar/NavBar.vue';
 import ChatInterface from './components/Chat/ChatInterface.vue';
 import Popup from './components/Popup/Popup.vue';
 import ZoomedAvatar from './components/ZoomedAvatar.vue';
-import AppSidebar from './components/Shared/AppSidebar.vue';
+import Sidebar from './components/Shared/Sidebar.vue';
 import ChatHeader from './components/Chat/ChatHeader.vue';
 import AiConfigDrawer from './components/NavBar/AiConfigDrawer.vue';
 import RecentChats from './components/Chat/RecentChats.vue';
@@ -67,13 +67,13 @@ onMounted(() => {
   <div id="background" :style="backgroundStyle"></div>
   <Navbar />
 
-  <AppSidebar side="left" :is-open="uiStore.isLeftSidebarOpen" storage-key="leftSidebarWidth">
+  <Sidebar side="left" :is-open="uiStore.isLeftSidebarOpen" storage-key="leftSidebarWidth">
     <template v-for="[id, def] in uiStore.leftSidebarRegistry" :key="id">
       <div v-show="uiStore.leftSidebarView === id" style="height: 100%">
         <component :is="def.component" v-bind="def.componentProps" />
       </div>
     </template>
-  </AppSidebar>
+  </Sidebar>
 
   <!-- Main Layout -->
   <main
@@ -93,13 +93,13 @@ onMounted(() => {
     </template>
   </main>
 
-  <AppSidebar side="right" :is-open="uiStore.isRightSidebarOpen" storage-key="rightSidebarWidth">
+  <Sidebar side="right" :is-open="uiStore.isRightSidebarOpen" storage-key="rightSidebarWidth">
     <template v-for="[id, def] in uiStore.rightSidebarRegistry" :key="id">
       <div v-show="uiStore.rightSidebarView === id" style="height: 100%">
         <component :is="def.component" v-bind="def.componentProps" />
       </div>
     </template>
-  </AppSidebar>
+  </Sidebar>
 
   <template v-for="popup in popupStore.popups" :key="popup.id">
     <Popup

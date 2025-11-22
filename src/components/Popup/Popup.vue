@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type CustomPopupButton } from '../../types';
 import 'cropperjs';
 import type { I18nKey } from '../../types/i18n';
-import { AppButton, AppTextarea } from '../UI';
+import { Button, Textarea } from '../UI';
 
 interface CropperSelectionElement extends HTMLElement {
   x: number;
@@ -43,7 +43,7 @@ const emit = defineEmits(['close', 'submit']);
 const { t } = useStrictI18n();
 const settings = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
-const mainInputComponent = ref<InstanceType<typeof AppTextarea> | null>(null);
+const mainInputComponent = ref<InstanceType<typeof Textarea> | null>(null);
 const cropperSelection = ref<CropperSelectionElement | null>(null);
 const internalInputValue = ref(props.inputValue);
 const generatedButtons = ref<CustomPopupButton[]>([]);
@@ -200,7 +200,7 @@ function handleEnter(evt: KeyboardEvent) {
 
         <component :is="component" v-if="component" v-bind="componentProps" />
 
-        <AppTextarea
+        <Textarea
           v-if="type === POPUP_TYPE.INPUT"
           ref="mainInputComponent"
           v-model="internalInputValue"
@@ -227,7 +227,7 @@ function handleEnter(evt: KeyboardEvent) {
       </div>
 
       <div class="popup-controls">
-        <AppButton
+        <Button
           v-for="button in generatedButtons"
           :key="button.text"
           :variant="getButtonVariant(button)"
@@ -235,7 +235,7 @@ function handleEnter(evt: KeyboardEvent) {
           @click="handleResult(button.result)"
         >
           {{ button.text }}
-        </AppButton>
+        </Button>
       </div>
     </div>
   </dialog>

@@ -1,8 +1,8 @@
 .prompt-manager {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 5px;
+  gap: 8x;
+  padding: 4px;
   height: 100%;
   overflow: hidden;
 
@@ -10,7 +10,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--theme-border-color);
     flex-shrink: 0;
   }
@@ -18,7 +18,7 @@
   &-list-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding-right: 5px;
+    padding-right: 4px;
     display: flex;
     flex-direction: column;
   }
@@ -27,14 +27,14 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
   }
 }
 
 .prompt-item {
   background-color: var(--black-30a);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@
     overflow: hidden;
     cursor: pointer;
     padding: 4px;
-    border-radius: 3px;
+    border-radius: var(--base-border-radius);
 
     &:hover {
       background-color: var(--white-20a);
@@ -80,7 +80,7 @@
   &-drag-handle {
     cursor: grab;
     opacity: 0.5;
-    padding: 5px;
+    padding: 4px;
     color: var(--theme-text-color);
 
     &:active {
@@ -107,7 +107,7 @@
 
   &-badge {
     font-size: 0.7em;
-    padding: 2px 6px;
+    padding: 4px 8px;
     border-radius: 4px;
     background-color: var(--black-50a);
     font-weight: bold;
@@ -140,8 +140,8 @@
   }
 
   &-editor {
-    margin-top: 5px;
-    padding-top: 10px;
+    margin-top: 4px;
+    padding-top: 12px;
     border-top: 1px dashed var(--theme-border-color);
     display: flex;
     flex-direction: column;

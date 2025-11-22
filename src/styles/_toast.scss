@@ -6,11 +6,11 @@
   position: fixed;
   z-index: 999999;
   pointer-events: none;
-  width: 300px;
-  max-width: 100%;
+  width: 320px;
+  max-width: calc(100% - 32px);
 
   &.toast-top-center {
-    top: var(--nav-bar-height);
+    top: calc(var(--nav-bar-height, 56px) + 16px);
     left: 50%;
     transform: translateX(-50%);
   }
@@ -20,11 +20,11 @@
   pointer-events: auto;
   position: relative;
   overflow: hidden;
-  margin: 0 0 6px;
-  padding: 10px 10px 10px 20px;
+  margin: 0 0 4px;
+  padding: 12px 12px 12px 26px;
   width: 100%;
-  border-radius: 3px;
-  box-shadow: 0 0 12px #000;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   color: #fff;
   opacity: 0;
   transform: translateY(-20px);
@@ -35,22 +35,22 @@
   font-size: calc(var(--font-size-main) * 0.95);
 
   &.show {
-    opacity: 0.9;
+    opacity: 0.95;
     transform: translateY(0);
   }
 }
 
 button.toast-close-button {
   position: absolute;
-  right: 0.5em;
-  top: 0.5em;
+  right: 8px;
+  top: 8px;
   font-size: 1.2em;
   font-weight: bold;
   color: #fff;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0 5px 0 0;
+  padding: 0 4px 0 0;
   text-shadow: 0 1px 0 #fff;
   opacity: 0.8;
 

@@ -15,14 +15,14 @@
     align-items: center;
     gap: 8px 12px;
 
-    .app-checkbox-container {
+    .checkbox-container {
       margin: 0;
     }
 
     .field-value {
       background: var(--black-30a);
-      padding: 5px;
-      border-radius: 5px;
+      padding: 4px;
+      border-radius: var(--base-border-radius);
       font-family: var(--font-family-mono);
       overflow: hidden;
       text-overflow: ellipsis;

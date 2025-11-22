@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 interface Props {
   modelValue: string | number;
@@ -36,8 +37,8 @@ function handleInput(event: Event) {
 </script>
 
 <template>
-  <div class="app-input-wrapper">
-    <label v-if="label" class="app-input-label">{{ label }}</label>
+  <div class="input-wrapper">
+    <label v-if="label" class="input-label">{{ label }}</label>
     <input
       class="text-pole"
       :type="type"

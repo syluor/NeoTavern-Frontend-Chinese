@@ -84,13 +84,13 @@ textarea {
   resize: vertical;
   display: block;
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   outline: none;
   background-color: var(--black-50a);
   color: var(--theme-text-color);
   font-family: var(--font-family-main);
   font-size: var(--font-size-main);
-  padding: 5px 10px;
+  padding: 4px 8px;
 }
 
 input[type='range'] {
@@ -100,7 +100,7 @@ input[type='range'] {
   padding: 0;
   width: 100%;
   height: 5px;
-  background: var(--theme-text-color);
+  background: var(--black-30a);
   border-radius: 15px;
   background-size: 70% 100%;
   background-repeat: no-repeat;
@@ -114,16 +114,15 @@ select {
   -moz-appearance: none;
   -webkit-appearance: none;
   appearance: none;
-  padding: 3px 5px;
+  padding: 4px;
   background-color: var(--black-30a);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
-  margin-bottom: 5px;
-  height: min-content;
+  border-radius: var(--base-border-radius);
+  margin-bottom: 4px;
   background-image: url('/img/down-arrow.svg');
   background-repeat: no-repeat;
-  background-position: right 6px center;
-  background-size: 8px 5px;
+  background-position: right 4px center;
+  background-size: 8px 4px;
 }
 
 select option {
@@ -146,12 +145,11 @@ select option[disabled]:not(:checked) {
   background-color: var(--black-30a);
   color: var(--theme-text-color);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   font-family: var(--font-family-main);
-  padding: 3px 5px;
+  padding: 4px;
   width: 100%;
-  margin: 5px 0;
-  height: fit-content;
+  margin: 4px 0;
 }
 
 select.text-pole {
@@ -162,8 +160,8 @@ select.text-pole {
   color: var(--theme-text-color);
   background-color: var(--theme-background-tint);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
-  padding: 3px 5px;
+  border-radius: var(--base-border-radius);
+  padding: 4px;
   cursor: pointer;
   transition: background-color var(--animation-duration-2x);
   display: flex;
@@ -171,7 +169,6 @@ select.text-pole {
   justify-content: center;
   text-align: center;
   filter: grayscale(0.5);
-  width: min-content;
 
   &:not(.disabled):not([disabled]):hover {
     background-color: var(--white-30a);
@@ -210,8 +207,7 @@ select.text-pole {
   color: var(--theme-text-color);
   background-color: transparent;
   border: none;
-  border-radius: 5px;
-  padding: 2px;
+  border-radius: var(--base-border-radius);
   cursor: pointer;
   transition:
     background-color var(--animation-duration-2x),

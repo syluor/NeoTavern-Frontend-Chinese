@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { AppIconButton, AppSelect } from '../UI';
+import { IconButton, Select } from '../UI';
 
 const props = defineProps({
   totalItems: { type: Number, required: true },
@@ -46,25 +46,20 @@ function onSizeChange(newSize: number) {
   <div v-if="totalItems > 0" class="pagination">
     <div class="pagination-nav">{{ startItem }}-{{ endItem }} {{ t('common.of') }} {{ totalItems }}</div>
     <div class="pagination-pages">
-      <AppIconButton
-        icon="fa-angles-left"
-        :disabled="!canGoBack"
-        :title="t('pagination.first')"
-        @click="changePage(1)"
-      />
-      <AppIconButton
+      <IconButton icon="fa-angles-left" :disabled="!canGoBack" :title="t('pagination.first')" @click="changePage(1)" />
+      <IconButton
         icon="fa-angle-left"
         :disabled="!canGoBack"
         :title="t('pagination.previous')"
         @click="changePage(currentPage - 1)"
       />
-      <AppIconButton
+      <IconButton
         icon="fa-angle-right"
         :disabled="!canGoForward"
         :title="t('pagination.next')"
         @click="changePage(currentPage + 1)"
       />
-      <AppIconButton
+      <IconButton
         icon="fa-angles-right"
         :disabled="!canGoForward"
         :title="t('pagination.last')"
@@ -73,7 +68,7 @@ function onSizeChange(newSize: number) {
     </div>
     <div class="pagination-size-changer">
       <!-- @vue-ignore -->
-      <AppSelect :model-value="itemsPerPage" :options="sizeOptions" @update:model-value="onSizeChange" />
+      <Select :model-value="itemsPerPage" :options="sizeOptions" @update:model-value="onSizeChange" />
     </div>
   </div>
 </template>

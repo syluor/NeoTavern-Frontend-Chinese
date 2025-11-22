@@ -20,11 +20,11 @@ $golden: rgb(248, 211, 0);
 
 // Base metrics
 $base-font-scale: 1;
-$base-font-size: 15px;
+$base-font-size: 16px;
 $base-animation-duration: 125ms;
-$base-border-radius: 2px;
+$base-border-radius: 4px;
 $base-border-radius-round: 50%;
-$base-border-radius-rounded: 10px;
+$base-border-radius-rounded: 8px;
 
 // =============================================================================
 // CSS Custom Properties (:root)
@@ -109,11 +109,11 @@ $base-border-radius-rounded: 10px;
   // --- Layout & Sizing ---
   --panel-width: 50vw;
   --panel-width-wide: 80vw;
-  --sidebar-width: 350px;
-  --sidebar-min-width: 200px;
+  --sidebar-width: 360px;
+  --sidebar-min-width: 240px;
   --sidebar-max-width: 800px;
-  --header-height: 50px;
-  --layout-message-right-spacing: 30px;
+  --header-height: 56px;
+  --layout-message-right-spacing: 32px;
 
   --base-border-radius: #{$base-border-radius};
   --base-border-radius-round: #{$base-border-radius-round};
@@ -140,8 +140,8 @@ $base-border-radius-rounded: 10px;
   --nav-bar-width: calc(var(--nav-bar-icon-size) + var(--nav-bar-padding) * 2);
 
   // Avatars
-  --avatar-height: 50px;
-  --avatar-width: 50px;
+  --avatar-height: 48px;
+  --avatar-width: 48px;
   --avatar-border-radius: #{$base-border-radius};
   --avatar-border-radius-round: #{$base-border-radius-round};
   --avatar-border-radius-rounded: #{$base-border-radius-rounded};

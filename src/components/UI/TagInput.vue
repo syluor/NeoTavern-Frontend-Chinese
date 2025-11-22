@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import AppButton from './AppButton.vue';
+import Button from './Button.vue';
 
 interface Props {
   modelValue: string[]; // Array of tags
@@ -59,7 +59,7 @@ function handleKeydown(e: KeyboardEvent) {
         @keydown="handleKeydown"
         @blur="addTag"
       />
-      <AppButton icon="fa-plus" @click="addTag" />
+      <Button icon="fa-plus" @click="addTag" />
     </div>
     <div class="tags-list">
       <span v-for="(tag, idx) in modelValue" :key="idx" class="tag">

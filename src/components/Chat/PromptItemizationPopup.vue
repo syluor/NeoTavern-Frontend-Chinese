@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import type { ItemizedPrompt, PromptTokenBreakdown, WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
-import { AppButton } from '../UI';
+import { Button } from '../UI';
 
 const props = defineProps<{
   data: ItemizedPrompt;
@@ -169,15 +169,15 @@ const fmt = (n: number) => n.toLocaleString();
 
     <!-- Actions -->
     <div class="pi-actions">
-      <AppButton icon="fa-square-poll-horizontal" @click="toggleRaw">
+      <Button icon="fa-square-poll-horizontal" @click="toggleRaw">
         {{ t('chat.itemization.showRaw') }}
-      </AppButton>
-      <AppButton v-if="hasWiEntries" icon="fa-book-journal-whills" @click="toggleWorldInfo">
+      </Button>
+      <Button v-if="hasWiEntries" icon="fa-book-journal-whills" @click="toggleWorldInfo">
         {{ t('chat.itemization.showWorldInfo') }}
-      </AppButton>
-      <AppButton icon="fa-copy" @click="copyPrompt">
+      </Button>
+      <Button icon="fa-copy" @click="copyPrompt">
         {{ t('chat.itemization.copy') }}
-      </AppButton>
+      </Button>
     </div>
 
     <!-- Raw Prompt Viewer -->

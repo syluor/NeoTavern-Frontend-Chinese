@@ -14,17 +14,8 @@ import { toast } from '../../composables/useToast';
 import { usePopupStore } from '../../stores/popup.store';
 import { cloneDeep, set } from 'lodash-es';
 import { humanizedDateTime } from '../../utils/date';
-import {
-  AppInput,
-  AppTextarea,
-  AppButton,
-  AppIconButton,
-  AppSelect,
-  TagInput,
-  CollapsibleSection,
-  RangeControl,
-} from '../UI';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Input, Textarea, Button, IconButton, Select, TagInput, CollapsibleSection, RangeControl } from '../UI';
+import FormItem from '../UI/FormItem.vue';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -278,7 +269,7 @@ async function handleMoreAction(action: string) {
       <div id="character-editor-header" class="character-edit-form-header">
         <div id="character-editor-name-container" class="character-edit-form-header-main" style="flex-grow: 1">
           <h2 v-show="!isCreating" class="interactable" tabindex="0">{{ localCharacter.name }}</h2>
-          <AppInput
+          <Input
             v-show="isCreating"
             v-model="localCharacter.name"
             :placeholder="t('characterEditor.namePlaceholder')"
@@ -301,7 +292,7 @@ async function handleMoreAction(action: string) {
               </small>
             </div>
           </div>
-          <AppIconButton v-show="!isCreating" icon="fa-ranking-star" :title="t('characterEditor.stats.title')" />
+          <IconButton v-show="!isCreating" icon="fa-ranking-star" :title="t('characterEditor.stats.title')" />
         </div>
       </div>
 
@@ -327,12 +318,12 @@ async function handleMoreAction(action: string) {
         <div class="character-edit-form-controls">
           <!-- Creation Controls -->
           <div v-show="isCreating" class="character-edit-form-buttons">
-            <AppButton variant="confirm" :loading="isSubmitting" @click="handleCreate">
+            <Button variant="confirm" :loading="isSubmitting" @click="handleCreate">
               {{ t('common.save') }}
-            </AppButton>
-            <AppButton :disabled="isSubmitting" @click="characterStore.cancelCreating">
+            </Button>
+            <Button :disabled="isSubmitting" @click="characterStore.cancelCreating">
               {{ t('common.cancel') }}
-            </AppButton>
+            </Button>
           </div>
 
           <div
@@ -340,7 +331,7 @@ async function handleMoreAction(action: string) {
             class="character-primary-actions"
             style="display: flex; gap: 4px; margin-bottom: 5px"
           >
-            <AppButton
+            <Button
               variant="confirm"
               icon="fa-comments"
               class="flex-1"
@@ -348,36 +339,31 @@ async function handleMoreAction(action: string) {
               @click="openLastChat"
             >
               {{ t('common.chat') }}
-            </AppButton>
-            <AppButton icon="fa-plus" class="flex-1" :title="t('characterEditor.startNewChat')" @click="createNewChat">
+            </Button>
+            <Button icon="fa-plus" class="flex-1" :title="t('characterEditor.startNewChat')" @click="createNewChat">
               {{ t('common.new') }}
-            </AppButton>
+            </Button>
           </div>
 
           <div v-show="!isCreating" class="character-edit-form-buttons">
-            <AppIconButton
+            <IconButton
               icon="fa-star"
               :active="!!localCharacter.fav"
               :class="{ 'is-favorite': localCharacter.fav }"
               :title="t('characterEditor.favorite')"
               @click="toggleFavorite"
             />
-            <AppIconButton icon="fa-globe" :title="t('characterEditor.lore')" />
-            <AppIconButton icon="fa-passport" :title="t('characterEditor.chatLore')" />
-            <AppIconButton icon="fa-face-smile" :title="t('characterEditor.personas')" />
-            <AppIconButton icon="fa-file-export" :title="t('characterEditor.export')" />
-            <AppIconButton icon="fa-clone" :title="t('characterEditor.duplicate')" @click="handleDuplicate" />
-            <AppIconButton
-              icon="fa-skull"
-              variant="danger"
-              :title="t('characterEditor.delete')"
-              @click="handleDelete"
-            />
+            <IconButton icon="fa-globe" :title="t('characterEditor.lore')" />
+            <IconButton icon="fa-passport" :title="t('characterEditor.chatLore')" />
+            <IconButton icon="fa-face-smile" :title="t('characterEditor.personas')" />
+            <IconButton icon="fa-file-export" :title="t('characterEditor.export')" />
+            <IconButton icon="fa-clone" :title="t('characterEditor.duplicate')" @click="handleDuplicate" />
+            <IconButton icon="fa-skull" variant="danger" :title="t('characterEditor.delete')" @click="handleDelete" />
           </div>
 
           <div v-show="!isCreating">
             <!-- @vue-ignore -->
-            <AppSelect :model-value="'default'" :options="moreOptions" @update:model-value="handleMoreAction" />
+            <Select :model-value="'default'" :options="moreOptions" @update:model-value="handleMoreAction" />
           </div>
         </div>
       </div>
@@ -389,8 +375,8 @@ async function handleMoreAction(action: string) {
       <!-- Creator's Notes Inline Drawer -->
       <CollapsibleSection v-model:is-open="isCreatorNotesOpen!" :title="t('characterEditor.creatorNotes')">
         <template #actions>
-          <AppIconButton icon="fa-palette" :title="t('characterEditor.toggleStyles')" @click.stop="() => {}" />
-          <AppIconButton icon="fa-eye" :title="t('characterEditor.toggleSpoiler')" @click.stop="peekSpoilerMode" />
+          <IconButton icon="fa-palette" :title="t('characterEditor.toggleStyles')" @click.stop="() => {}" />
+          <IconButton icon="fa-eye" :title="t('characterEditor.toggleSpoiler')" @click.stop="peekSpoilerMode" />
         </template>
 
         <!-- eslint-disable-next-line vue/no-v-html -->
@@ -403,8 +389,8 @@ async function handleMoreAction(action: string) {
       <small v-show="areDetailsHidden">{{ t('characterEditor.detailsHidden') }}</small>
 
       <div v-show="!areDetailsHidden" class="character-edit-form-main-content">
-        <AppFormItem :label="t('characterEditor.description')" data-field-name="description">
-          <AppTextarea
+        <FormItem :label="t('characterEditor.description')" data-field-name="description">
+          <Textarea
             v-model="localCharacter.description!"
             :rows="12"
             :placeholder="t('characterEditor.descriptionPlaceholder')"
@@ -415,11 +401,11 @@ async function handleMoreAction(action: string) {
                 {{ t('common.tokens') }}: <span>{{ tokenCounts['description'] || 0 }}</span>
               </div>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
 
-        <AppFormItem :label="t('characterEditor.firstMessage')" data-field-name="first_mes">
-          <AppTextarea
+        <FormItem :label="t('characterEditor.firstMessage')" data-field-name="first_mes">
+          <Textarea
             v-model="localCharacter.first_mes!"
             :rows="10"
             :placeholder="t('characterEditor.firstMessagePlaceholder')"
@@ -430,13 +416,13 @@ async function handleMoreAction(action: string) {
                 {{ t('common.tokens') }}: <span>{{ tokenCounts['first_mes'] || 0 }}</span>
               </div>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
 
         <hr />
 
-        <AppFormItem :label="t('characterEditor.advanced.personality')" data-field-name="personality">
-          <AppTextarea
+        <FormItem :label="t('characterEditor.advanced.personality')" data-field-name="personality">
+          <Textarea
             v-model="localCharacter.personality!"
             :rows="4"
             :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
@@ -447,11 +433,11 @@ async function handleMoreAction(action: string) {
                 {{ t('common.tokens') }}: <span>{{ tokenCounts['personality'] || 0 }}</span>
               </div>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
 
-        <AppFormItem :label="t('characterEditor.advanced.scenario')" data-field-name="scenario">
-          <AppTextarea
+        <FormItem :label="t('characterEditor.advanced.scenario')" data-field-name="scenario">
+          <Textarea
             v-model="localCharacter.scenario!"
             :rows="4"
             :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
@@ -462,32 +448,32 @@ async function handleMoreAction(action: string) {
                 {{ t('common.tokens') }}: <span>{{ tokenCounts['scenario'] || 0 }}</span>
               </div>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
 
         <!-- Character Note with Depth -->
         <div class="character-note-container" data-field-name="data.depth_prompt.prompt">
           <div v-if="localCharacter.data?.depth_prompt" style="flex: 3">
-            <AppFormItem :label="t('characterEditor.advanced.characterNote')">
-              <AppTextarea
+            <FormItem :label="t('characterEditor.advanced.characterNote')">
+              <Textarea
                 v-model="localCharacter.data.depth_prompt.prompt"
                 :rows="5"
                 :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
                 @maximize="openMaximizeEditor('data.depth_prompt.prompt', t('characterEditor.advanced.characterNote'))"
               />
-            </AppFormItem>
+            </FormItem>
           </div>
           <div v-if="localCharacter.data?.depth_prompt" style="flex: 1">
-            <AppFormItem :label="t('characterEditor.advanced.depth')">
-              <AppInput v-model="localCharacter.data.depth_prompt.depth" type="number" :min="0" :max="9999" />
-            </AppFormItem>
-            <AppFormItem :label="t('characterEditor.advanced.role')">
-              <AppSelect v-model="localCharacter.data.depth_prompt.role" :options="roleOptions" />
-            </AppFormItem>
+            <FormItem :label="t('characterEditor.advanced.depth')">
+              <Input v-model="localCharacter.data.depth_prompt.depth" type="number" :min="0" :max="9999" />
+            </FormItem>
+            <FormItem :label="t('characterEditor.advanced.role')">
+              <Select v-model="localCharacter.data.depth_prompt.role" :options="roleOptions" />
+            </FormItem>
           </div>
         </div>
 
-        <AppFormItem
+        <FormItem
           :label="t('characterEditor.advanced.talkativeness')"
           :description="t('characterEditor.advanced.talkativenessHint')"
         >
@@ -500,16 +486,16 @@ async function handleMoreAction(action: string) {
               </div>
             </template>
           </RangeControl>
-        </AppFormItem>
+        </FormItem>
 
         <hr />
 
-        <AppFormItem
+        <FormItem
           :label="t('characterEditor.advanced.dialogueExamples')"
           :description="t('characterEditor.advanced.dialogueExamplesHint')"
           data-field-name="mes_example"
         >
-          <AppTextarea
+          <Textarea
             v-model="localCharacter.mes_example!"
             :rows="6"
             :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
@@ -520,8 +506,8 @@ async function handleMoreAction(action: string) {
                 {{ t('common.tokens') }}: <span>{{ tokenCounts['mes_example'] || 0 }}</span>
               </div>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
 
         <hr />
 
@@ -533,8 +519,8 @@ async function handleMoreAction(action: string) {
           <div class="inline-drawer-content--column">
             <small>{{ t('characterEditor.advanced.promptHint') }}</small>
             <div v-if="localCharacter.data" data-field-name="data.system_prompt">
-              <AppFormItem :label="t('characterEditor.advanced.mainPrompt')">
-                <AppTextarea
+              <FormItem :label="t('characterEditor.advanced.mainPrompt')">
+                <Textarea
                   v-model="localCharacter.data.system_prompt!"
                   :rows="3"
                   :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
@@ -545,13 +531,13 @@ async function handleMoreAction(action: string) {
                       {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
                     </div>
                   </template>
-                </AppTextarea>
-              </AppFormItem>
+                </Textarea>
+              </FormItem>
             </div>
 
             <div v-if="localCharacter.data" data-field-name="data.post_history_instructions">
-              <AppFormItem :label="t('characterEditor.advanced.postHistoryInstructions')">
-                <AppTextarea
+              <FormItem :label="t('characterEditor.advanced.postHistoryInstructions')">
+                <Textarea
                   v-model="localCharacter.data.post_history_instructions!"
                   :rows="3"
                   :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
@@ -567,8 +553,8 @@ async function handleMoreAction(action: string) {
                       {{ t('common.tokens') }}: <span>{{ tokenCounts['data.post_history_instructions'] || 0 }}</span>
                     </div>
                   </template>
-                </AppTextarea>
-              </AppFormItem>
+                </Textarea>
+              </FormItem>
             </div>
           </div>
         </CollapsibleSection>
@@ -584,41 +570,41 @@ async function handleMoreAction(action: string) {
             <small>{{ t('characterEditor.advanced.metadataOptional') }}</small>
             <div class="form-row">
               <div class="form-column">
-                <AppFormItem :label="t('characterEditor.advanced.createdBy')">
-                  <AppTextarea
+                <FormItem :label="t('characterEditor.advanced.createdBy')">
+                  <Textarea
                     v-if="localCharacter.data"
                     v-model="localCharacter.data.creator!"
                     :rows="2"
                     :placeholder="t('characterEditor.advanced.createdByPlaceholder')"
                   />
-                </AppFormItem>
+                </FormItem>
               </div>
               <div class="form-column">
-                <AppFormItem :label="t('characterEditor.advanced.characterVersion')">
-                  <AppTextarea
+                <FormItem :label="t('characterEditor.advanced.characterVersion')">
+                  <Textarea
                     v-if="localCharacter.data"
                     v-model="localCharacter.data.character_version!"
                     :rows="2"
                     :placeholder="t('characterEditor.advanced.characterVersionPlaceholder')"
                   />
-                </AppFormItem>
+                </FormItem>
               </div>
             </div>
             <div class="form-row">
               <div class="form-column" data-field-name="data.creator_notes">
-                <AppFormItem :label="t('characterEditor.advanced.creatorNotes')">
-                  <AppTextarea
+                <FormItem :label="t('characterEditor.advanced.creatorNotes')">
+                  <Textarea
                     v-if="localCharacter.data"
                     v-model="localCharacter.data.creator_notes!"
                     :rows="4"
                     :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
                     @maximize="openMaximizeEditor('data.creator_notes', t('characterEditor.advanced.creatorNotes'))"
                   />
-                </AppFormItem>
+                </FormItem>
               </div>
               <div class="form-column">
-                <AppFormItem :label="t('characterEditor.advanced.tagsToEmbed')">
-                  <AppTextarea
+                <FormItem :label="t('characterEditor.advanced.tagsToEmbed')">
+                  <Textarea
                     :model-value="localCharacter.tags?.join(', ') || ''"
                     :rows="4"
                     :placeholder="t('characterEditor.advanced.tagsToEmbedPlaceholder')"
@@ -626,7 +612,7 @@ async function handleMoreAction(action: string) {
                       (v) => (localCharacter ? (localCharacter.tags = v.split(',').map((s: string) => s.trim())) : null)
                     "
                   />
-                </AppFormItem>
+                </FormItem>
               </div>
             </div>
           </div>

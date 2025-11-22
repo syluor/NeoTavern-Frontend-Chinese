@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useResizable } from '../../composables/useResizable';
@@ -24,15 +25,10 @@ useResizable(sidebarRef, resizerRef, {
 </script>
 
 <template>
-  <aside
-    :id="`app-sidebar-${side}`"
-    ref="sidebarRef"
-    class="app-sidebar"
-    :class="[`app-sidebar--${side}`, { 'is-open': isOpen }]"
-  >
-    <div ref="resizerRef" class="app-sidebar-resizer"></div>
+  <aside :id="`sidebar-${side}`" ref="sidebarRef" class="sidebar" :class="[`sidebar--${side}`, { 'is-open': isOpen }]">
+    <div ref="resizerRef" class="sidebar-resizer"></div>
 
-    <div class="app-sidebar-content">
+    <div class="sidebar-content">
       <slot></slot>
     </div>
   </aside>

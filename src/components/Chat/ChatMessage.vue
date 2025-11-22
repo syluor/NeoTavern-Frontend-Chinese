@@ -15,7 +15,7 @@ import { formatMessage, formatReasoning } from '../../utils/markdown';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import PromptItemizationPopup from './PromptItemizationPopup.vue';
-import { AppIconButton, AppTextarea } from '../UI';
+import { IconButton, Textarea } from '../UI';
 import SmartAvatar from '../Common/SmartAvatar.vue';
 
 const props = defineProps({
@@ -241,18 +241,18 @@ async function showPromptItemization() {
 
         <!-- Buttons for Normal Mode -->
         <div v-show="!isEditing" class="message-buttons">
-          <AppIconButton
+          <IconButton
             v-if="hasItemizedPrompt"
             icon="fa-square-poll-horizontal"
             :title="t('chat.buttons.itemization')"
             @click="showPromptItemization"
           />
           <!-- TODO: Implement extra buttons dropdown -->
-          <AppIconButton icon="fa-ellipsis" title="Message Actions" />
+          <IconButton icon="fa-ellipsis" title="Message Actions" />
           <!-- TODO: Implement bookmark button -->
-          <AppIconButton icon="fa-flag" title="Bookmark" />
-          <AppIconButton icon="fa-pencil" title="Edit" @click="startEditing" />
-          <AppIconButton
+          <IconButton icon="fa-flag" title="Bookmark" />
+          <IconButton icon="fa-pencil" title="Edit" @click="startEditing" />
+          <IconButton
             icon="fa-trash-can"
             variant="danger"
             :title="t('chat.buttons.deleteMessage')"
@@ -262,23 +262,23 @@ async function showPromptItemization() {
 
         <!-- Buttons for Editing Mode -->
         <div v-show="isEditing" class="message-edit-actions">
-          <AppIconButton
+          <IconButton
             icon="fa-check"
             variant="default"
             class="confirm-btn"
             :title="t('chat.buttons.confirmEdit')"
             @click="saveEdit"
           />
-          <AppIconButton icon="fa-copy" :title="t('chat.buttons.copyMessage')" @click="copyMessage" />
-          <AppIconButton
+          <IconButton icon="fa-copy" :title="t('chat.buttons.copyMessage')" @click="copyMessage" />
+          <IconButton
             icon="fa-lightbulb"
             :active="isEditingReasoning"
             :title="t('chat.buttons.addReasoning')"
             @click="toggleReasoningEdit"
           />
-          <AppIconButton icon="fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp" />
-          <AppIconButton icon="fa-chevron-down" :title="t('chat.buttons.moveDown')" @click="moveDown" />
-          <AppIconButton
+          <IconButton icon="fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp" />
+          <IconButton icon="fa-chevron-down" :title="t('chat.buttons.moveDown')" @click="moveDown" />
+          <IconButton
             icon="fa-xmark"
             variant="danger"
             class="cancel-btn"
@@ -303,10 +303,10 @@ async function showPromptItemization() {
       <div v-show="isEditing" class="message-edit-area">
         <transition name="expand">
           <div v-show="isEditingReasoning" class="message-reasoning-edit-area">
-            <AppTextarea v-model="editedReasoning" :label="t('chat.reasoning.title')" :rows="3" :resizable="true" />
+            <Textarea v-model="editedReasoning" :label="t('chat.reasoning.title')" :rows="3" :resizable="true" />
           </div>
         </transition>
-        <AppTextarea v-model="editedContent" :rows="5" :resizable="true" />
+        <Textarea v-model="editedContent" :rows="5" :resizable="true" />
       </div>
 
       <div v-if="canSwipe" class="message-footer">

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 interface Props {
   modelValue: string;
@@ -24,8 +25,8 @@ function onInput(event: Event) {
 </script>
 
 <template>
-  <div class="app-textarea-wrapper">
-    <div v-if="label || $slots.header" class="app-textarea-header">
+  <div class="textarea-wrapper">
+    <div v-if="label || $slots.header" class="textarea-header">
       <label v-if="label">{{ label }}</label>
       <div v-if="$attrs.onMaximize" class="maximize-icon" @click="$emit('maximize')">
         <i class="fa-solid fa-maximize"></i>

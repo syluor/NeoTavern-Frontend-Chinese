@@ -1,6 +1,7 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts" generic="T extends string | number">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import AppIcon from './AppIcon.vue';
+import Icon from './Icon.vue';
 
 interface Option<T> {
   label: string;
@@ -113,25 +114,25 @@ watch(
 </script>
 
 <template>
-  <div ref="containerRef" class="app-select-wrapper">
-    <label v-if="label" class="app-select-label">{{ label }}</label>
+  <div ref="containerRef" class="select-wrapper">
+    <label v-if="label" class="select-label">{{ label }}</label>
 
     <div
-      class="app-select-trigger text-pole"
+      class="select-trigger text-pole"
       :class="{ 'is-open': isOpen, 'is-disabled': disabled }"
       :title="title"
       @click="toggleOpen"
     >
       <div class="selected-text">{{ displayValue }}</div>
-      <AppIcon icon="fa-chevron-down" class="chevron-icon" :class="{ 'rotate-180': isOpen }" />
+      <Icon icon="fa-chevron-down" class="chevron-icon" :class="{ 'rotate-180': isOpen }" />
     </div>
 
     <Transition name="fade-fast">
-      <div v-if="isOpen" class="app-select-dropdown">
+      <div v-if="isOpen" class="select-dropdown">
         <div
           v-for="opt in options"
           :key="String(opt.value)"
-          class="app-select-option"
+          class="select-option"
           :class="{
             'is-selected': isSelected(opt.value),
             'is-disabled': opt.disabled,
@@ -139,12 +140,12 @@ watch(
           @click.stop="selectOption(opt)"
         >
           <div v-if="multiple" class="option-checkbox">
-            <AppIcon v-if="isSelected(opt.value)" icon="fa-check" class="check-icon" />
+            <Icon v-if="isSelected(opt.value)" icon="fa-check" class="check-icon" />
           </div>
           <span class="option-label">{{ opt.label }}</span>
-          <AppIcon v-if="!multiple && isSelected(opt.value)" icon="fa-check" class="check-icon-single" />
+          <Icon v-if="!multiple && isSelected(opt.value)" icon="fa-check" class="check-icon-single" />
         </div>
-        <div v-if="options.length === 0" class="app-select-option is-disabled">No options</div>
+        <div v-if="options.length === 0" class="select-option is-disabled">No options</div>
       </div>
     </Transition>
   </div>

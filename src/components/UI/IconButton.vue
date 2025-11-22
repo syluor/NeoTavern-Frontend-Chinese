@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import AppIcon from './AppIcon.vue';
+import Icon from './Icon.vue';
 
 const props = defineProps<{
   icon: string;
@@ -24,6 +24,6 @@ const classes = computed(() => {
 
 <template>
   <div :class="classes" :title="title" @click="!disabled && emit('click', $event)">
-    <AppIcon :icon="icon" fixed-width />
+    <Icon :icon="icon" fixed-width />
   </div>
 </template>

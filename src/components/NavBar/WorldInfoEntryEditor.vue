@@ -3,17 +3,8 @@ import { type PropType, computed } from 'vue';
 import { WorldInfoPosition, type WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useWorldInfoStore } from '../../stores/world-info.store';
-import {
-  AppInput,
-  AppTextarea,
-  AppSelect,
-  AppCheckbox,
-  AppIconButton,
-  CollapsibleSection,
-  AppIcon,
-  TagInput,
-} from '../../components/UI';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Input, Textarea, Select, Checkbox, IconButton, CollapsibleSection, Icon, TagInput } from '../../components/UI';
+import FormItem from '../UI/FormItem.vue';
 
 const props = defineProps({
   modelValue: {
@@ -95,12 +86,12 @@ const logicOptions = [
           :title="t('worldInfo.entry.toggle')"
           @click="updateValue('disable', !modelValue?.disable)"
         >
-          <AppIcon :icon="modelValue?.disable ? 'fa-toggle-off' : 'fa-toggle-on'" />
+          <Icon :icon="modelValue?.disable ? 'fa-toggle-off' : 'fa-toggle-on'" />
         </div>
 
-        <!-- Title Input (Using AppInput but ensuring it grows) -->
+        <!-- Title Input (Using Input but ensuring it grows) -->
         <div style="flex-grow: 1">
-          <AppTextarea
+          <Textarea
             :model-value="modelValue?.comment || ''"
             :rows="1"
             :placeholder="t('worldInfo.entry.titlePlaceholder')"
@@ -111,13 +102,13 @@ const logicOptions = [
       </div>
 
       <div class="editor-header-actions">
-        <AppIconButton icon="fa-right-left" :title="t('worldInfo.entry.move')" />
-        <AppIconButton
+        <IconButton icon="fa-right-left" :title="t('worldInfo.entry.move')" />
+        <IconButton
           icon="fa-paste"
           :title="t('worldInfo.entry.duplicate')"
           @click="worldInfoStore.duplicateSelectedEntry"
         />
-        <AppIconButton
+        <IconButton
           icon="fa-trash-can"
           variant="danger"
           :title="t('worldInfo.entry.delete')"
@@ -129,39 +120,39 @@ const logicOptions = [
     <div class="world-entry-editor-form">
       <!-- Top Grid: State, Position, Order, Probability -->
       <div class="world-entry-editor-grid">
-        <AppFormItem :label="t('worldInfo.entry.entryState')">
-          <AppSelect v-model="entryState" :options="stateOptions" />
-        </AppFormItem>
+        <FormItem :label="t('worldInfo.entry.entryState')">
+          <Select v-model="entryState" :options="stateOptions" />
+        </FormItem>
 
-        <AppFormItem :label="t('worldInfo.entry.positionLabel')">
-          <AppSelect
+        <FormItem :label="t('worldInfo.entry.positionLabel')">
+          <Select
             :model-value="modelValue?.position ?? WorldInfoPosition.BEFORE_CHAR"
             :options="positionOptions"
             :title="t('worldInfo.entry.positionTooltip')"
             @update:model-value="(val) => updateValue('position', val as WorldInfoPosition)"
           />
-        </AppFormItem>
+        </FormItem>
 
-        <AppFormItem v-show="isAtDepth" :label="t('worldInfo.entry.depth')">
-          <AppInput
+        <FormItem v-show="isAtDepth" :label="t('worldInfo.entry.depth')">
+          <Input
             type="number"
             :model-value="modelValue?.depth ?? 0"
             :placeholder="t('worldInfo.entry.depth')"
             @update:model-value="(val) => updateValue('depth', Number(val))"
           />
-        </AppFormItem>
+        </FormItem>
 
-        <AppFormItem :label="t('worldInfo.entry.order')">
-          <AppInput
+        <FormItem :label="t('worldInfo.entry.order')">
+          <Input
             type="number"
             :model-value="modelValue?.order ?? 0"
             :placeholder="t('worldInfo.entry.order')"
             @update:model-value="(val) => updateValue('order', Number(val))"
           />
-        </AppFormItem>
+        </FormItem>
 
-        <AppFormItem :label="t('worldInfo.entry.trigger')">
-          <AppInput
+        <FormItem :label="t('worldInfo.entry.trigger')">
+          <Input
             type="number"
             :model-value="modelValue?.probability ?? 100"
             :placeholder="t('worldInfo.entry.trigger')"
@@ -169,46 +160,46 @@ const logicOptions = [
             :max="100"
             @update:model-value="(val) => updateValue('probability', Number(val))"
           />
-        </AppFormItem>
+        </FormItem>
       </div>
 
       <!-- Keywords Section -->
       <div class="world-entry-editor-section">
         <div class="control-group flex-1">
-          <AppFormItem :label="t('worldInfo.entry.keywordsPlaceholder')">
+          <FormItem :label="t('worldInfo.entry.keywordsPlaceholder')">
             <TagInput
               :model-value="modelValue?.key || []"
               :placeholder="t('worldInfo.entry.keywordsPlaceholder')"
               @update:model-value="(val) => updateValue('key', val)"
             />
-          </AppFormItem>
+          </FormItem>
         </div>
 
         <div class="control-group" style="min-width: 150px">
-          <AppFormItem :label="t('worldInfo.entry.logic')">
-            <AppSelect
+          <FormItem :label="t('worldInfo.entry.logic')">
+            <Select
               :model-value="modelValue?.selectiveLogic ?? 0"
               :options="logicOptions"
               @update:model-value="(val) => updateValue('selectiveLogic', Number(val))"
             />
-          </AppFormItem>
+          </FormItem>
         </div>
 
         <div class="control-group flex-1">
-          <AppFormItem :label="t('worldInfo.entry.filterPlaceholder')">
+          <FormItem :label="t('worldInfo.entry.filterPlaceholder')">
             <TagInput
               :model-value="modelValue?.keysecondary || []"
               :placeholder="t('worldInfo.entry.filterPlaceholder')"
               @update:model-value="(val) => updateValue('keysecondary', val)"
             />
-          </AppFormItem>
+          </FormItem>
         </div>
       </div>
 
       <!-- Content Section -->
       <div class="world-entry-editor-section--column">
-        <AppFormItem :label="t('worldInfo.entry.content')">
-          <AppTextarea
+        <FormItem :label="t('worldInfo.entry.content')">
+          <Textarea
             :model-value="modelValue?.content ?? ''"
             :rows="8"
             :placeholder="t('worldInfo.entry.contentPlaceholder')"
@@ -217,39 +208,39 @@ const logicOptions = [
             <template #footer>
               <small class="uid-label">UID: {{ modelValue?.uid }}</small>
             </template>
-          </AppTextarea>
-        </AppFormItem>
+          </Textarea>
+        </FormItem>
       </div>
 
       <!-- Collapsible Additional Sources -->
       <CollapsibleSection :title="t('worldInfo.entry.additionalSources')">
         <div class="world-entry-editor-checkbox-grid">
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchCharacterDescription ?? false"
             :label="t('worldInfo.entry.charDescription')"
             @update:model-value="updateValue('matchCharacterDescription', $event)"
           />
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchPersonaDescription ?? false"
             :label="t('worldInfo.entry.personaDescription')"
             @update:model-value="updateValue('matchPersonaDescription', $event)"
           />
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchCharacterPersonality ?? false"
             :label="t('worldInfo.entry.charPersonality')"
             @update:model-value="updateValue('matchCharacterPersonality', $event)"
           />
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchCharacterDepthPrompt ?? false"
             :label="t('worldInfo.entry.charNote')"
             @update:model-value="updateValue('matchCharacterDepthPrompt', $event)"
           />
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchScenario ?? false"
             :label="t('worldInfo.entry.scenario')"
             @update:model-value="updateValue('matchScenario', $event)"
           />
-          <AppCheckbox
+          <Checkbox
             :model-value="modelValue?.matchCreatorNotes ?? false"
             :label="t('worldInfo.entry.creatorNotes')"
             @update:model-value="updateValue('matchCreatorNotes', $event)"

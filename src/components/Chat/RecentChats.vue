@@ -10,11 +10,11 @@ import { POPUP_TYPE, POPUP_RESULT, type ChatInfo } from '../../types';
 import { listRecentChats, deleteChat } from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import Pagination from '../Common/Pagination.vue';
-import { AppIconButton, AppButton } from '../UI';
+import { IconButton, Button } from '../UI';
 import SmartAvatar from '../Common/SmartAvatar.vue';
 import EmptyState from '../Common/EmptyState.vue';
 import DrawerHeader from '../Common/DrawerHeader.vue';
-import AppListItem from '../UI/AppListItem.vue';
+import ListItem from '../UI/ListItem.vue';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
@@ -141,30 +141,30 @@ onMounted(() => {
   <div class="recent-chats">
     <DrawerHeader :title="t('navbar.recentChats')">
       <template #actions>
-        <AppIconButton
+        <IconButton
           :icon="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
           :title="isSelectionMode ? t('common.cancel') : t('common.select')"
           @click="toggleSelectionMode"
         />
-        <AppIconButton icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
+        <IconButton icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
       </template>
     </DrawerHeader>
 
     <div v-show="isSelectionMode" class="recent-chats-selection-bar">
       <div class="selection-info">{{ selectedChats.size }} {{ t('common.selected') }}</div>
       <div class="selection-actions">
-        <AppButton class="small" @click="selectAllVisible">
+        <Button class="small" @click="selectAllVisible">
           {{ t('common.selectAll') }}
-        </AppButton>
-        <AppButton variant="danger" class="small" :disabled="selectedChats.size === 0" @click="deleteSelected">
+        </Button>
+        <Button variant="danger" class="small" :disabled="selectedChats.size === 0" @click="deleteSelected">
           <i class="fa-solid fa-trash"></i>
-        </AppButton>
+        </Button>
       </div>
     </div>
 
     <div class="recent-chats-content">
       <div v-for="chat in paginatedRecentChats" :key="chat.file_id">
-        <AppListItem
+        <ListItem
           :active="chatStore.activeChatFile === chat.file_id"
           :selected="selectedChats.has(chat.file_id)"
           @click="onItemClick(chat)"
@@ -189,7 +189,7 @@ onMounted(() => {
               <span>{{ chat.chat_items }} {{ t('common.messages').toLowerCase() }}</span>
             </div>
           </template>
-        </AppListItem>
+        </ListItem>
       </div>
 
       <EmptyState v-if="recentChats.length === 0" icon="fa-comments" :description="t('chatManagement.noRecentChats')" />

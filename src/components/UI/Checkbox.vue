@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 defineProps<{
   modelValue: boolean;
@@ -15,7 +16,7 @@ function onChange(event: Event) {
 </script>
 
 <template>
-  <div class="app-checkbox-container">
+  <div class="checkbox-container">
     <label class="checkbox-label" :class="{ disabled }">
       <input type="checkbox" :checked="modelValue" :disabled="disabled" @change="onChange" />
       <span>{{ label }}</span>

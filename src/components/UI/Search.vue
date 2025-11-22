@@ -1,5 +1,6 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import AppInput from './AppInput.vue';
+import Input from './Input.vue';
 
 defineProps<{
   modelValue: string;
@@ -10,9 +11,9 @@ const emit = defineEmits(['update:modelValue']);
 </script>
 
 <template>
-  <div class="app-search-bar">
+  <div class="search-bar">
     <div class="search-input-wrapper">
-      <AppInput
+      <Input
         type="search"
         :model-value="modelValue"
         :placeholder="placeholder"

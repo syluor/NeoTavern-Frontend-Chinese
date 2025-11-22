@@ -6,10 +6,10 @@ import Pagination from '../Common/Pagination.vue';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
-import { AppIconButton, AppButton, AppSelect } from '../UI';
-import AppSearch from '../UI/AppSearch.vue';
-import AppFileInput from '../UI/AppFileInput.vue';
-import AppListItem from '../UI/AppListItem.vue';
+import { IconButton, Button, Select } from '../UI';
+import Search from '../UI/Search.vue';
+import FileInput from '../UI/FileInput.vue';
+import ListItem from '../UI/ListItem.vue';
 import SplitPane from '../Common/SplitPane.vue';
 import EmptyState from '../Common/EmptyState.vue';
 
@@ -81,19 +81,19 @@ onMounted(() => {
     <template #side>
       <div class="character-panel-browser-header">
         <div class="character-panel-actions">
-          <AppIconButton icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
-          <AppFileInput
+          <IconButton icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
+          <FileInput
             accept=".json,.png"
             multiple
             icon="fa-file-import"
             :label="t('characterPanel.importFile')"
             @change="handleFileImport"
           />
-          <AppIconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
+          <IconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
 
           <div id="extension-buttons-container"></div>
 
-          <AppIconButton
+          <IconButton
             icon="fa-search"
             :title="t('characterPanel.searchToggle')"
             @click="isSearchActive = !isSearchActive"
@@ -101,17 +101,17 @@ onMounted(() => {
         </div>
 
         <div v-show="isSearchActive" style="margin-top: 5px">
-          <AppSearch v-model="characterStore.searchTerm" :placeholder="t('characterPanel.searchPlaceholder')">
+          <Search v-model="characterStore.searchTerm" :placeholder="t('characterPanel.searchPlaceholder')">
             <template #actions>
               <div style="min-width: 140px">
-                <AppSelect
+                <Select
                   v-model="characterStore.sortOrder"
                   :options="sortOptions"
                   :title="t('characterPanel.sorting.title')"
                 />
               </div>
             </template>
-          </AppSearch>
+          </Search>
         </div>
       </div>
 
@@ -130,7 +130,7 @@ onMounted(() => {
           {{ t('common.loading') }}
         </div>
         <template v-for="character in characterStore.paginatedCharacters" :key="character.id">
-          <AppListItem
+          <ListItem
             :ref="
               (el: any) => {
                 if (character.avatar === characterStore.highlightedAvatar) highlightedItemRef = el?.$el;
@@ -160,7 +160,7 @@ onMounted(() => {
                 {{ character.description || '&nbsp;' }}
               </div>
             </template>
-          </AppListItem>
+          </ListItem>
         </template>
       </div>
     </template>
@@ -173,9 +173,9 @@ onMounted(() => {
           :title="t('characterPanel.editor.placeholderTitle')"
           :description="t('characterPanel.editor.placeholderText')"
         >
-          <AppButton icon="fa-user-plus" @click="createNew">
+          <Button icon="fa-user-plus" @click="createNew">
             {{ t('characterPanel.editor.placeholderButton') }}
-          </AppButton>
+          </Button>
         </EmptyState>
 
         <CharacterEditForm v-show="characterStore.editFormCharacter" />

@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 15px;
+  padding: 0 16px;
   background-color: var(--theme-background-tint);
   border-bottom: 1px solid var(--theme-border-color);
   z-index: 100; // High enough to stay above content
@@ -26,18 +26,18 @@
       flex-grow: 1;
       justify-content: center;
       overflow: hidden;
-      padding: 0 10px;
+      padding: 0 8px;
     }
   }
 
   &-icon {
-    font-size: 1.1em;
+    font-size: 1.2em;
     cursor: pointer;
     opacity: 0.7;
     transition:
       opacity var(--animation-duration),
       color var(--animation-duration);
-    padding: 6px;
+    padding: 4px;
     border-radius: var(--base-border-radius);
 
     &:hover,
@@ -51,7 +51,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: var(--base-border-radius);
     transition: background-color var(--animation-duration);
     max-width: 100%;
@@ -61,8 +61,8 @@
     }
 
     &-avatar {
-      height: 34px;
-      width: 34px;
+      height: 40px;
+      width: 40px;
       flex-shrink: 0;
     }
 
@@ -97,6 +97,6 @@
     max-width: 150px;
   }
   .chat-header {
-    padding: 0 10px;
+    padding: 0 12px;
   }
 }

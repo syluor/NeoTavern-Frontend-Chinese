@@ -7,11 +7,11 @@ import { getThumbnailUrl } from '../../utils/image';
 import Pagination from '../Common/Pagination.vue';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
-import { AppButton, AppIconButton, AppSelect, AppCheckbox, AppTextarea } from '../UI';
-import AppSearch from '../UI/AppSearch.vue';
-import AppListItem from '../UI/AppListItem.vue';
-import AppFileInput from '../UI/AppFileInput.vue';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Button, IconButton, Select, Checkbox, Textarea } from '../UI';
+import Search from '../UI/Search.vue';
+import ListItem from '../UI/ListItem.vue';
+import FileInput from '../UI/FileInput.vue';
+import FormItem from '../UI/FormItem.vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { storeToRefs } from 'pinia';
@@ -144,9 +144,9 @@ onMounted(() => {
         </a>
       </h3>
       <div class="persona-drawer-header-actions">
-        <AppButton icon="fa-ranking-star">{{ t('personaManagement.usageStats') }}</AppButton>
-        <AppButton icon="fa-file-export">{{ t('personaManagement.backup') }}</AppButton>
-        <AppFileInput
+        <Button icon="fa-ranking-star">{{ t('personaManagement.usageStats') }}</Button>
+        <Button icon="fa-file-export">{{ t('personaManagement.backup') }}</Button>
+        <FileInput
           accept=".json"
           icon="fa-file-import"
           type="button"
@@ -159,15 +159,15 @@ onMounted(() => {
       <!-- Left Column -->
       <div class="persona-drawer-column--left">
         <div class="persona-drawer-list-controls">
-          <AppSearch v-model="searchTerm" :placeholder="t('common.search')">
+          <Search v-model="searchTerm" :placeholder="t('common.search')">
             <template #actions>
-              <AppButton icon="fa-person-circle-question" @click="personaStore.createPersona">
+              <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
                 {{ t('personaManagement.create') }}
-              </AppButton>
-              <AppSelect v-model="sortOrder" :options="sortOptions" />
-              <AppIconButton icon="fa-table-cells-large" @click="isGridView = !isGridView" />
+              </Button>
+              <Select v-model="sortOrder" :options="sortOptions" />
+              <IconButton icon="fa-table-cells-large" @click="isGridView = !isGridView" />
             </template>
-          </AppSearch>
+          </Search>
         </div>
         <Pagination
           v-if="filteredPersonas.length > 0"
@@ -178,7 +178,7 @@ onMounted(() => {
         />
         <div class="persona-list" :class="{ 'grid-view': isGridView }">
           <div v-for="persona in paginatedPersonas" :key="`${persona.avatarId}-${personaStore.lastAvatarUpdate}`">
-            <AppListItem
+            <ListItem
               :active="persona.avatarId === personaStore.activePersonaId"
               @click="personaStore.setActivePersona(persona.avatarId)"
             >
@@ -202,7 +202,7 @@ onMounted(() => {
                   {{ persona.description || t('personaManagement.noDescription') }}
                 </div>
               </template>
-            </AppListItem>
+            </ListItem>
           </div>
         </div>
       </div>
@@ -214,23 +214,23 @@ onMounted(() => {
           <div class="persona-editor-controls">
             <h5 class="persona-editor-name">{{ personaStore.activePersona?.name ?? '' }}</h5>
             <div class="buttons_block">
-              <AppIconButton
+              <IconButton
                 icon="fa-pencil"
                 :title="t('personaManagement.actions.rename')"
                 @click="personaStore.updateActivePersonaName"
               />
-              <AppIconButton icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
-              <AppIconButton icon="fa-globe" :title="t('personaManagement.actions.lore')" />
+              <IconButton icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
+              <IconButton icon="fa-globe" :title="t('personaManagement.actions.lore')" />
 
-              <AppFileInput
+              <FileInput
                 accept="image/*"
                 icon="fa-image"
                 :label="t('personaManagement.actions.changeImage')"
                 @change="handleAvatarChange"
               />
 
-              <AppIconButton icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
-              <AppIconButton
+              <IconButton icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
+              <IconButton
                 variant="danger"
                 icon="fa-skull"
                 :title="t('personaManagement.actions.delete')"
@@ -239,32 +239,32 @@ onMounted(() => {
             </div>
           </div>
 
-          <AppFormItem :label="t('personaManagement.description.label')">
-            <AppTextarea
+          <FormItem :label="t('personaManagement.description.label')">
+            <Textarea
               :model-value="personaStore.activePersona?.description ?? ''"
               :rows="6"
               :placeholder="t('personaManagement.description.placeholder')"
               @update:model-value="personaStore.updateActivePersonaField('description', $event)"
             />
-          </AppFormItem>
+          </FormItem>
           <!-- TODO: Add token counter -->
 
           <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
           <div class="persona-editor-connections">
-            <AppButton icon="fa-star" :active="isDefaultPersona" @click="toggleDefault">
+            <Button icon="fa-star" :active="isDefaultPersona" @click="toggleDefault">
               {{ t('personaManagement.connections.default') }}
-            </AppButton>
-            <AppButton
+            </Button>
+            <Button
               icon="fa-user-lock"
               :active="isCharacterLocked"
               :disabled="activeCharacters.length !== 1"
               @click="toggleCharacterLock"
             >
               {{ t('personaManagement.connections.character') }}
-            </AppButton>
-            <AppButton icon="fa-lock" :active="isChatLocked" :disabled="!activeChat" @click="toggleChatLock">
+            </Button>
+            <Button icon="fa-lock" :active="isChatLocked" :disabled="!activeChat" @click="toggleChatLock">
               {{ t('personaManagement.connections.chat') }}
-            </AppButton>
+            </Button>
           </div>
 
           <div v-if="connectedCharacters.length > 0" class="connected-characters-list">
@@ -280,7 +280,7 @@ onMounted(() => {
 
           <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
           <div class="persona-editor-global-settings">
-            <AppCheckbox
+            <Checkbox
               v-model="settingsStore.settings.persona.showNotifications"
               :label="t('personaManagement.globalSettings.showNotifications')"
             />

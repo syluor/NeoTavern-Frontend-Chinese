@@ -21,19 +21,19 @@ export interface LlmGenerationOptions {
 
 export enum MountableComponent {
   ConnectionProfileSelector = 'ConnectionProfileSelector',
-  AppButton = 'AppButton',
-  AppCheckbox = 'AppCheckbox',
-  AppFileInput = 'AppFileInput',
-  AppFormItem = 'AppFormItem',
-  AppIcon = 'AppIcon',
-  AppIconButton = 'AppIconButton',
-  AppInput = 'AppInput',
-  AppListItem = 'AppListItem',
-  AppSearch = 'AppSearch',
-  AppSelect = 'AppSelect',
-  AppTabs = 'AppTabs',
-  AppTextarea = 'AppTextarea',
-  AppToggle = 'AppToggle',
+  Button = 'Button',
+  Checkbox = 'Checkbox',
+  FileInput = 'FileInput',
+  FormItem = 'FormItem',
+  Icon = 'Icon',
+  IconButton = 'IconButton',
+  Input = 'Input',
+  ListItem = 'ListItem',
+  Search = 'Search',
+  Select = 'Select',
+  Tabs = 'Tabs',
+  Textarea = 'Textarea',
+  Toggle = 'Toggle',
   CollapsibleSection = 'CollapsibleSection',
   RangeControl = 'RangeControl',
   TagInput = 'TagInput',
@@ -54,7 +54,7 @@ export interface MountableComponentPropsMap {
     modelValue?: string;
     'onUpdate:modelValue'?: (value: string | undefined) => void;
   };
-  [MountableComponent.AppButton]: {
+  [MountableComponent.Button]: {
     variant?: 'default' | 'danger' | 'confirm';
     icon?: string;
     disabled?: boolean;
@@ -62,14 +62,14 @@ export interface MountableComponentPropsMap {
     title?: string;
     onClick?: (event: MouseEvent) => void;
   };
-  [MountableComponent.AppCheckbox]: {
+  [MountableComponent.Checkbox]: {
     modelValue: boolean;
     label: string;
     description?: string;
     disabled?: boolean;
     'onUpdate:modelValue'?: (value: boolean) => void;
   };
-  [MountableComponent.AppFileInput]: {
+  [MountableComponent.FileInput]: {
     accept?: string;
     multiple?: boolean;
     type?: 'icon' | 'button';
@@ -77,18 +77,18 @@ export interface MountableComponentPropsMap {
     label?: string;
     onChange?: (files: File[]) => void;
   };
-  [MountableComponent.AppFormItem]: {
+  [MountableComponent.FormItem]: {
     label?: string;
     description?: string;
     error?: string;
     horizontal?: boolean;
   };
-  [MountableComponent.AppIcon]: {
+  [MountableComponent.Icon]: {
     icon: string;
     spin?: boolean;
     fixedWidth?: boolean;
   };
-  [MountableComponent.AppIconButton]: {
+  [MountableComponent.IconButton]: {
     icon: string;
     title?: string;
     active?: boolean;
@@ -96,7 +96,7 @@ export interface MountableComponentPropsMap {
     variant?: 'default' | 'danger';
     onClick?: (event: MouseEvent) => void;
   };
-  [MountableComponent.AppInput]: {
+  [MountableComponent.Input]: {
     modelValue: string | number;
     label?: string;
     type?: 'text' | 'number' | 'search' | 'password';
@@ -108,16 +108,16 @@ export interface MountableComponentPropsMap {
     'onUpdate:modelValue'?: (value: string | number) => void;
     onChange?: (event: Event) => void;
   };
-  [MountableComponent.AppListItem]: {
+  [MountableComponent.ListItem]: {
     active?: boolean;
     selected?: boolean;
   };
-  [MountableComponent.AppSearch]: {
+  [MountableComponent.Search]: {
     modelValue: string;
     placeholder?: string;
     'onUpdate:modelValue'?: (value: string) => void;
   };
-  [MountableComponent.AppSelect]: {
+  [MountableComponent.Select]: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     modelValue: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,12 +132,12 @@ export interface MountableComponentPropsMap {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onChange?: (value: any) => void;
   };
-  [MountableComponent.AppTabs]: {
+  [MountableComponent.Tabs]: {
     modelValue: string;
     options: { label: string; value: string; icon?: string }[];
     'onUpdate:modelValue'?: (value: string) => void;
   };
-  [MountableComponent.AppTextarea]: {
+  [MountableComponent.Textarea]: {
     modelValue: string;
     label?: string;
     placeholder?: string;
@@ -147,7 +147,7 @@ export interface MountableComponentPropsMap {
     'onUpdate:modelValue'?: (value: string) => void;
     onMaximize?: () => void;
   };
-  [MountableComponent.AppToggle]: {
+  [MountableComponent.Toggle]: {
     modelValue: boolean;
     disabled?: boolean;
     'onUpdate:modelValue'?: (value: boolean) => void;

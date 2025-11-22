@@ -30,7 +30,7 @@ export function activate(api: ExtensionAPI<ChatTranslationSettings>) {
 
     buttonsContainer.appendChild(wrapper);
 
-    await api.ui.mountComponent(wrapper, MountableComponent.AppIconButton, {
+    await api.ui.mountComponent(wrapper, MountableComponent.IconButton, {
       icon: 'fa-globe',
       title: 'Translate Message',
       onClick: (e: MouseEvent) => {

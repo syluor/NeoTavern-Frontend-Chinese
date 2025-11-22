@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import AppIconButton from './AppIconButton.vue';
-import AppButton from './AppButton.vue';
+import IconButton from './IconButton.vue';
+import Button from './Button.vue';
 
 defineProps<{
   accept?: string;
@@ -32,13 +32,13 @@ function handleChange(e: Event) {
 </script>
 
 <template>
-  <div class="app-file-input">
+  <div class="file-input">
     <input ref="inputRef" type="file" hidden :accept="accept" :multiple="multiple" @change="handleChange" />
 
-    <AppButton v-if="type === 'button'" :icon="icon || 'fa-upload'" @click="trigger">
+    <Button v-if="type === 'button'" :icon="icon || 'fa-upload'" @click="trigger">
       {{ label || 'Upload' }}
-    </AppButton>
+    </Button>
 
-    <AppIconButton v-else :icon="icon || 'fa-upload'" :title="label || 'Upload'" @click="trigger" />
+    <IconButton v-else :icon="icon || 'fa-upload'" :title="label || 'Upload'" @click="trigger" />
   </div>
 </template>

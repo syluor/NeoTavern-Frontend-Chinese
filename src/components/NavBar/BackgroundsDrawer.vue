@@ -6,9 +6,9 @@ import { usePopupStore } from '../../stores/popup.store';
 import { getThumbnailUrl } from '../../utils/image';
 import { POPUP_RESULT, POPUP_TYPE, type BackgroundFitting } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { AppButton, AppIconButton, AppSelect } from '../UI';
-import AppSearch from '../UI/AppSearch.vue';
-import AppFileInput from '../UI/AppFileInput.vue';
+import { Button, IconButton, Select } from '../UI';
+import Search from '../UI/Search.vue';
+import FileInput from '../UI/FileInput.vue';
 
 const { t } = useStrictI18n();
 const backgroundStore = useBackgroundStore();
@@ -106,7 +106,7 @@ onMounted(() => {
   <div class="backgrounds-drawer">
     <div class="backgrounds-drawer-header">
       <div class="backgrounds-drawer-header-row">
-        <AppFileInput
+        <FileInput
           accept="image/*"
           type="button"
           icon="fa-plus"
@@ -115,14 +115,14 @@ onMounted(() => {
         />
         <span class="expander"></span>
         <div style="width: 120px">
-          <AppSelect v-model="backgroundStore.fitting" :options="fittingOptions" :title="t('backgrounds.fitting')" />
+          <Select v-model="backgroundStore.fitting" :options="fittingOptions" :title="t('backgrounds.fitting')" />
         </div>
-        <AppButton icon="fa-wand-magic" :title="t('backgrounds.autoSelectTooltip')">
+        <Button icon="fa-wand-magic" :title="t('backgrounds.autoSelectTooltip')">
           {{ t('backgrounds.autoSelect') }}
-        </AppButton>
+        </Button>
       </div>
       <div class="backgrounds-drawer-header-row">
-        <AppSearch v-model="backgroundStore.searchTerm" :placeholder="t('backgrounds.searchPlaceholder')" />
+        <Search v-model="backgroundStore.searchTerm" :placeholder="t('backgrounds.searchPlaceholder')" />
       </div>
     </div>
 
@@ -130,13 +130,13 @@ onMounted(() => {
       <div class="heading-container">
         <h3>{{ t('backgrounds.systemBackgrounds') }}</h3>
         <div class="heading-controls">
-          <AppIconButton
+          <IconButton
             icon="fa-minus"
             :title="t('backgrounds.zoomIn')"
             :disabled="backgroundStore.thumbnailColumns <= THUMBNAIL_COLUMNS_MIN"
             @click="zoomIn"
           />
-          <AppIconButton
+          <IconButton
             icon="fa-plus"
             :title="t('backgrounds.zoomOut')"
             :disabled="backgroundStore.thumbnailColumns >= THUMBNAIL_COLUMNS_MAX"
@@ -161,22 +161,22 @@ onMounted(() => {
             <div class="background-item-title">{{ getBgFileName(bg) }}</div>
           </div>
           <div class="background-item-menu">
-            <AppIconButton
+            <IconButton
               icon="fa-lock"
               :title="t('backgrounds.actions.lock')"
               @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
             />
-            <AppIconButton
+            <IconButton
               icon="fa-lock-open"
               :title="t('backgrounds.actions.unlock')"
               @click.stop="backgroundStore.unlockBackground()"
             />
-            <AppIconButton
+            <IconButton
               icon="fa-pen-to-square"
               :title="t('backgrounds.actions.rename')"
               @click.stop="handleRename(bg)"
             />
-            <AppIconButton
+            <IconButton
               icon="fa-trash-can"
               :title="t('backgrounds.actions.delete')"
               @click.stop="handleDelete(bg, false)"

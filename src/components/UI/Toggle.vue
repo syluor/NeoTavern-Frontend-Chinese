@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 // Replaces the toggle-switch pattern found in ExtensionsDrawer
 defineProps<{

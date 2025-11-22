@@ -1,6 +1,7 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { computed } from 'vue';
-import AppIcon from './AppIcon.vue';
+import Icon from './Icon.vue';
 
 interface Props {
   variant?: 'default' | 'danger' | 'confirm';
@@ -41,8 +42,8 @@ function onClick(event: MouseEvent) {
 
 <template>
   <button :class="classes" :disabled="disabled || loading" :title="title" @click="onClick">
-    <AppIcon v-if="loading" icon="fa-spinner" spin />
-    <AppIcon v-else-if="icon" :icon="icon" />
+    <Icon v-if="loading" icon="fa-spinner" spin />
+    <Icon v-else-if="icon" :icon="icon" />
     <span v-if="$slots.default" :class="{ 'ml-2': icon || loading }">
       <slot />
     </span>

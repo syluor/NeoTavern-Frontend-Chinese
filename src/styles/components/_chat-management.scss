@@ -2,14 +2,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 5px;
+  padding: 4px;
   gap: 8px;
 
   &-header {
     display: flex;
     gap: 4px;
     border-bottom: 1px solid var(--theme-border-color);
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     flex-shrink: 0;
 
     .menu-button {
@@ -45,7 +45,7 @@
   }
 
   &-prompt-tab {
-    padding: 5px;
+    padding: 4px;
     height: 100%;
   }
 
@@ -72,10 +72,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px;
+  padding: 8px;
   background-color: var(--black-30a);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   transition: all var(--animation-duration);
   cursor: pointer;
 
@@ -90,8 +90,8 @@
   }
 
   &-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -149,9 +149,9 @@
   flex-grow: 1;
   overflow-y: auto;
   min-height: 100px;
-  padding: 5px;
+  padding: 4px;
   background-color: var(--black-30a);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
 }
 
 .group-member-item {
@@ -160,7 +160,7 @@
   gap: 8px;
   background-color: var(--black-30a);
   padding: 8px;
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   border: 1px solid transparent;
   transition: background-color var(--animation-duration);
 
@@ -200,13 +200,13 @@
 }
 
 .group-add-section {
-  margin-top: 10px;
+  margin-top: 12px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
   border-top: 1px solid var(--theme-border-color);
-  padding-top: 10px;
+  padding-top: 12px;
   max-height: 40vh;
   min-height: 250px;
 
@@ -219,7 +219,7 @@
 }
 
 .add-member-search {
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .add-member-list {
@@ -229,8 +229,8 @@
   gap: 4px;
   flex-grow: 1;
   background-color: var(--black-30a);
-  border-radius: 5px;
-  padding: 5px;
+  border-radius: var(--base-border-radius);
+  padding: 4px;
 }
 
 .add-member-card {
@@ -240,7 +240,7 @@
   padding: 8px;
   background-color: var(--theme-background-tint);
   border: 1px solid var(--theme-border-color);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
   cursor: pointer;
   transition: all var(--animation-duration);
 
@@ -274,10 +274,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 10px;
+  padding: 8px;
   overflow-y: auto;
   background-color: var(--black-30a);
-  border-radius: 5px;
+  border-radius: var(--base-border-radius);
 
   hr {
     width: 100%;

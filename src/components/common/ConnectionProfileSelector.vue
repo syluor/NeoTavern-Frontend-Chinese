@@ -2,7 +2,7 @@
 import { useApiStore } from '../../stores/api.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { computed } from 'vue';
-import { AppSelect } from '../UI';
+import { Select } from '../UI';
 
 const props = defineProps<{
   modelValue?: string;
@@ -29,5 +29,5 @@ const options = computed(() => {
 
 <template>
   <!-- @vue-ignore -->
-  <AppSelect v-model="selectedProfile!" :options="options" />
+  <Select v-model="selectedProfile!" :options="options" />
 </template>

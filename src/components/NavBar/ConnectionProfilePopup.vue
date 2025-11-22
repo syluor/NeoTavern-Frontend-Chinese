@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ConnectionProfile } from '../../types';
 import { toast } from '../../composables/useToast';
-import { AppInput, AppCheckbox, AppButton } from '../UI';
+import { Input, Checkbox, Button } from '../UI';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -116,33 +116,29 @@ function save() {
 
       <div class="connection-profile-form">
         <div class="form-group">
-          <AppInput
-            v-model="profileName"
-            :label="t('apiConnections.profileManagement.profileName')"
-            class="text-pole"
-          />
+          <Input v-model="profileName" :label="t('apiConnections.profileManagement.profileName')" class="text-pole" />
         </div>
 
         <h4>{{ t('apiConnections.profileManagement.fieldsToInclude') }}</h4>
 
         <div class="fields-grid">
-          <AppCheckbox v-model="includeApi" :label="t('apiConnections.api')" />
+          <Checkbox v-model="includeApi" :label="t('apiConnections.api')" />
           <div class="field-value">{{ currentApi }}</div>
 
-          <AppCheckbox v-model="includeSource" :label="t('apiConnections.source')" />
+          <Checkbox v-model="includeSource" :label="t('apiConnections.source')" />
           <div class="field-value">{{ currentSource }}</div>
 
-          <AppCheckbox v-model="includeModel" :label="modelLabel" />
+          <Checkbox v-model="includeModel" :label="modelLabel" />
           <div class="field-value">{{ currentModel }}</div>
 
-          <AppCheckbox v-model="includeSampler" :label="t('aiConfig.presets.chatCompletion.label')" />
+          <Checkbox v-model="includeSampler" :label="t('aiConfig.presets.chatCompletion.label')" />
           <div class="field-value">{{ currentSampler }}</div>
         </div>
       </div>
 
       <div class="popup-controls">
-        <AppButton variant="confirm" @click="save">{{ t('common.save') }}</AppButton>
-        <AppButton @click="close">{{ t('common.cancel') }}</AppButton>
+        <Button variant="confirm" @click="save">{{ t('common.save') }}</Button>
+        <Button @click="close">{{ t('common.cancel') }}</Button>
       </div>
     </div>
   </dialog>

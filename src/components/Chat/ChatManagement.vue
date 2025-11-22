@@ -14,11 +14,11 @@ import { getThumbnailUrl } from '../../utils/image';
 import Pagination from '../Common/Pagination.vue';
 import DraggableList from '../Common/DraggableList.vue';
 import { useUiStore } from '@/stores/ui.store';
-import { AppButton, AppIconButton, AppInput, AppSelect, AppTextarea, AppCheckbox } from '../UI';
-import AppTabs from '../UI/AppTabs.vue';
-import AppSearch from '../UI/AppSearch.vue';
-import AppListItem from '../UI/AppListItem.vue';
-import AppFormItem from '../UI/AppFormItem.vue';
+import { Button, IconButton, Input, Select, Textarea, Checkbox } from '../UI';
+import Tabs from '../UI/Tabs.vue';
+import Search from '../UI/Search.vue';
+import ListItem from '../UI/ListItem.vue';
+import FormItem from '../UI/FormItem.vue';
 import CollapsibleSection from '../UI/CollapsibleSection.vue';
 import EmptyState from '../Common/EmptyState.vue';
 
@@ -169,7 +169,7 @@ const availableCharactersPaginated = computed(() => {
 const groupConfig = computed(() => chatStore.groupConfig);
 const isGroup = computed(() => chatStore.isGroupChat);
 
-// Options for AppSelect
+// Options for Select
 const replyStrategyOptions = computed(() => [
   { label: t('group.strategies.manual'), value: GroupReplyStrategy.MANUAL },
   { label: t('group.strategies.natural'), value: GroupReplyStrategy.NATURAL_ORDER },
@@ -217,7 +217,7 @@ async function removeMember(avatar: string) {
 <template>
   <div class="popup-body chat-management">
     <div class="chat-management-header">
-      <AppTabs
+      <Tabs
         v-model="activeTab"
         style="border-bottom: none; margin-bottom: 0"
         :options="[
@@ -232,18 +232,18 @@ async function removeMember(avatar: string) {
       <!-- Tab: Chats -->
       <div v-show="activeTab === 'chats'" class="chat-management-tab-content">
         <div class="chat-management-actions">
-          <AppSearch v-model="chatSearchTerm" :placeholder="t('common.search')" style="margin-top: 5px">
+          <Search v-model="chatSearchTerm" :placeholder="t('common.search')" style="margin-top: 5px">
             <template #actions>
-              <AppButton v-show="characterStore.activeCharacters.length > 0" icon="fa-plus" @click="createNewChat()">
+              <Button v-show="characterStore.activeCharacters.length > 0" icon="fa-plus" @click="createNewChat()">
                 {{ t('chatManagement.newChat') }}
-              </AppButton>
+              </Button>
             </template>
-          </AppSearch>
+          </Search>
         </div>
 
         <div class="chat-management-list">
           <div v-for="file in chats" :key="file.file_id">
-            <AppListItem :active="chatStore.activeChatFile === file.file_id" @click="selectChat(file.file_id)">
+            <ListItem :active="chatStore.activeChatFile === file.file_id" @click="selectChat(file.file_id)">
               <template #start>
                 <div class="chat-management-item-icon">
                   <i class="fa-solid fa-comments"></i>
@@ -263,19 +263,19 @@ async function removeMember(avatar: string) {
                 </div>
               </template>
               <template #end>
-                <AppIconButton
+                <IconButton
                   icon="fa-pencil"
                   :title="t('chatManagement.actions.rename')"
                   @click.stop="renameChat(file.file_id)"
                 />
-                <AppIconButton
+                <IconButton
                   icon="fa-trash-can"
                   variant="danger"
                   :title="t('chatManagement.actions.delete')"
                   @click.stop="deleteChat(file.file_id)"
                 />
               </template>
-            </AppListItem>
+            </ListItem>
           </div>
           <EmptyState v-if="chats.length === 0" :description="t('chatManagement.noChatsFound')" />
         </div>
@@ -296,7 +296,7 @@ async function removeMember(avatar: string) {
             @update:items="updateMembersOrder"
           >
             <template #default="{ item: member }">
-              <AppListItem :class="{ muted: groupConfig?.members[member.avatar]?.muted }" style="margin-bottom: 2px">
+              <ListItem :class="{ muted: groupConfig?.members[member.avatar]?.muted }" style="margin-bottom: 2px">
                 <template #start>
                   <div
                     class="menu-button-icon fa-solid fa-grip-lines group-member-handle"
@@ -313,32 +313,32 @@ async function removeMember(avatar: string) {
                   }}</span>
                 </template>
                 <template #end>
-                  <AppIconButton
+                  <IconButton
                     v-if="isGroup"
                     icon="fa-address-card"
                     :title="t('group.peek')"
                     @click="peekCharacter(member.avatar)"
                   />
-                  <AppIconButton
+                  <IconButton
                     v-if="isGroup"
                     icon="fa-comment-dots"
                     :title="t('group.forceTalk')"
                     @click="forceTalk(member.avatar)"
                   />
-                  <AppIconButton
+                  <IconButton
                     v-if="isGroup"
                     :icon="groupConfig?.members[member.avatar]?.muted ? 'fa-comment-slash' : 'fa-comment'"
                     :title="t('group.mute')"
                     @click="toggleMute(member.avatar)"
                   />
-                  <AppIconButton
+                  <IconButton
                     icon="fa-trash-can"
                     variant="danger"
                     :title="t('common.remove')"
                     @click="removeMember(member.avatar)"
                   />
                 </template>
-              </AppListItem>
+              </ListItem>
             </template>
           </DraggableList>
         </CollapsibleSection>
@@ -349,11 +349,11 @@ async function removeMember(avatar: string) {
           :title="t('group.addMember')"
         >
           <div class="group-add-section">
-            <AppSearch v-model="addMemberSearchTerm" :placeholder="t('common.search')" @input="addMemberPage = 1" />
+            <Search v-model="addMemberSearchTerm" :placeholder="t('common.search')" @input="addMemberPage = 1" />
 
             <div class="add-member-list">
               <div v-for="char in availableCharactersPaginated" :key="char.avatar">
-                <AppListItem @click="addMember(char.avatar)">
+                <ListItem @click="addMember(char.avatar)">
                   <template #start>
                     <img
                       :src="getThumbnailUrl('avatar', char.avatar)"
@@ -362,7 +362,7 @@ async function removeMember(avatar: string) {
                   </template>
                   <template #default>{{ char.name }}</template>
                   <template #end><i class="fa-solid fa-plus"></i></template>
-                </AppListItem>
+                </ListItem>
               </div>
               <EmptyState v-if="availableCharactersPaginated.length === 0" :description="t('common.noResults')" />
             </div>
@@ -384,24 +384,19 @@ async function removeMember(avatar: string) {
         >
           <div class="group-config-section">
             <hr />
-            <AppFormItem :label="t('group.replyStrategy')">
-              <AppSelect v-model="groupConfig.config.replyStrategy" :options="replyStrategyOptions" />
-            </AppFormItem>
+            <FormItem :label="t('group.replyStrategy')">
+              <Select v-model="groupConfig.config.replyStrategy" :options="replyStrategyOptions" />
+            </FormItem>
 
-            <AppFormItem :label="t('group.handlingMode')">
-              <AppSelect v-model="groupConfig.config.handlingMode" :options="handlingModeOptions" />
-            </AppFormItem>
+            <FormItem :label="t('group.handlingMode')">
+              <Select v-model="groupConfig.config.handlingMode" :options="handlingModeOptions" />
+            </FormItem>
 
-            <AppCheckbox v-model="groupConfig.config.allowSelfResponses" :label="t('group.allowSelfResponses')" />
+            <Checkbox v-model="groupConfig.config.allowSelfResponses" :label="t('group.allowSelfResponses')" />
 
-            <AppFormItem :label="t('group.autoMode')" :description="t('group.autoModeHint')">
-              <AppInput
-                v-model="groupConfig.config.autoMode"
-                type="number"
-                :min="0"
-                :placeholder="t('common.seconds')"
-              />
-            </AppFormItem>
+            <FormItem :label="t('group.autoMode')" :description="t('group.autoModeHint')">
+              <Input v-model="groupConfig.config.autoMode" type="number" :min="0" :placeholder="t('common.seconds')" />
+            </FormItem>
           </div>
         </CollapsibleSection>
       </div>
@@ -409,13 +404,13 @@ async function removeMember(avatar: string) {
       <!-- Tab: Prompt Overrides -->
       <div v-show="activeTab === 'prompts'" class="chat-management-prompt-tab">
         <div v-if="chatStore.activeChat?.metadata.promptOverrides">
-          <AppFormItem :label="t('chatManagement.scenarioOverride')">
-            <AppTextarea
+          <FormItem :label="t('chatManagement.scenarioOverride')">
+            <Textarea
               v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
               :rows="6"
               :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
             />
-          </AppFormItem>
+          </FormItem>
         </div>
       </div>
     </div>

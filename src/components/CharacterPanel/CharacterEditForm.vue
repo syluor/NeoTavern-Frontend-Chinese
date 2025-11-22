@@ -4,6 +4,7 @@ import { useCharacterStore } from '../../stores/character.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useChatStore } from '../../stores/chat.store';
 import { usePersonaStore } from '../../stores/persona.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
 import type { Character } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions } from '../../types';
@@ -15,6 +16,7 @@ import { usePopupStore } from '../../stores/popup.store';
 import { cloneDeep, set } from 'lodash-es';
 import { humanizedDateTime } from '../../utils/date';
 import { Input, Textarea, Button, Select, TagInput, CollapsibleSection, RangeControl, FormItem } from '../UI';
+import { convertWorldInfoBookToCharacterBook } from '../../utils/world-info-conversion';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -22,6 +24,7 @@ const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const chatStore = useChatStore();
 const personaStore = usePersonaStore();
+const worldInfoStore = useWorldInfoStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 
 const isCreating = computed(() => characterStore.isCreating);
@@ -260,6 +263,31 @@ async function handleMoreAction(action: string) {
       console.log('Selected action:', action);
   }
 }
+
+const lorebookOptions = computed(() => {
+  return [
+    { label: t('common.none'), value: '' },
+    ...worldInfoStore.bookNames.map((name) => ({ label: name, value: name })),
+  ];
+});
+
+const embeddedLorebookName = computed({
+  get: () => localCharacter.value?.data?.character_book?.name || '',
+  set: async (newValue) => {
+    if (!localCharacter.value || !localCharacter.value.data) return;
+    if (!newValue) {
+      delete localCharacter.value.data.character_book;
+    } else {
+      const book = await worldInfoStore.getBookFromCache(newValue, true);
+      if (book) {
+        const charBook = convertWorldInfoBookToCharacterBook(book);
+        localCharacter.value.data.character_book = charBook;
+      }
+    }
+    // Trigger save
+    characterStore.saveCharacterDebounced(localCharacter.value);
+  },
+});
 </script>
 
 <template>
@@ -577,6 +605,11 @@ async function handleMoreAction(action: string) {
           :subtitle="t('characterEditor.advanced.metadataHint')"
         >
           <div class="inline-drawer-content--column">
+            <!-- TODO: Move to another place -->
+            <FormItem :label="t('characterEditor.embeddedLorebook')">
+              <Select v-model="embeddedLorebookName" :options="lorebookOptions" />
+            </FormItem>
+
             <small>{{ t('characterEditor.advanced.metadataOptional') }}</small>
             <div class="form-row">
               <div class="form-column">

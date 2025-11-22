@@ -8,6 +8,7 @@ export interface ChatMetadata {
   integrity: string;
   custom_background?: string;
   chat_backgrounds?: string[];
+  chat_lorebooks?: string[];
 
   members?: string[];
   active_persona?: string;

@@ -10,6 +10,8 @@ import { downloadFile } from '../utils/file';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { eventEmitter } from '../utils/event-emitter';
 import { usePersonaStore } from './persona.store';
+import { useChatStore } from './chat.store';
+import { useCharacterStore } from './character.store';
 import { WorldInfoLogic, WorldInfoPosition } from '../constants';
 
 export const useWorldInfoStore = defineStore('world-info', () => {
@@ -17,6 +19,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const settingsStore = useSettingsStore();
   const popupStore = usePopupStore();
   const personaStore = usePersonaStore();
+  const chatStore = useChatStore();
+  const characterStore = useCharacterStore();
 
   const isPanelPinned = ref(false);
   const bookNames = ref<string[]>([]);
@@ -28,11 +32,18 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const loadingBooks = ref<Set<string>>(new Set());
 
   const activeBookNames = computed<string[]>(() => {
-    const personaBookNames = personaStore.activePersona?.lorebooks || [];
-    const uniqueNames = new Set<string>([
-      ...(settingsStore.settings.worldInfo.activeBookNames || []),
-      ...personaBookNames,
-    ]);
+    const global = settingsStore.settings.worldInfo.activeBookNames || [];
+    const persona = personaStore.activePersona?.lorebooks || [];
+    const chat = chatStore.activeChat?.metadata.chat_lorebooks || [];
+
+    const charBooks = new Set<string>();
+    for (const char of characterStore.activeCharacters) {
+      if (char.data?.character_book?.name) {
+        charBooks.add(char.data.character_book.name);
+      }
+    }
+
+    const uniqueNames = new Set<string>([...global, ...persona, ...chat, ...charBooks]);
     return Array.from(uniqueNames);
   });
 

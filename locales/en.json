@@ -27,6 +27,8 @@
     "scenarioOverridePlaceholder": "Override the scenario for this specific group chat...",
     "deleteSelectedConfirmContent": "Are you sure you want to delete {count} selected chats?",
     "deleteSuccess": "Successfully deleted {count} chats.",
+    "chatLorebooks": "Assigned Lorebooks",
+    "selectLorebooks": "Select lorebooks...",
     "actions": {
       "rename": "Rename Chat",
       "delete": "Delete Chat"
@@ -72,7 +74,7 @@
     "backup": "Backup",
     "restore": "Restore",
     "create": "Create",
-    "activated": "Persona {'{{name}}'} activated.",
+    "activated": "Persona {name} activated.",
     "noDescription": "[No description]",
     "currentPersona": "Current Persona",
     "description": {
@@ -166,6 +168,7 @@
     "deleteBook": "Delete Lorebook '{bookName}'",
     "refresh": "Refresh",
     "searchPlaceholder": "Search Lorebooks...",
+    "importSuccess": "Successfully imported embedded lorebook: {name}",
     "sorting": {
       "title": "Sort entries by",
       "titleAsc": "Title A-Z",
@@ -229,7 +232,9 @@
       "duplicateBookTitle": "Duplicate Lorebook",
       "duplicateBookInputSuffix": " (copy)",
       "deleteEntryTitle": "Confirm Entry Deletion",
-      "deleteEntryContent": "Are you sure you want to delete the entry \"<b>{name}</b>\"?"
+      "deleteEntryContent": "Are you sure you want to delete the entry \"<b>{name}</b>\"?",
+      "importEmbeddedTitle": "Import Embedded Lorebook",
+      "importEmbeddedContent": "This character has an embedded lorebook named \"{name}\". Do you want to import it into your World Info library?"
     }
   },
   "backgrounds": {
@@ -593,6 +598,7 @@
     "firstMessagePlaceholder": "This will be the first message from the character that starts every chat.",
     "openLastChat": "Open last chat with this character",
     "startNewChat": "Start a new chat with this character",
+    "embeddedLorebook": "Embedded Lorebook",
     "tokenCounts": {
       "title": "Token counts may be inaccurate and provided just for reference.",
       "total": "Total tokens",

@@ -15,6 +15,8 @@ import {
   type ChatInfo,
   type Character,
   type WorldInfoBook,
+  POPUP_TYPE,
+  POPUP_RESULT,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -43,6 +45,9 @@ import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 import { getCharactersForContext } from '../utils/group-chat';
 import { useWorldInfoStore } from './world-info.store';
+import { usePopupStore } from './popup.store';
+import { convertCharacterBookToWorldInfoBook } from '../utils/world-info-conversion';
+import * as apiWorldInfo from '../api/world-info';
 
 export type ChatStoreState = {
   messages: ChatMessage[];
@@ -74,6 +79,7 @@ export const useChatStore = defineStore('chat', () => {
   const promptStore = usePromptStore();
   const settingsStore = useSettingsStore();
   const worldInfoStore = useWorldInfoStore();
+  const popupStore = usePopupStore();
 
   const chatsMetadataByCharacterAvatars = computed(() => {
     const mapping: Record<string, ChatInfo[]> = {};
@@ -339,6 +345,31 @@ export const useChatStore = defineStore('chat', () => {
       if (activeChatFile.value) {
         for (const character of characterStore.activeCharacters) {
           await characterStore.updateAndSaveCharacter(character.avatar, { chat: chatFile });
+        }
+
+        // Check for embedded lorebooks in characters
+        for (const character of characterStore.activeCharacters) {
+          if (character.data?.character_book) {
+            const bookName = character.data.character_book.name || character.name;
+            // Check if book exists globally
+            const exists = await worldInfoStore.getBookFromCache(bookName, true);
+            if (!exists) {
+              // Ask to import
+              const { result } = await popupStore.show({
+                title: t('worldInfo.popup.importEmbeddedTitle'),
+                content: t('worldInfo.popup.importEmbeddedContent', { name: bookName }),
+                type: POPUP_TYPE.CONFIRM,
+              });
+
+              if (result === POPUP_RESULT.AFFIRMATIVE) {
+                const wiBook = convertCharacterBookToWorldInfoBook(character.data.character_book);
+                wiBook.name = bookName;
+                await apiWorldInfo.saveWorldInfoBook(bookName, wiBook);
+                await worldInfoStore.refresh();
+                toast.success(t('worldInfo.importSuccess', { name: bookName }));
+              }
+            }
+          }
         }
 
         await promptStore.loadItemizedPrompts(activeChatFile.value);

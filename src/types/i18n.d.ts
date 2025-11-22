@@ -30,6 +30,8 @@ export interface MessageSchema {
     scenarioOverridePlaceholder: string;
     deleteSelectedConfirmContent: string;
     deleteSuccess: string;
+    chatLorebooks: string;
+    selectLorebooks: string;
     actions: {
       rename: string;
       delete: string;
@@ -169,6 +171,7 @@ export interface MessageSchema {
     deleteBook: string;
     refresh: string;
     searchPlaceholder: string;
+    importSuccess: string;
     sorting: {
       title: string;
       titleAsc: string;
@@ -233,6 +236,8 @@ export interface MessageSchema {
       duplicateBookInputSuffix: string;
       deleteEntryTitle: string;
       deleteEntryContent: string;
+      importEmbeddedTitle: string;
+      importEmbeddedContent: string;
     };
   };
   backgrounds: {
@@ -596,6 +601,7 @@ export interface MessageSchema {
     firstMessagePlaceholder: string;
     openLastChat: string;
     startNewChat: string;
+    embeddedLorebook: string;
     tokenCounts: {
       title: string;
       total: string;

@@ -113,11 +113,9 @@ export const DEFAULT_SAVE_EDIT_TIMEOUT = DebounceTimeout.RELAXED;
 export const DEFAULT_PRINT_TIMEOUT = DebounceTimeout.QUICK;
 export const default_avatar = 'img/ai4.png';
 export const default_user_avatar = 'img/user-default.png';
-export const ANIMATION_DURATION_DEFAULT = 125;
 export const talkativeness_default = 0.5;
 export const depth_prompt_depth_default = 4;
 export const depth_prompt_role_default = 'system';
-export const group_auto_mode_default_interval = 5; // seconds
 
 export const defaultPrompts: Prompt[] = [
   {

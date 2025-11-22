@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, nextTick } from 'vue';
-import type { Character } from '../types';
+import { type Character, POPUP_RESULT, POPUP_TYPE } from '../types';
 import {
   fetchAllCharacters,
   saveCharacter as apiSaveCharacter,
@@ -10,11 +10,14 @@ import {
   deleteCharacter as apiDeleteCharacter,
   updateCharacterImage as apiUpdateCharacterImage,
 } from '../api/characters';
+import * as apiWorldInfo from '../api/world-info';
 import DOMPurify from 'dompurify';
 import { humanizedDateTime } from '../utils/date';
 import { toast } from '../composables/useToast';
 import { useChatStore } from './chat.store';
 import { useUiStore } from './ui.store';
+import { usePopupStore } from './popup.store';
+import { useWorldInfoStore } from './world-info.store';
 import {
   CHARACTER_FIELD_MAPPINGS,
   DEFAULT_CHARACTER,
@@ -33,6 +36,7 @@ import { get, set, debounce } from 'lodash-es';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 import { getThumbnailUrl } from '../utils/image';
+import { convertCharacterBookToWorldInfoBook } from '../utils/world-info-conversion';
 
 const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
@@ -42,6 +46,8 @@ export const useCharacterStore = defineStore('character', () => {
   const settingsStore = useSettingsStore();
   const chatStore = useChatStore();
   const uiStore = useUiStore();
+  const popupStore = usePopupStore();
+  const worldInfoStore = useWorldInfoStore();
   const characters = ref<Array<Character>>([]);
   const favoriteCharacterChecked = ref<boolean>(false);
   const currentPage = ref(1);
@@ -361,6 +367,24 @@ export const useCharacterStore = defineStore('character', () => {
         if (importedChar) {
           await nextTick();
           await eventEmitter.emit('character:imported', importedChar);
+
+          // Check for embedded lorebook
+          if (importedChar.data?.character_book) {
+            const bookName = importedChar.data.character_book.name || importedChar.name;
+            const { result } = await popupStore.show({
+              title: t('worldInfo.popup.importEmbeddedTitle'),
+              content: t('worldInfo.popup.importEmbeddedContent', { name: bookName }),
+              type: POPUP_TYPE.CONFIRM,
+            });
+
+            if (result === POPUP_RESULT.AFFIRMATIVE) {
+              const wiBook = convertCharacterBookToWorldInfoBook(importedChar.data.character_book);
+              wiBook.name = bookName; // Ensure name matches
+              await apiWorldInfo.saveWorldInfoBook(bookName, wiBook);
+              await worldInfoStore.refresh();
+              toast.success(t('worldInfo.importSuccess', { name: bookName }));
+            }
+          }
         }
 
         return avatarFileName;
@@ -499,6 +523,11 @@ export const useCharacterStore = defineStore('character', () => {
     formData.append('depth_prompt_prompt', character.data?.depth_prompt?.prompt || '');
     formData.append('depth_prompt_depth', String(character.data?.depth_prompt?.depth ?? depth_prompt_depth_default));
     formData.append('depth_prompt_role', character.data?.depth_prompt?.role || depth_prompt_role_default);
+
+    // Character Book
+    if (character.data?.character_book) {
+      formData.append('character_book', JSON.stringify(character.data.character_book));
+    }
 
     formData.append('talkativeness', String(character.talkativeness ?? talkativeness_default));
     formData.append('mes_example', character.mes_example || '');

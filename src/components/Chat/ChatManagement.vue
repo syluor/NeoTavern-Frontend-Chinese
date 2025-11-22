@@ -4,6 +4,7 @@ import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
 import { POPUP_RESULT, POPUP_TYPE, type ChatInfo, type Character } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { formatTimeStamp, humanizedDateTime } from '../../utils/date';
@@ -21,6 +22,7 @@ const characterStore = useCharacterStore();
 const popupStore = usePopupStore();
 const settingsStore = useSettingsStore();
 const uiStore = useUiStore();
+const worldInfoStore = useWorldInfoStore();
 
 const activeTab = ref<'chats' | 'members' | 'prompts'>('chats');
 const chatSearchTerm = ref('');
@@ -175,6 +177,19 @@ const handlingModeOptions = computed(() => [
   { label: t('group.modes.joinExclude'), value: GroupGenerationHandlingMode.JOIN_EXCLUDE_MUTED },
   { label: t('group.modes.joinInclude'), value: GroupGenerationHandlingMode.JOIN_INCLUDE_MUTED },
 ]);
+
+const availableLorebooks = computed(() => {
+  return worldInfoStore.bookNames.map((name) => ({ label: name, value: name }));
+});
+
+const activeChatLorebooks = computed({
+  get: () => chatStore.activeChat?.metadata.chat_lorebooks || [],
+  set: (val) => {
+    if (chatStore.activeChat) {
+      chatStore.activeChat.metadata.chat_lorebooks = val;
+    }
+  },
+});
 
 function toggleMute(avatar: string) {
   chatStore.toggleMemberMute(avatar);
@@ -406,6 +421,18 @@ async function removeMember(avatar: string) {
               v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
               :rows="6"
               :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
+            />
+          </FormItem>
+
+          <hr />
+
+          <!-- TODO: Rename tab name or move to another place -->
+          <FormItem :label="t('chatManagement.chatLorebooks')">
+            <Select
+              v-model="activeChatLorebooks"
+              :options="availableLorebooks"
+              multiple
+              :placeholder="t('chatManagement.selectLorebooks')"
             />
           </FormItem>
         </div>

@@ -6,17 +6,25 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { getThumbnailUrl } from '../../utils/image';
 import Pagination from '../Common/Pagination.vue';
 import { usePopupStore } from '../../stores/popup.store';
-import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
 import { AppButton, AppIconButton, AppSelect, AppCheckbox, AppTextarea } from '../UI';
 import AppSearch from '../UI/AppSearch.vue';
 import AppListItem from '../UI/AppListItem.vue';
 import AppFileInput from '../UI/AppFileInput.vue';
 import AppFormItem from '../UI/AppFormItem.vue';
+import { useChatStore } from '../../stores/chat.store';
+import { useCharacterStore } from '../../stores/character.store';
+import { storeToRefs } from 'pinia';
 
 const { t } = useStrictI18n();
 const personaStore = usePersonaStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
+const chatStore = useChatStore();
+const characterStore = useCharacterStore();
+
+const { activeChat } = storeToRefs(chatStore);
+const { activeCharacters } = storeToRefs(characterStore);
 
 const searchTerm = ref('');
 const sortOrder = ref('asc');
@@ -50,6 +58,28 @@ const paginatedPersonas = computed(() => {
   return filteredPersonas.value.slice(start, end);
 });
 
+const connectedCharacters = computed(() => {
+  if (!personaStore.activePersona?.connections) return [];
+  return personaStore.activePersona.connections
+    .map((conn) => characterStore.characters.find((c) => c.avatar === conn.id))
+    .filter(Boolean) as Character[];
+});
+
+const isChatLocked = computed(() => {
+  if (!activeChat.value || !personaStore.activePersonaId) return false;
+  return activeChat.value.metadata.active_persona === personaStore.activePersonaId;
+});
+
+const isCharacterLocked = computed(() => {
+  if (activeCharacters.value.length !== 1 || !personaStore.activePersonaId) return false;
+  return personaStore.isLinkedToCharacter(personaStore.activePersonaId, activeCharacters.value[0].avatar);
+});
+
+const isDefaultPersona = computed(() => {
+  if (!personaStore.activePersonaId) return false;
+  return personaStore.isDefault(personaStore.activePersonaId);
+});
+
 function handleFileImport(files: File[]) {
   console.log('Restore from backup clicked', files);
 }
@@ -70,6 +100,30 @@ async function handleDelete() {
 async function handleAvatarChange(files: File[]) {
   if (files[0]) {
     await personaStore.uploadPersonaAvatar(personaStore.activePersonaId, files[0]);
+  }
+}
+
+function toggleDefault() {
+  if (personaStore.activePersonaId) {
+    personaStore.toggleDefault(personaStore.activePersonaId);
+  }
+}
+
+function toggleCharacterLock() {
+  if (activeCharacters.value.length === 1 && personaStore.activePersonaId) {
+    personaStore.toggleCharacterConnection(personaStore.activePersonaId, activeCharacters.value[0].avatar);
+  }
+}
+
+function toggleChatLock() {
+  if (activeChat.value && personaStore.activePersonaId) {
+    chatStore.toggleChatPersona(personaStore.activePersonaId);
+  }
+}
+
+function removeConnection(charAvatar: string) {
+  if (personaStore.activePersonaId) {
+    personaStore.toggleCharacterConnection(personaStore.activePersonaId, charAvatar);
   }
 }
 
@@ -136,12 +190,15 @@ onMounted(() => {
                 />
               </template>
               <template #default>
-                <div class="font-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
-                  {{ persona.name }}
+                <div class="font-bold persona-name-row">
+                  <span class="persona-name">{{ persona.name }}</span>
+                  <i
+                    v-if="personaStore.isDefault(persona.avatarId)"
+                    class="fa-solid fa-star default-icon"
+                    :title="t('personaManagement.default.tooltip')"
+                  ></i>
                 </div>
-                <div
-                  style="font-size: 0.9em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-                >
+                <div class="persona-desc">
                   {{ persona.description || t('personaManagement.noDescription') }}
                 </div>
               </template>
@@ -194,25 +251,38 @@ onMounted(() => {
 
           <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
           <div class="persona-editor-connections">
-            <AppButton icon="fa-crown">{{ t('personaManagement.connections.default') }}</AppButton>
-            <AppButton icon="fa-unlock">{{ t('personaManagement.connections.character') }}</AppButton>
-            <AppButton icon="fa-unlock">{{ t('personaManagement.connections.chat') }}</AppButton>
+            <AppButton icon="fa-star" :active="isDefaultPersona" @click="toggleDefault">
+              {{ t('personaManagement.connections.default') }}
+            </AppButton>
+            <AppButton
+              icon="fa-user-lock"
+              :active="isCharacterLocked"
+              :disabled="activeCharacters.length !== 1"
+              @click="toggleCharacterLock"
+            >
+              {{ t('personaManagement.connections.character') }}
+            </AppButton>
+            <AppButton icon="fa-lock" :active="isChatLocked" :disabled="!activeChat" @click="toggleChatLock">
+              {{ t('personaManagement.connections.chat') }}
+            </AppButton>
           </div>
-          <!-- TODO: Connections List -->
+
+          <div v-if="connectedCharacters.length > 0" class="connected-characters-list">
+            <h5>{{ t('personaManagement.connections.linkedCharacters') }}</h5>
+            <div class="chips-container">
+              <div v-for="char in connectedCharacters" :key="char.avatar" class="character-chip">
+                <img :src="getThumbnailUrl('avatar', char.avatar)" class="chip-avatar" />
+                <span class="chip-name">{{ char?.name ?? '' }}</span>
+                <i class="fa-solid fa-xmark chip-remove" @click="removeConnection(char.avatar)"></i>
+              </div>
+            </div>
+          </div>
 
           <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
           <div class="persona-editor-global-settings">
             <AppCheckbox
               v-model="settingsStore.settings.persona.showNotifications"
               :label="t('personaManagement.globalSettings.showNotifications')"
-            />
-            <AppCheckbox
-              v-model="settingsStore.settings.persona.allowMultiConnections"
-              :label="t('personaManagement.globalSettings.allowMultiConnections')"
-            />
-            <AppCheckbox
-              v-model="settingsStore.settings.persona.autoLock"
-              :label="t('personaManagement.globalSettings.autoLock')"
             />
           </div>
         </div>
@@ -224,5 +294,71 @@ onMounted(() => {
 <style scoped>
 .font-bold {
   font-weight: bold;
+}
+
+.persona-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.persona-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-icon {
+  color: var(--color-golden);
+  font-size: 0.9em;
+}
+
+.persona-desc {
+  font-size: 0.9em;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.connected-characters-list {
+  margin-top: 10px;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.character-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: var(--black-30a);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 15px;
+  padding: 2px 8px 2px 2px;
+  font-size: 0.9em;
+}
+
+.chip-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chip-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+.chip-remove:hover {
+  opacity: 1;
+  color: var(--color-warning);
 }
 </style>

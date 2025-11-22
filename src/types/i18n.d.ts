@@ -75,6 +75,7 @@ export interface MessageSchema {
     backup: string;
     restore: string;
     create: string;
+    activated: string;
     noDescription: string;
     currentPersona: string;
     description: {
@@ -86,12 +87,20 @@ export interface MessageSchema {
       default: string;
       character: string;
       chat: string;
+      characterRemoved: string;
+      characterAdded: string;
+      chatRemoved: string;
+      chatAdded: string;
+      linkedCharacters: string;
+    };
+    default: {
+      removed: string;
+      set: string;
+      tooltip: string;
     };
     globalSettings: {
       title: string;
       showNotifications: string;
-      allowMultiConnections: string;
-      autoLock: string;
     };
     actions: {
       rename: string;
@@ -803,18 +812,6 @@ export interface MessageSchema {
           only_existing: string;
           ask: string;
         };
-      };
-      personaShowNotifications: {
-        label: string;
-        description: string;
-      };
-      personaAllowMultiConnections: {
-        label: string;
-        description: string;
-      };
-      personaAutoLock: {
-        label: string;
-        description: string;
       };
     };
     background: {

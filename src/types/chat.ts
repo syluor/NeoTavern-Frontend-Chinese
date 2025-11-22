@@ -10,6 +10,7 @@ export interface ChatMetadata {
   chat_backgrounds?: string[];
 
   members?: string[];
+  active_persona?: string;
 
   promptOverrides?: {
     scenario?: string;

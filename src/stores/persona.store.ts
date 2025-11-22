@@ -40,9 +40,6 @@ export const usePersonaStore = defineStore('persona', () => {
   function createDefaultDescription(): Omit<Persona, 'avatarId' | 'name'> {
     return {
       description: '',
-      position: 0, // In Prompt
-      depth: 2,
-      role: 'system',
       lorebook: '',
       connections: [],
       title: '',
@@ -100,6 +97,11 @@ export const usePersonaStore = defineStore('persona', () => {
       activePersonaId.value = avatarId;
       uiStore.activePlayerName = persona.name;
       uiStore.activePlayerAvatar = persona.avatarId;
+
+      if (settingsStore.settings.persona.showNotifications) {
+        toast.info(t('personaManagement.activated', { name: persona.name }));
+      }
+
       await nextTick();
       await eventEmitter.emit('persona:activated', persona);
     }
@@ -240,6 +242,47 @@ export const usePersonaStore = defineStore('persona', () => {
     }
   }
 
+  function isDefault(avatarId: string): boolean {
+    return settingsStore.settings.persona.defaultPersonaId === avatarId;
+  }
+
+  async function toggleDefault(avatarId: string) {
+    if (settingsStore.settings.persona.defaultPersonaId === avatarId) {
+      settingsStore.settings.persona.defaultPersonaId = null;
+      toast.info(t('personaManagement.default.removed'));
+    } else {
+      settingsStore.settings.persona.defaultPersonaId = avatarId;
+      toast.success(t('personaManagement.default.set'));
+    }
+  }
+
+  async function toggleCharacterConnection(personaId: string, characterAvatar: string) {
+    const persona = personas.value.find((p) => p.avatarId === personaId);
+    if (!persona) return;
+
+    if (!persona.connections) persona.connections = [];
+
+    const index = persona.connections.findIndex((c) => c.id === characterAvatar);
+    if (index !== -1) {
+      persona.connections.splice(index, 1);
+      toast.info(t('personaManagement.connections.characterRemoved'));
+    } else {
+      persona.connections.push({ id: characterAvatar });
+      toast.success(t('personaManagement.connections.characterAdded'));
+    }
+    // Force update to trigger watchers if necessary, although reactive array methods should work.
+    // We rely on the settings store deep watcher.
+  }
+
+  function getLinkedPersona(characterAvatar: string): Persona | undefined {
+    return personas.value.find((p) => p.connections?.some((c) => c.id === characterAvatar));
+  }
+
+  function isLinkedToCharacter(personaId: string, characterAvatar: string): boolean {
+    const persona = personas.value.find((p) => p.avatarId === personaId);
+    return !!persona?.connections?.some((c) => c.id === characterAvatar);
+  }
+
   return {
     personas,
     activePersonaId,
@@ -254,5 +297,10 @@ export const usePersonaStore = defineStore('persona', () => {
     deletePersona,
     createPersona,
     createPersonaFromCharacter,
+    isDefault,
+    toggleDefault,
+    toggleCharacterConnection,
+    getLinkedPersona,
+    isLinkedToCharacter,
   };
 });

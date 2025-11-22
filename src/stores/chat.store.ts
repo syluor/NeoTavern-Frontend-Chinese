@@ -70,6 +70,7 @@ export const useChatStore = defineStore('chat', () => {
   const personaStore = usePersonaStore();
   const characterStore = useCharacterStore();
   const promptStore = usePromptStore();
+  const settingsStore = useSettingsStore();
 
   const chatsMetadataByCharacterAvatars = computed(() => {
     const mapping: Record<string, ChatInfo[]> = {};
@@ -338,6 +339,27 @@ export const useChatStore = defineStore('chat', () => {
         }
 
         await promptStore.loadItemizedPrompts(activeChatFile.value);
+
+        // Persona Switching Logic
+        const meta = activeChat.value!.metadata;
+        if (meta.active_persona) {
+          // Chat specific lock
+          await personaStore.setActivePersona(meta.active_persona);
+        } else if (activeChat.value!.metadata.members?.length === 1) {
+          // Single character lock check
+          const charAvatar = activeChat.value!.metadata.members[0];
+          const linkedPersona = personaStore.getLinkedPersona(charAvatar);
+          if (linkedPersona) {
+            await personaStore.setActivePersona(linkedPersona.avatarId);
+          } else if (settingsStore.settings.persona.defaultPersonaId) {
+            // Fallback to default
+            await personaStore.setActivePersona(settingsStore.settings.persona.defaultPersonaId);
+          }
+        } else if (settingsStore.settings.persona.defaultPersonaId) {
+          // Fallback to default for Groups (if no explicit chat lock)
+          await personaStore.setActivePersona(settingsStore.settings.persona.defaultPersonaId);
+        }
+
         await nextTick();
         await eventEmitter.emit('chat:entered', activeChatFile.value as string);
       }
@@ -389,6 +411,19 @@ export const useChatStore = defineStore('chat', () => {
     } finally {
       isChatLoading.value = false;
     }
+  }
+
+  async function toggleChatPersona(personaId: string) {
+    if (!activeChat.value) return;
+
+    if (activeChat.value.metadata.active_persona === personaId) {
+      delete activeChat.value.metadata.active_persona;
+      toast.info(t('personaManagement.connections.chatRemoved'));
+    } else {
+      activeChat.value.metadata.active_persona = personaId;
+      toast.success(t('personaManagement.connections.chatAdded'));
+    }
+    saveChatDebounced();
   }
 
   function abortGeneration() {
@@ -1096,5 +1131,6 @@ export const useChatStore = defineStore('chat', () => {
     toggleMemberMute,
     addMember,
     removeMember,
+    toggleChatPersona,
   };
 });

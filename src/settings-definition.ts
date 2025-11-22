@@ -113,33 +113,4 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: false,
   },
-
-  // --- Persona ---
-  {
-    id: 'persona.showNotifications',
-    label: 'settings.powerUser.personaShowNotifications.label',
-    description: 'settings.powerUser.personaShowNotifications.description',
-    category: 'Persona',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: true,
-  },
-  {
-    id: 'persona.allowMultiConnections',
-    label: 'settings.powerUser.personaAllowMultiConnections.label',
-    description: 'settings.powerUser.personaAllowMultiConnections.description',
-    category: 'Persona',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: false,
-  },
-  {
-    id: 'persona.autoLock',
-    label: 'settings.powerUser.personaAutoLock.label',
-    description: 'settings.powerUser.personaAutoLock.description',
-    category: 'Persona',
-    type: 'boolean',
-    widget: 'checkbox',
-    defaultValue: false,
-  },
 ];

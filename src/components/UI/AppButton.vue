@@ -8,6 +8,7 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   title?: string;
+  active?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   title: undefined,
   icon: undefined,
+  active: false,
 });
 
 const emit = defineEmits(['click']);
@@ -26,6 +28,7 @@ const classes = computed(() => {
     'menu-button--danger': props.variant === 'danger',
     'menu-button--confirm': props.variant === 'confirm',
     disabled: props.disabled || props.loading,
+    active: props.active,
   };
 });
 

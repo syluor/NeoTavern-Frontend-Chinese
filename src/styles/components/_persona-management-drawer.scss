@@ -86,9 +86,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow-y: auto;
+  padding-right: 5px;
 
   .standoutHeader {
     margin-bottom: 0;
+    border-bottom: 1px solid var(--theme-border-color);
+    padding-bottom: 5px;
   }
 
   &-controls {
@@ -104,6 +108,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0;
   }
 
   .buttons_block {

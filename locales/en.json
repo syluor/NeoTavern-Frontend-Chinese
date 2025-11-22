@@ -72,6 +72,7 @@
     "backup": "Backup",
     "restore": "Restore",
     "create": "Create",
+    "activated": "Persona {'{{name}}'} activated.",
     "noDescription": "[No description]",
     "currentPersona": "Current Persona",
     "description": {
@@ -82,13 +83,21 @@
       "title": "Connections",
       "default": "Default",
       "character": "Character",
-      "chat": "Chat"
+      "chat": "Chat",
+      "characterRemoved": "Character connection removed.",
+      "characterAdded": "Character connection added.",
+      "chatRemoved": "Chat connection removed.",
+      "chatAdded": "Chat connection added.",
+      "linkedCharacters": "Linked Characters"
+    },
+    "default": {
+      "removed": "Default persona removed.",
+      "set": "Default persona set.",
+      "tooltip": "Default Persona"
     },
     "globalSettings": {
       "title": "Global Settings",
-      "showNotifications": "Show notifications on switching personas",
-      "allowMultiConnections": "Allow multiple persona connections per character",
-      "autoLock": "Auto-lock a chosen persona to the chat"
+      "showNotifications": "Show notifications on switching personas"
     },
     "actions": {
       "rename": "Rename Persona",
@@ -800,18 +809,6 @@
           "only_existing": "Import only existing tags",
           "ask": "Ask for each character"
         }
-      },
-      "personaShowNotifications": {
-        "label": "Show Persona Notifications",
-        "description": "Display a notification when the active persona is switched."
-      },
-      "personaAllowMultiConnections": {
-        "label": "Allow Multiple Persona Connections",
-        "description": "Permit a single character to be connected to multiple personas."
-      },
-      "personaAutoLock": {
-        "label": "Auto-lock Persona to Chat",
-        "description": "Automatically lock a chosen persona to a chat when it's selected."
       }
     },
     "background": {

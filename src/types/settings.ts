@@ -212,8 +212,6 @@ export interface Settings {
   };
   persona: {
     showNotifications: boolean;
-    allowMultiConnections: boolean;
-    autoLock: boolean;
     defaultPersonaId: string | null;
     personas: Persona[];
   };

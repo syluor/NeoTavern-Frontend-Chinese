@@ -173,20 +173,34 @@ select.text-pole {
   filter: grayscale(0.5);
   width: min-content;
 
-  &:not(.disabled):not([disabled]):hover,
-  &:not(.disabled):not([disabled]).active {
+  &:not(.disabled):not([disabled]):hover {
     background-color: var(--white-30a);
+  }
+
+  &.active {
+    background-color: var(--theme-emphasis-color);
+    color: var(--black-100);
+    filter: none;
+    border-color: var(--theme-quote-color);
+  }
+
+  &.disabled,
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(1);
+    pointer-events: none;
   }
 
   &--danger {
     color: var(--color-warning);
-    &:hover {
+    &:hover:not(.disabled):not([disabled]) {
       background-color: var(--color-accent-crimson-hover);
     }
   }
 
   &--confirm {
-    &:hover {
+    &:hover:not(.disabled):not([disabled]) {
       filter: brightness(120%);
     }
   }
@@ -212,6 +226,12 @@ select.text-pole {
   &:not(.disabled):not([disabled]).active {
     background-color: transparent;
     opacity: 1;
+  }
+
+  &.disabled,
+  &[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 }
 

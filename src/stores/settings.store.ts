@@ -77,8 +77,6 @@ function createDefaultSettings(): Settings {
   defaultSettings.extensionSettings = {};
   defaultSettings.persona = {
     showNotifications: true,
-    allowMultiConnections: false,
-    autoLock: false,
     defaultPersonaId: null,
     personas: [],
   };
@@ -160,8 +158,6 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     },
     persona: {
       showNotifications: p.persona_show_notifications,
-      allowMultiConnections: p.persona_allow_multi_connections,
-      autoLock: p.persona_auto_lock,
       defaultPersonaId: p.default_persona,
       personas: migratedPersonas,
     },

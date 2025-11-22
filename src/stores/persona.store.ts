@@ -93,6 +93,7 @@ export const usePersonaStore = defineStore('persona', () => {
   async function setActivePersona(avatarId: string | null) {
     if (!avatarId) return;
     const persona = personas.value.find((p) => p.avatarId === avatarId);
+    if (activePersonaId.value === avatarId) return;
     if (persona) {
       activePersonaId.value = avatarId;
       uiStore.activePlayerName = persona.name;

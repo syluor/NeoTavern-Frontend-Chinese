@@ -6,7 +6,7 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { getThumbnailUrl } from '../../utils/image';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
-import { Pagination } from '../Common';
+import { Pagination, SplitPane, EmptyState } from '../Common';
 import { Button, Select, Checkbox, Textarea, Search, ListItem, FileInput, FormItem } from '../UI';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
@@ -25,6 +25,8 @@ const sortOrder = ref('asc');
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const isGridView = ref(false);
+
+const viewMode = ref<'editor' | 'settings'>('editor');
 
 const sortOptions = [
   { label: 'A-Z', value: 'asc' },
@@ -77,6 +79,15 @@ const isDefaultPersona = computed(() => {
 const lorebookOptions = computed(() => {
   return worldInfoStore.bookNames.map((name) => ({ label: name, value: name }));
 });
+
+function selectPersona(id: string) {
+  viewMode.value = 'editor';
+  personaStore.setActivePersona(id);
+}
+
+function selectGlobalSettings() {
+  viewMode.value = 'settings';
+}
 
 function handleFileImport(files: File[]) {
   console.log('Restore from backup clicked', files);
@@ -168,161 +179,187 @@ onMounted(() => {
         />
       </div>
     </div>
-    <div class="persona-drawer-content">
-      <!-- Left Column -->
-      <div class="persona-drawer-column--left">
-        <div class="persona-drawer-list-controls">
-          <Search v-model="searchTerm" :placeholder="t('common.search')">
-            <template #actions>
-              <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
-                {{ t('personaManagement.create') }}
-              </Button>
-              <Select v-model="sortOrder" :options="sortOptions" />
-              <Button variant="ghost" icon="fa-table-cells-large" @click="isGridView = !isGridView" />
-            </template>
-          </Search>
-        </div>
-        <Pagination
-          v-if="filteredPersonas.length > 0"
-          v-model:current-page="currentPage"
-          v-model:items-per-page="itemsPerPage"
-          :total-items="filteredPersonas.length"
-          :items-per-page-options="[5, 10, 25, 50, 100]"
-        />
-        <div class="persona-list" :class="{ 'grid-view': isGridView }">
-          <div v-for="persona in paginatedPersonas" :key="`${persona.avatarId}-${personaStore.lastAvatarUpdate}`">
-            <ListItem
-              :active="persona.avatarId === personaStore.activePersonaId"
-              @click="personaStore.setActivePersona(persona.avatarId)"
-            >
-              <template #start>
-                <img
-                  :src="getThumbnailUrl('persona', persona.avatarId)"
-                  alt="Persona Avatar"
-                  class="persona-item-avatar"
-                />
+
+    <SplitPane
+      :collapsed="!settingsStore.settings.account.personaBrowserExpanded"
+      storage-key="personaBrowserWidth"
+      :initial-width="350"
+      class="persona-drawer-split"
+      @update:collapsed="(v) => (settingsStore.settings.account.personaBrowserExpanded = !v)"
+    >
+      <!-- Left Column: List -->
+      <template #side>
+        <div class="persona-drawer-sidebar">
+          <div class="persona-drawer-list-controls">
+            <Search v-model="searchTerm" :placeholder="t('common.search')">
+              <template #actions>
+                <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
+                  {{ t('personaManagement.create') }}
+                </Button>
+                <Select v-model="sortOrder" :options="sortOptions" />
+                <Button variant="ghost" icon="fa-table-cells-large" @click="isGridView = !isGridView" />
               </template>
-              <template #default>
-                <div class="font-bold persona-name-row">
-                  <span class="persona-name">{{ persona.name }}</span>
-                  <i
-                    v-if="personaStore.isDefault(persona.avatarId)"
-                    class="fa-solid fa-star default-icon"
-                    :title="t('personaManagement.default.tooltip')"
-                  ></i>
-                </div>
-                <div class="persona-desc">
-                  {{ persona.description || t('personaManagement.noDescription') }}
-                </div>
-              </template>
-            </ListItem>
+            </Search>
+          </div>
+
+          <ListItem :active="viewMode === 'settings'" @click="selectGlobalSettings">
+            <template #start><i class="fa-solid fa-cogs" style="opacity: 0.7"></i></template>
+            <template #default>{{ t('personaManagement.globalSettings.title') }}</template>
+          </ListItem>
+
+          <hr class="panel-divider" />
+
+          <Pagination
+            v-if="filteredPersonas.length > 0"
+            v-model:current-page="currentPage"
+            v-model:items-per-page="itemsPerPage"
+            :total-items="filteredPersonas.length"
+            :items-per-page-options="[5, 10, 25, 50, 100]"
+          />
+
+          <div class="persona-list" :class="{ 'grid-view': isGridView }">
+            <div v-for="persona in paginatedPersonas" :key="`${persona.avatarId}-${personaStore.lastAvatarUpdate}`">
+              <ListItem
+                :active="viewMode === 'editor' && persona.avatarId === personaStore.activePersonaId"
+                @click="selectPersona(persona.avatarId)"
+              >
+                <template #start>
+                  <img
+                    :src="getThumbnailUrl('persona', persona.avatarId)"
+                    alt="Persona Avatar"
+                    class="persona-item-avatar"
+                  />
+                </template>
+                <template #default>
+                  <div class="font-bold persona-name-row">
+                    <span class="persona-name">{{ persona.name }}</span>
+                    <i
+                      v-if="personaStore.isDefault(persona.avatarId)"
+                      class="fa-solid fa-star default-icon"
+                      :title="t('personaManagement.default.tooltip')"
+                    ></i>
+                  </div>
+                  <div class="persona-desc">
+                    {{ persona.description || t('personaManagement.noDescription') }}
+                  </div>
+                </template>
+              </ListItem>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
 
-      <!-- Right Column -->
-      <div class="persona-drawer-column--right">
-        <div v-show="personaStore.activePersona" class="persona-editor">
-          <h4 class="standoutHeader">{{ t('personaManagement.currentPersona') }}</h4>
-          <div class="persona-editor-controls">
-            <h5 class="persona-editor-name">{{ personaStore.activePersona?.name ?? '' }}</h5>
-            <div class="buttons_block">
-              <Button
-                variant="ghost"
-                icon="fa-pencil"
-                :title="t('personaManagement.actions.rename')"
-                @click="personaStore.updateActivePersonaName"
-              />
-              <Button
-                variant="ghost"
-                icon="fa-sync"
-                :title="t('personaManagement.actions.syncName')"
-                :disabled="!chatStore.activeChat"
-                @click="handleSyncName"
-              />
-
-              <FileInput
-                accept="image/*"
-                icon="fa-image"
-                :label="t('personaManagement.actions.changeImage')"
-                @change="handleAvatarChange"
-              />
-
-              <Button
-                variant="ghost"
-                icon="fa-clone"
-                :title="t('personaManagement.actions.duplicate')"
-                @click="handleDuplicate"
-              />
-              <Button
-                variant="danger"
-                icon="fa-skull"
-                :title="t('personaManagement.actions.delete')"
-                @click="handleDelete"
+      <!-- Right Column: Editor or Settings -->
+      <template #main>
+        <div class="persona-drawer-main">
+          <!-- Global Settings View -->
+          <div v-if="viewMode === 'settings'" class="persona-editor">
+            <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
+            <div class="persona-editor-global-settings">
+              <Checkbox
+                v-model="settingsStore.settings.persona.showNotifications"
+                :label="t('personaManagement.globalSettings.showNotifications')"
               />
             </div>
           </div>
 
-          <FormItem :label="t('personaManagement.description.label')">
-            <Textarea
-              :model-value="personaStore.activePersona?.description ?? ''"
-              :rows="6"
-              :placeholder="t('personaManagement.description.placeholder')"
-              @update:model-value="personaStore.updateActivePersonaField('description', $event)"
-            />
-          </FormItem>
+          <!-- Persona Editor View -->
+          <div v-else-if="personaStore.activePersona" class="persona-editor">
+            <h4 class="standoutHeader">{{ t('personaManagement.currentPersona') }}</h4>
+            <div class="persona-editor-controls">
+              <h5 class="persona-editor-name">{{ personaStore.activePersona?.name ?? '' }}</h5>
+              <div class="buttons_block">
+                <Button
+                  variant="ghost"
+                  icon="fa-pencil"
+                  :title="t('personaManagement.actions.rename')"
+                  @click="personaStore.updateActivePersonaName"
+                />
+                <Button
+                  variant="ghost"
+                  icon="fa-sync"
+                  :title="t('personaManagement.actions.syncName')"
+                  :disabled="!chatStore.activeChat"
+                  @click="handleSyncName"
+                />
 
-          <FormItem :label="t('personaManagement.lorebooks.label')">
-            <!-- @vue-ignore -->
-            <Select
-              :model-value="personaStore.activePersona?.lorebooks ?? []"
-              :options="lorebookOptions"
-              multiple
-              @update:model-value="personaStore.updateActivePersonaField('lorebooks', $event)"
-            />
-          </FormItem>
+                <FileInput
+                  accept="image/*"
+                  icon="fa-image"
+                  :label="t('personaManagement.actions.changeImage')"
+                  @change="handleAvatarChange"
+                />
 
-          <!-- TODO: Add token counter -->
+                <Button
+                  variant="ghost"
+                  icon="fa-clone"
+                  :title="t('personaManagement.actions.duplicate')"
+                  @click="handleDuplicate"
+                />
+                <Button
+                  variant="danger"
+                  icon="fa-skull"
+                  :title="t('personaManagement.actions.delete')"
+                  @click="handleDelete"
+                />
+              </div>
+            </div>
 
-          <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
-          <div class="persona-editor-connections">
-            <Button icon="fa-star" :active="isDefaultPersona" @click="toggleDefault">
-              {{ t('personaManagement.connections.default') }}
-            </Button>
-            <Button
-              icon="fa-user-lock"
-              :active="isCharacterLocked"
-              :disabled="characterStore.activeCharacters.length !== 1"
-              @click="toggleCharacterLock"
-            >
-              {{ t('personaManagement.connections.character') }}
-            </Button>
-            <Button icon="fa-lock" :active="isChatLocked" :disabled="!chatStore.activeChat" @click="toggleChatLock">
-              {{ t('personaManagement.connections.chat') }}
-            </Button>
-          </div>
+            <FormItem :label="t('personaManagement.description.label')">
+              <Textarea
+                :model-value="personaStore.activePersona?.description ?? ''"
+                :rows="6"
+                :placeholder="t('personaManagement.description.placeholder')"
+                @update:model-value="personaStore.updateActivePersonaField('description', $event)"
+              />
+            </FormItem>
 
-          <div v-if="connectedCharacters.length > 0" class="connected-characters-list">
-            <h5>{{ t('personaManagement.connections.linkedCharacters') }}</h5>
-            <div class="chips-container">
-              <div v-for="char in connectedCharacters" :key="char.avatar" class="character-chip">
-                <img :src="getThumbnailUrl('avatar', char.avatar)" class="chip-avatar" />
-                <span class="chip-name">{{ char?.name ?? '' }}</span>
-                <i class="fa-solid fa-xmark chip-remove" @click="removeConnection(char.avatar)"></i>
+            <FormItem :label="t('personaManagement.lorebooks.label')">
+              <!-- @vue-ignore -->
+              <Select
+                :model-value="personaStore.activePersona?.lorebooks ?? []"
+                :options="lorebookOptions"
+                multiple
+                @update:model-value="personaStore.updateActivePersonaField('lorebooks', $event)"
+              />
+            </FormItem>
+
+            <!-- TODO: Add token counter -->
+
+            <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
+            <div class="persona-editor-connections">
+              <Button icon="fa-star" :active="isDefaultPersona" @click="toggleDefault">
+                {{ t('personaManagement.connections.default') }}
+              </Button>
+              <Button
+                icon="fa-user-lock"
+                :active="isCharacterLocked"
+                :disabled="characterStore.activeCharacters.length !== 1"
+                @click="toggleCharacterLock"
+              >
+                {{ t('personaManagement.connections.character') }}
+              </Button>
+              <Button icon="fa-lock" :active="isChatLocked" :disabled="!chatStore.activeChat" @click="toggleChatLock">
+                {{ t('personaManagement.connections.chat') }}
+              </Button>
+            </div>
+
+            <div v-if="connectedCharacters.length > 0" class="connected-characters-list">
+              <h5>{{ t('personaManagement.connections.linkedCharacters') }}</h5>
+              <div class="chips-container">
+                <div v-for="char in connectedCharacters" :key="char.avatar" class="character-chip">
+                  <img :src="getThumbnailUrl('avatar', char.avatar)" class="chip-avatar" />
+                  <span class="chip-name">{{ char?.name ?? '' }}</span>
+                  <i class="fa-solid fa-xmark chip-remove" @click="removeConnection(char.avatar)"></i>
+                </div>
               </div>
             </div>
           </div>
 
-          <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
-          <div class="persona-editor-global-settings">
-            <Checkbox
-              v-model="settingsStore.settings.persona.showNotifications"
-              :label="t('personaManagement.globalSettings.showNotifications')"
-            />
-          </div>
+          <EmptyState v-else title="No Persona Selected" icon="fa-user-slash" />
         </div>
-      </div>
-    </div>
+      </template>
+    </SplitPane>
   </div>
 </template>
 
@@ -355,6 +392,12 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.panel-divider {
+  border: none;
+  border-top: 1px solid var(--theme-border-color);
+  margin: 4px 0;
 }
 
 .connected-characters-list {

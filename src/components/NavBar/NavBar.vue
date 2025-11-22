@@ -142,7 +142,10 @@ function toggleDrawer(drawerName: DrawerType) {
     >
       <ExtensionsDrawer />
     </div>
-    <div class="nav-item-content" :class="{ active: uiStore.activeDrawer === 'persona' }">
+    <div
+      class="nav-item-content"
+      :class="{ active: uiStore.activeDrawer === 'persona', wide: uiStore.activeDrawer === 'persona' }"
+    >
       <PersonaManagementDrawer />
     </div>
     <div

@@ -258,6 +258,8 @@ export const defaultAccountSettings: Settings['account'] = {
   characterBrowserExpanded: true,
   characterBrowserWidth: 300,
   worldinfoBrowserWidth: 300,
+  personaBrowserWidth: 300,
+  personaBrowserExpanded: true,
   characterSortOrder: CharacterSortOption.NAME_ASC,
   worldInfoSortOrder: WorldInfoSortOption.ORDER_ASC,
   extensionsBrowserWidth: 300,

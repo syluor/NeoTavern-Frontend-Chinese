@@ -3,8 +3,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  padding: 12px;
-  gap: 12px;
+  gap: 8px;
 
   &-header {
     display: flex;
@@ -12,6 +11,7 @@
     gap: 8px;
     flex-shrink: 0;
     flex-wrap: wrap;
+    padding: 12px 12px 0 12px;
 
     h3 {
       margin: 0;
@@ -36,25 +36,25 @@
     gap: 4px;
   }
 
-  &-content {
+  // Split Pane Wrapper
+  &-split {
     flex-grow: 1;
-    display: flex;
-    gap: 8px;
-    overflow: hidden;
+    min-height: 0;
   }
 
-  &-column--left {
-    flex: 1;
+  // Sidebar Content
+  &-sidebar {
     display: flex;
     flex-direction: column;
+    height: 100%;
     gap: 8px;
     min-width: 0;
   }
 
-  &-column--right {
-    flex: 1;
+  &-main {
     display: flex;
     flex-direction: column;
+    height: 100%;
     min-width: 0;
   }
 
@@ -62,6 +62,7 @@
     display: flex;
     gap: 4px;
     align-items: flex-start;
+    flex-shrink: 0;
   }
 }
 
@@ -72,6 +73,14 @@
   flex-direction: column;
   gap: 4px;
   padding-right: 4px;
+
+  &.grid-view {
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
 .persona-item-avatar {
@@ -87,12 +96,14 @@
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding: 0 12px 12px 12px;
+  height: 100%;
 
   .standoutHeader {
     margin-bottom: 0;
     border-bottom: 1px solid var(--theme-border-color);
     padding-bottom: 4px;
+    margin-top: 8px;
   }
 
   &-controls {

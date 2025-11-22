@@ -248,6 +248,8 @@ export interface Settings {
     characterBrowserExpanded: boolean;
     characterBrowserWidth: number;
     worldinfoBrowserWidth: number;
+    personaBrowserWidth: number;
+    personaBrowserExpanded: boolean;
     characterSortOrder: CharacterSortOption;
     worldInfoSortOrder: WorldInfoSortOption;
     extensionsBrowserWidth: number;

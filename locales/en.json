@@ -24,7 +24,7 @@
     "noRecentChats": "No recent chats found.",
     "noChatsFound": "No chats found.",
     "scenarioOverride": "Scenario Override",
-    "scenarioOverridePlaceholder": "Override the scenario for this specific group chat...",
+    "scenarioOverridePlaceholder": "Override the scenario for this group chat...",
     "deleteSelectedConfirmContent": "Are you sure you want to delete {count} selected chats?",
     "deleteSuccess": "Successfully deleted {count} chats.",
     "chatLorebooks": "Assigned Lorebooks",

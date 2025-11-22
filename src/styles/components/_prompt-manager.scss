@@ -2,15 +2,15 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px;
+  padding: 5px;
   height: 100%;
   overflow: hidden;
 
   &-header {
     display: flex;
     justify-content: flex-end;
-    gap: 5px;
-    padding-bottom: 5px;
+    gap: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--theme-border-color);
     flex-shrink: 0;
   }
@@ -18,13 +18,16 @@
   &-list-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding-right: 5px; // Space for scrollbar
+    padding-right: 5px;
+    display: flex;
+    flex-direction: column;
   }
 
   &-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-bottom: 10px;
   }
 }
 
@@ -35,23 +38,28 @@
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  transition: background-color var(--animation-duration-2x);
+  gap: 8px;
+  transition:
+    background-color var(--animation-duration),
+    border-color var(--animation-duration);
 
   &.disabled {
     opacity: 0.6;
     background-color: transparent;
+    border-style: dashed;
   }
 
   &.is-editing {
     background-color: var(--white-20a);
     border-color: var(--theme-emphasis-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   }
 
   &-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
   }
 
   &-info {
@@ -61,15 +69,25 @@
     flex-grow: 1;
     overflow: hidden;
     cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: var(--white-20a);
+    }
   }
 
   &-drag-handle {
     cursor: grab;
     opacity: 0.5;
     padding: 5px;
+    color: var(--theme-text-color);
 
     &:active {
       cursor: grabbing;
+    }
+    &:hover {
+      opacity: 1;
     }
   }
 
@@ -78,32 +96,39 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 0.95em;
   }
 
   &-badges {
     display: flex;
     gap: 5px;
+    flex-shrink: 0;
   }
 
   &-badge {
-    font-size: 0.75em;
-    padding: 1px 4px;
-    border-radius: 3px;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
     background-color: var(--black-50a);
-    opacity: 0.8;
+    font-weight: bold;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 
     &--system {
       color: var(--color-accent-red);
+      border: 1px solid rgba(var(--color-accent-red), 0.2);
     }
     &--user {
       color: var(--theme-text-color);
+      border: 1px solid var(--theme-border-color);
     }
     &--assistant {
       color: var(--color-accent-green-70a);
+      border: 1px solid rgba(0, 100, 0, 0.3);
     }
     &--marker {
       border: 1px solid var(--theme-quote-color);
+      color: var(--theme-quote-color);
       background: transparent;
     }
   }
@@ -111,37 +136,27 @@
   &-actions {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
   }
 
   &-editor {
-    margin-top: 10px;
+    margin-top: 5px;
     padding-top: 10px;
     border-top: 1px dashed var(--theme-border-color);
     display: flex;
     flex-direction: column;
     gap: 10px;
-
-    label {
-      font-size: 0.9em;
-      font-weight: bold;
-      margin-bottom: 2px;
-      display: block;
-    }
+    animation: slideDown 0.2s ease;
   }
 }
 
-.prompt-empty-state {
-  text-align: center;
-  opacity: 0.6;
-  padding: 20px;
-  font-style: italic;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-
-  i {
-    font-size: 2em;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

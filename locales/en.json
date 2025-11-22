@@ -48,6 +48,8 @@
     "mute": "Mute/Unmute",
     "addMember": "Add Member",
     "replyStrategy": "Reply Strategy",
+    "members": "Members",
+    "configuration": "Configuration",
     "strategies": {
       "manual": "Manual",
       "natural": "Natural Order",
@@ -145,8 +147,6 @@
     "deleteBook": "Delete Lorebook '{bookName}'",
     "refresh": "Refresh",
     "searchPlaceholder": "Search Lorebooks...",
-    "selectEntryPlaceholderTitle": "Select an Item",
-    "selectEntryPlaceholderText": "Select a lorebook entry or Global Settings from the list to begin editing.",
     "sorting": {
       "title": "Sort entries by",
       "titleAsc": "Title A-Z",
@@ -158,7 +158,6 @@
     "entry": {
       "toggle": "Toggle entry's active state.",
       "titlePlaceholder": "Entry Title/Memo",
-      "primaryKeywords": "Primary Keywords",
       "keywordsPlaceholder": "Comma separated list",
       "logic": "Logic",
       "logicOptions": {
@@ -167,10 +166,10 @@
         "notAll": "NOT ALL",
         "notAny": "NOT ANY"
       },
-      "optionalFilter": "Optional Filter",
       "filterPlaceholder": "Comma separated list (ignored if empty)",
       "content": "Content",
       "contentPlaceholder": "What this keyword should mean to the AI...",
+      "positionLabel": "Position",
       "positionTooltip": "{'↑'}Char: Before Character Definitions\n{'↓'}Char: After Character Definitions\n{'↑'}EM: Before Example Messages\n{'↓'}EM: After Example Messages\n{'↑'}AN: Before Author's Note\n{'↓'}AN: After Author's Note\n{'@'}D ⚙️: at Depth (System)\n{'@'}D 👤: at Depth (User)\n{'@'}D 🤖: at Depth (Assistant)",
       "positionOptions": {
         "beforeChar": "{'↑'}Char",
@@ -423,8 +422,6 @@
   "chat": {
     "inputPlaceholder": "Type a message, or /? for help",
     "options": "Options",
-    "extensions": "Extensions",
-    "continue": "Continue the last message",
     "send": "Send a message",
     "loadError": "Failed to load chat.",
     "createError": "Failed to create chat message.",
@@ -534,7 +531,6 @@
     "createNew": "Create New Character",
     "importFile": "Import Character from File",
     "importUrl": "Import content from external URL",
-    "createGroup": "Create New Chat Group",
     "searchToggle": "Toggle search bar",
     "searchPlaceholder": "Search...",
     "sorting": {
@@ -549,9 +545,7 @@
       "placeholderTitle": "Select a Character",
       "placeholderText": "Select a character from the list to view or edit their details.",
       "placeholderButton": "Create New Character"
-    },
-    "collapseBrowser": "Collapse character browser",
-    "expandBrowser": "Expand character browser"
+    }
   },
   "characterEditor": {
     "avatar": "Click to select a new avatar for this character",
@@ -564,7 +558,6 @@
     "delete": "Delete Character",
     "more": "More...",
     "searchTags": "Search / Create tags",
-    "viewAllTags": "View all tags",
     "creatorNotes": "Creator's Notes",
     "toggleStyles": "Allow / Forbid global styles",
     "toggleSpoiler": "Show / Hide Description and First Message",
@@ -572,7 +565,6 @@
     "detailsHidden": "Character details are hidden.",
     "description": "Description",
     "firstMessage": "First message",
-    "expandEditor": "Expand the editor",
     "namePlaceholder": "Enter character name here",
     "descriptionPlaceholder": "Describe your character's physical and mental traits here.",
     "firstMessagePlaceholder": "This will be the first message from the character that starts every chat.",
@@ -581,8 +573,7 @@
     "tokenCounts": {
       "title": "Token counts may be inaccurate and provided just for reference.",
       "total": "Total tokens",
-      "permanent": "Permanent",
-      "warningTooltip": "About Token 'Limits'"
+      "permanent": "Permanent"
     },
     "stats": {
       "title": "Click for stats!"
@@ -617,7 +608,7 @@
       "creatorNotesPlaceholder": "(Describe the bot, give use tips, etc.)",
       "tagsToEmbed": "Tags to Embed",
       "tagsToEmbedPlaceholder": "(Write a comma-separated list of tags)",
-      "personality": "Personality summary",
+      "personality": "Personality",
       "personalityPlaceholder": "(A brief description of the personality)",
       "scenario": "Scenario",
       "scenarioPlaceholder": "(Circumstances and context of the interaction)",

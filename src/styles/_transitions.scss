@@ -22,3 +22,12 @@
 .grid-slide-leave-active > * {
   overflow: hidden;
 }
+
+// JavaScript-driven slide transition (used by CollapsibleSection)
+.slide-js-enter-active,
+.slide-js-leave-active {
+  transition:
+    height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  overflow: hidden;
+}

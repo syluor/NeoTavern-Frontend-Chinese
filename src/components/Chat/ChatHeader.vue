@@ -6,6 +6,8 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { getThumbnailUrl } from '@/utils/image';
 import { useChatStore } from '@/stores/chat.store';
 import { formatTimeStamp } from '@/utils/date';
+import { AppIconButton } from '../UI';
+import SmartAvatar from '../Common/SmartAvatar.vue';
 
 const uiStore = useUiStore();
 const characterStore = useCharacterStore();
@@ -37,8 +39,6 @@ const lastMessageDate = computed(() => {
   return formatTimeStamp(lastMsg.send_date || lastMsg.gen_finished || Date.now());
 });
 
-const isFullScreen = computed(() => settingsStore.getAccountItem('chat_full_screen') === 'true');
-
 function handleCharacterClick() {
   if (isGroup.value) {
     uiStore.toggleRightSidebar('chat-management');
@@ -49,7 +49,7 @@ function handleCharacterClick() {
 }
 
 function toggleFullScreen() {
-  settingsStore.setAccountItem('chat_full_screen', (!isFullScreen.value).toString());
+  settingsStore.settings.account.chatFullScreen = !settingsStore.settings.account.chatFullScreen;
 }
 </script>
 
@@ -57,35 +57,22 @@ function toggleFullScreen() {
   <header class="chat-header">
     <div class="chat-header-group left">
       <template v-for="[id, def] in uiStore.leftSidebarRegistry" :key="id">
-        <i
+        <AppIconButton
           v-if="def.icon"
-          class="chat-header-icon fa-solid"
-          :class="[def.icon, { active: uiStore.leftSidebarView === id }]"
+          class="chat-header-icon"
+          :icon="def.icon"
+          :active="uiStore.leftSidebarView === id"
           :title="def.title"
           @click="uiStore.toggleLeftSidebar(id)"
-        ></i>
+        />
       </template>
     </div>
 
     <div class="chat-header-group center" @click="handleCharacterClick">
       <div v-if="characterStore.activeCharacters.length > 0" class="chat-header-info">
-        <div v-if="isGroup" class="chat-header-info-avatar group-grid">
-          <img
-            v-for="(url, index) in avatarUrls"
-            :key="index"
-            :src="url"
-            class="group-avatar-img"
-            onerror="this.src='img/ai4.png'"
-            alt="Group Member"
-          />
+        <div class="chat-header-info-avatar" :class="{ 'group-grid': isGroup }">
+          <SmartAvatar :urls="avatarUrls" :alt="headerTitle" />
         </div>
-        <img
-          v-else
-          :src="avatarUrls[0]"
-          :alt="headerTitle"
-          class="chat-header-info-avatar"
-          onerror="this.src='img/ai4.png'"
-        />
 
         <div class="chat-header-info-text">
           <span class="chat-header-info-name" :title="headerTitle">{{ headerTitle }}</span>
@@ -95,20 +82,22 @@ function toggleFullScreen() {
     </div>
 
     <div class="chat-header-group right">
-      <i
-        class="chat-header-icon fa-solid"
-        :class="isFullScreen ? 'fa-compress active' : 'fa-expand'"
+      <AppIconButton
+        class="chat-header-icon"
+        :icon="settingsStore.settings.account.chatFullScreen ? 'fa-compress' : 'fa-expand'"
+        :active="settingsStore.settings.account.chatFullScreen"
         title="Toggle Full Screen"
         @click="toggleFullScreen"
-      ></i>
+      />
       <template v-for="([id, def], index) in uiStore.rightSidebarRegistry" :key="index">
-        <i
+        <AppIconButton
           v-if="def.icon"
-          class="chat-header-icon fa-solid"
-          :class="[def.icon, { active: uiStore.rightSidebarView === id }]"
+          class="chat-header-icon"
+          :icon="def.icon"
+          :active="uiStore.rightSidebarView === id"
           :title="def.title"
           @click="uiStore.toggleRightSidebar(id)"
-        ></i>
+        />
       </template>
     </div>
   </header>

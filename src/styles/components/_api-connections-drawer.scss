@@ -46,7 +46,7 @@
     transition: background-color var(--animation-duration-2x);
 
     &.success {
-      background-color: #5d9e5d; // Using success color from toast
+      background-color: #5d9e5d;
     }
   }
 
@@ -54,9 +54,10 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    width: 100%;
 
-    .text-pole {
-      flex-grow: 1;
+    .menu-button {
+      flex-shrink: 0;
     }
   }
 
@@ -67,14 +68,14 @@
   }
 }
 
-.reverse_proxy_warning:not(small) {
-  color: var(--color-warning);
-  background-color: var(--black-70a);
-  text-shadow: none !important;
-  margin-top: 5px !important;
-  border-radius: 5px;
-  padding: 3px;
-  border: 1px solid var(--theme-border-color);
+.preset-manager-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+
+  .app-select-wrapper {
+    flex-grow: 1;
+  }
 }
 
 .neutral_warning {

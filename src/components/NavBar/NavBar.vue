@@ -11,6 +11,7 @@ import FormattingDrawer from './FormattingDrawer.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useUiStore } from '@/stores/ui.store';
 import type { DrawerType } from '@/types';
+import { AppIconButton } from '../UI';
 
 const { t } = useStrictI18n();
 
@@ -30,85 +31,76 @@ function toggleDrawer(drawerName: DrawerType) {
     <div id="nav-bar" class="nav-bar">
       <div class="nav-bar-nav">
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('ai-config')">
-            <div
-              class="nav-item-icon fa-solid fa-sliders fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'ai-config' }"
-              :title="t('navbar.aiConfig')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-sliders"
+            :active="uiStore.activeDrawer === 'ai-config'"
+            :title="t('navbar.aiConfig')"
+            @click="toggleDrawer('ai-config')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('api-status')">
-            <div
-              class="nav-item-icon fa-solid fa-plug fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'api-status' }"
-              :title="t('navbar.apiConnections')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-plug"
+            :active="uiStore.activeDrawer === 'api-status'"
+            :title="t('navbar.apiConnections')"
+            @click="toggleDrawer('api-status')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('formatting')">
-            <div
-              class="nav-item-icon fa-solid fa-font fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'formatting' }"
-              :title="t('navbar.formatting')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-font"
+            :active="uiStore.activeDrawer === 'formatting'"
+            :title="t('navbar.formatting')"
+            @click="toggleDrawer('formatting')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('world-info')">
-            <div
-              class="nav-item-icon fa-solid fa-book-atlas fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'world-info' }"
-              :title="t('navbar.worldInfo')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-book-atlas"
+            :active="uiStore.activeDrawer === 'world-info'"
+            :title="t('navbar.worldInfo')"
+            @click="toggleDrawer('world-info')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('user-settings')">
-            <div
-              class="nav-item-icon fa-solid fa-user-cog fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'user-settings' }"
-              :title="t('navbar.userSettings')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-user-cog"
+            :active="uiStore.activeDrawer === 'user-settings'"
+            :title="t('navbar.userSettings')"
+            @click="toggleDrawer('user-settings')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('backgrounds')">
-            <div
-              class="nav-item-icon fa-solid fa-panorama fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'backgrounds' }"
-              :title="t('navbar.backgrounds')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-panorama"
+            :active="uiStore.activeDrawer === 'backgrounds'"
+            :title="t('navbar.backgrounds')"
+            @click="toggleDrawer('backgrounds')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('extensions')">
-            <div
-              class="nav-item-icon fa-solid fa-cubes fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'extensions' }"
-              :title="t('navbar.extensions')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-cubes"
+            :active="uiStore.activeDrawer === 'extensions'"
+            :title="t('navbar.extensions')"
+            @click="toggleDrawer('extensions')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('persona')">
-            <div
-              class="nav-item-icon fa-solid fa-face-smile fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'persona' }"
-              :title="t('navbar.personaManagement')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-face-smile"
+            :active="uiStore.activeDrawer === 'persona'"
+            :title="t('navbar.personaManagement')"
+            @click="toggleDrawer('persona')"
+          />
         </div>
         <div class="nav-item">
-          <button type="button" class="nav-item-toggle" @click="toggleDrawer('character')">
-            <div
-              class="nav-item-icon fa-solid fa-address-card fa-fw"
-              :class="{ active: uiStore.activeDrawer === 'character' }"
-              :title="t('navbar.characterManagement')"
-            ></div>
-          </button>
+          <AppIconButton
+            icon="fa-address-card"
+            :active="uiStore.activeDrawer === 'character'"
+            :title="t('navbar.characterManagement')"
+            @click="toggleDrawer('character')"
+          />
         </div>
       </div>
     </div>

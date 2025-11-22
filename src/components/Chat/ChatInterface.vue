@@ -6,6 +6,7 @@ import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
 import { listChats, listRecentChats } from '@/api/chat';
+import { AppIconButton } from '../UI';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
@@ -16,6 +17,7 @@ const isOptionsMenuVisible = ref(false);
 const optionsMenu = ref<HTMLElement | null>(null);
 
 function submitMessage() {
+  if (!userInput.value.trim()) return;
   chatStore.sendMessage(userInput.value);
   userInput.value = '';
 }
@@ -97,21 +99,16 @@ watch(
       </div>
     </div>
     <div class="chat-interface-form-container">
-      <form id="chat-form" class="chat-form" @submit.prevent="submitMessage">
+      <div id="chat-form" class="chat-form">
         <div class="chat-form-inner">
           <div class="chat-form-actions-left">
-            <button
+            <AppIconButton
               id="chat-options-button"
-              type="button"
-              class="chat-form-button fa-solid fa-bars"
+              class="chat-form-button"
+              icon="fa-bars"
               :title="t('chat.options')"
               @click.stop="isOptionsMenuVisible = !isOptionsMenuVisible"
-            ></button>
-            <button
-              type="button"
-              class="chat-form-button fa-solid fa-magic-wand-sparkles"
-              :title="t('chat.extensions')"
-            ></button>
+            />
           </div>
           <textarea
             id="chat-input"
@@ -122,27 +119,21 @@ watch(
             @keydown="handleKeydown"
           ></textarea>
           <div class="chat-form-actions-right">
-            <button
+            <AppIconButton
               v-show="chatStore.isGenerating"
-              type="button"
-              class="chat-form-button fa-fw fa-solid fa-stop"
+              class="chat-form-button"
+              icon="fa-stop"
               :title="t('chat.abort')"
               @click="chatStore.abortGeneration"
-            ></button>
-            <div v-show="!chatStore.isGenerating">
-              <button
-                type="button"
-                class="chat-form-button fa-fw fa-solid fa-arrow-right"
-                :title="t('chat.continue')"
-                :disabled="chatStore.isGenerating"
-                @click="continueGeneration"
-              ></button>
-              <button
-                type="submit"
-                class="chat-form-button fa-solid fa-paper-plane"
+            />
+            <div v-show="!chatStore.isGenerating" style="display: contents">
+              <AppIconButton
+                class="chat-form-button"
+                icon="fa-paper-plane"
                 :title="t('chat.send')"
                 :disabled="chatStore.isGenerating"
-              ></button>
+                @click="submitMessage"
+              />
             </div>
           </div>
         </div>
@@ -158,7 +149,7 @@ watch(
             <span>{{ t('chat.optionsMenu.continue') }}</span>
           </a>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -14,6 +14,13 @@ import { getThumbnailUrl } from '../../utils/image';
 import Pagination from '../Common/Pagination.vue';
 import DraggableList from '../Common/DraggableList.vue';
 import { useUiStore } from '@/stores/ui.store';
+import { AppButton, AppIconButton, AppInput, AppSelect, AppTextarea, AppCheckbox } from '../UI';
+import AppTabs from '../UI/AppTabs.vue';
+import AppSearch from '../UI/AppSearch.vue';
+import AppListItem from '../UI/AppListItem.vue';
+import AppFormItem from '../UI/AppFormItem.vue';
+import CollapsibleSection from '../UI/CollapsibleSection.vue';
+import EmptyState from '../Common/EmptyState.vue';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
@@ -25,18 +32,8 @@ const uiStore = useUiStore();
 const activeTab = ref<'chats' | 'members' | 'prompts'>('chats');
 const chatSearchTerm = ref('');
 
-// --- Pagination State for Members to Add ---
-const STORAGE_KEY_ADD_MEMBER = 'add_member_page_size';
-const savedPageSize = settingsStore.getAccountItem(STORAGE_KEY_ADD_MEMBER);
-
 const addMemberSearchTerm = ref('');
 const addMemberPage = ref(1);
-const addMemberPageSize = ref(savedPageSize ? parseInt(savedPageSize, 10) : 10);
-
-watch(addMemberPageSize, (newVal) => {
-  settingsStore.setAccountItem(STORAGE_KEY_ADD_MEMBER, newVal.toString());
-  addMemberPage.value = 1; // Reset page when size changes
-});
 
 // --- Chat List Logic ---
 const chats = computed<ChatInfo[]>(() => {
@@ -49,10 +46,8 @@ const chats = computed<ChatInfo[]>(() => {
       allChats.push(...chatsForAvatar);
     }
   }
-  // Remove duplicates
   allChats = allChats.filter((chat, index, self) => index === self.findIndex((c) => c.file_id === chat.file_id));
 
-  // Filter by search
   if (chatSearchTerm.value) {
     const lower = chatSearchTerm.value.toLowerCase();
     allChats = allChats.filter((c) => c.file_id.toLowerCase().includes(lower));
@@ -166,13 +161,27 @@ const availableCharactersFiltered = computed(() => {
 });
 
 const availableCharactersPaginated = computed(() => {
-  const start = (addMemberPage.value - 1) * addMemberPageSize.value;
-  const end = start + addMemberPageSize.value;
+  const start = (addMemberPage.value - 1) * settingsStore.settings.account.addMemberPageSize;
+  const end = start + settingsStore.settings.account.addMemberPageSize;
   return availableCharactersFiltered.value.slice(start, end);
 });
 
 const groupConfig = computed(() => chatStore.groupConfig);
 const isGroup = computed(() => chatStore.isGroupChat);
+
+// Options for AppSelect
+const replyStrategyOptions = computed(() => [
+  { label: t('group.strategies.manual'), value: GroupReplyStrategy.MANUAL },
+  { label: t('group.strategies.natural'), value: GroupReplyStrategy.NATURAL_ORDER },
+  { label: t('group.strategies.list'), value: GroupReplyStrategy.LIST_ORDER },
+  { label: t('group.strategies.pooled'), value: GroupReplyStrategy.POOLED_ORDER },
+]);
+
+const handlingModeOptions = computed(() => [
+  { label: t('group.modes.swap'), value: GroupGenerationHandlingMode.SWAP },
+  { label: t('group.modes.joinExclude'), value: GroupGenerationHandlingMode.JOIN_EXCLUDE_MUTED },
+  { label: t('group.modes.joinInclude'), value: GroupGenerationHandlingMode.JOIN_INCLUDE_MUTED },
+]);
 
 function toggleMute(avatar: string) {
   chatStore.toggleMemberMute(avatar);
@@ -208,208 +217,219 @@ async function removeMember(avatar: string) {
 <template>
   <div class="popup-body chat-management">
     <div class="chat-management-header">
-      <button class="menu-button" :class="{ active: activeTab === 'chats' }" @click="activeTab = 'chats'">
-        {{ t('chatManagement.tabs.chats') }}
-      </button>
-      <button class="menu-button" :class="{ active: activeTab === 'members' }" @click="activeTab = 'members'">
-        {{ t('chatManagement.tabs.group') }}
-      </button>
-      <button class="menu-button" :class="{ active: activeTab === 'prompts' }" @click="activeTab = 'prompts'">
-        {{ t('chatManagement.tabs.prompts') }}
-      </button>
+      <AppTabs
+        v-model="activeTab"
+        style="border-bottom: none; margin-bottom: 0"
+        :options="[
+          { label: t('chatManagement.tabs.chats'), value: 'chats' },
+          { label: t('chatManagement.tabs.group'), value: 'members' },
+          { label: t('chatManagement.tabs.prompts'), value: 'prompts' },
+        ]"
+      />
     </div>
 
     <div class="chat-management-content">
       <!-- Tab: Chats -->
       <div v-show="activeTab === 'chats'" class="chat-management-tab-content">
         <div class="chat-management-actions">
-          <button v-show="characterStore.activeCharacters.length > 0" class="menu-button" @click="createNewChat()">
-            <i class="fa-solid fa-plus"></i> {{ t('chatManagement.newChat') }}
-          </button>
-          <input
-            v-model="chatSearchTerm"
-            type="search"
-            class="text-pole chat-management-search-input"
-            :placeholder="t('common.search')"
-          />
+          <AppSearch v-model="chatSearchTerm" :placeholder="t('common.search')" style="margin-top: 5px">
+            <template #actions>
+              <AppButton v-show="characterStore.activeCharacters.length > 0" icon="fa-plus" @click="createNewChat()">
+                {{ t('chatManagement.newChat') }}
+              </AppButton>
+            </template>
+          </AppSearch>
         </div>
 
         <div class="chat-management-list">
-          <div
-            v-for="file in chats"
-            :key="file.file_id"
-            class="chat-management-item"
-            :class="{ active: chatStore.activeChatFile === file.file_id }"
-            @click="selectChat(file.file_id)"
-          >
-            <div class="chat-management-item-icon">
-              <i class="fa-solid fa-comments"></i>
-            </div>
-            <div class="chat-management-item-info">
-              <div class="chat-management-item-name" :title="file.file_id">
-                {{ file.file_id }}
-              </div>
-              <div class="chat-management-item-meta">
-                <span>{{ formatTimeStamp(file.last_mes) }}</span>
-                <span>{{ file.chat_items }} msgs</span>
-              </div>
-            </div>
-            <div class="chat-management-item-actions">
-              <button
-                class="menu-button-icon fa-solid fa-pencil"
-                :title="t('chatManagement.actions.rename')"
-                @click.stop="renameChat(file.file_id)"
-              ></button>
-              <button
-                class="menu-button-icon fa-solid fa-trash-can menu-button--danger"
-                :title="t('chatManagement.actions.delete')"
-                @click.stop="deleteChat(file.file_id)"
-              ></button>
-            </div>
+          <div v-for="file in chats" :key="file.file_id">
+            <AppListItem :active="chatStore.activeChatFile === file.file_id" @click="selectChat(file.file_id)">
+              <template #start>
+                <div class="chat-management-item-icon">
+                  <i class="fa-solid fa-comments"></i>
+                </div>
+              </template>
+              <template #default>
+                <div
+                  class="font-bold"
+                  :title="file.file_id"
+                  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+                >
+                  {{ file.file_id }}
+                </div>
+                <div style="font-size: 0.85em; opacity: 0.7; display: flex; gap: 15px">
+                  <span>{{ formatTimeStamp(file.last_mes) }}</span>
+                  <span>{{ file.chat_items }} msgs</span>
+                </div>
+              </template>
+              <template #end>
+                <AppIconButton
+                  icon="fa-pencil"
+                  :title="t('chatManagement.actions.rename')"
+                  @click.stop="renameChat(file.file_id)"
+                />
+                <AppIconButton
+                  icon="fa-trash-can"
+                  variant="danger"
+                  :title="t('chatManagement.actions.delete')"
+                  @click.stop="deleteChat(file.file_id)"
+                />
+              </template>
+            </AppListItem>
           </div>
-          <div v-if="chats.length === 0" class="prompt-empty-state">
-            {{ t('chatManagement.noChatsFound') }}
-          </div>
+          <EmptyState v-if="chats.length === 0" :description="t('chatManagement.noChatsFound')" />
         </div>
       </div>
 
       <!-- Tab: Members / Group Config -->
-      <div v-show="activeTab === 'members'" class="chat-management-tab-content">
+      <div v-show="activeTab === 'members' && chatStore.activeChatFile" class="chat-management-tab-content">
         <!-- Current Members -->
-        <DraggableList
-          :items="groupMembers"
-          item-key="avatar"
-          class="group-members-list"
-          handle-class="group-member-handle"
-          @update:items="updateMembersOrder"
+        <CollapsibleSection
+          v-model:is-open="settingsStore.settings.account.groupMembersExpanded"
+          :title="t('group.members')"
         >
-          <template #default="{ item: member }">
-            <div class="group-member-item" :class="{ muted: groupConfig?.members[member.avatar]?.muted }">
-              <div
-                class="menu-button-icon fa-solid fa-grip-lines group-member-handle"
-                style="cursor: grab; opacity: 0.5"
-                :title="t('common.dragToReorder')"
-              ></div>
-
-              <img :src="getThumbnailUrl('avatar', member.avatar)" />
-              <span class="group-member-name" :title="member.name">{{ member.name }}</span>
-
-              <div class="member-actions">
-                <div
-                  v-if="isGroup"
-                  class="menu-button-icon fa-solid fa-address-card"
-                  :title="t('group.peek')"
-                  @click="peekCharacter(member.avatar)"
-                ></div>
-                <div
-                  v-if="isGroup"
-                  class="menu-button-icon fa-solid fa-comment-dots"
-                  :title="t('group.forceTalk')"
-                  @click="forceTalk(member.avatar)"
-                ></div>
-                <div
-                  v-if="isGroup"
-                  class="menu-button-icon fa-solid"
-                  :class="groupConfig?.members[member.avatar]?.muted ? 'fa-comment-slash' : 'fa-comment'"
-                  :title="t('group.mute')"
-                  @click="toggleMute(member.avatar)"
-                ></div>
-                <div
-                  class="menu-button-icon fa-solid fa-trash-can menu-button--danger"
-                  :title="t('common.remove')"
-                  @click="removeMember(member.avatar)"
-                ></div>
-              </div>
-            </div>
-          </template>
-        </DraggableList>
+          <DraggableList
+            :items="groupMembers"
+            item-key="avatar"
+            class="group-members-list"
+            handle-class="group-member-handle"
+            @update:items="updateMembersOrder"
+          >
+            <template #default="{ item: member }">
+              <AppListItem :class="{ muted: groupConfig?.members[member.avatar]?.muted }" style="margin-bottom: 2px">
+                <template #start>
+                  <div
+                    class="menu-button-icon fa-solid fa-grip-lines group-member-handle"
+                    style="cursor: grab; opacity: 0.5; margin-right: 5px"
+                  ></div>
+                  <img
+                    :src="getThumbnailUrl('avatar', member.avatar)"
+                    style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover"
+                  />
+                </template>
+                <template #default>
+                  <span class="font-bold" :class="{ 'line-through': groupConfig?.members[member.avatar]?.muted }">{{
+                    member.name
+                  }}</span>
+                </template>
+                <template #end>
+                  <AppIconButton
+                    v-if="isGroup"
+                    icon="fa-address-card"
+                    :title="t('group.peek')"
+                    @click="peekCharacter(member.avatar)"
+                  />
+                  <AppIconButton
+                    v-if="isGroup"
+                    icon="fa-comment-dots"
+                    :title="t('group.forceTalk')"
+                    @click="forceTalk(member.avatar)"
+                  />
+                  <AppIconButton
+                    v-if="isGroup"
+                    :icon="groupConfig?.members[member.avatar]?.muted ? 'fa-comment-slash' : 'fa-comment'"
+                    :title="t('group.mute')"
+                    @click="toggleMute(member.avatar)"
+                  />
+                  <AppIconButton
+                    icon="fa-trash-can"
+                    variant="danger"
+                    :title="t('common.remove')"
+                    @click="removeMember(member.avatar)"
+                  />
+                </template>
+              </AppListItem>
+            </template>
+          </DraggableList>
+        </CollapsibleSection>
 
         <!-- Add Member Section -->
-        <div class="group-add-section">
-          <h4>{{ t('group.addMember') }}</h4>
-          <input
-            v-model="addMemberSearchTerm"
-            type="search"
-            class="text-pole add-member-search"
-            :placeholder="t('common.search')"
-            @input="addMemberPage = 1"
-          />
-          <div class="add-member-list">
-            <div
-              v-for="char in availableCharactersPaginated"
-              :key="char.avatar"
-              class="add-member-card"
-              @click="addMember(char.avatar)"
-            >
-              <img :src="getThumbnailUrl('avatar', char.avatar)" />
-              <span>{{ char.name }}</span>
-              <i class="fa-solid fa-plus"></i>
+        <CollapsibleSection
+          v-model:is-open="settingsStore.settings.account.addMemberExpanded"
+          :title="t('group.addMember')"
+        >
+          <div class="group-add-section">
+            <AppSearch v-model="addMemberSearchTerm" :placeholder="t('common.search')" @input="addMemberPage = 1" />
+
+            <div class="add-member-list">
+              <div v-for="char in availableCharactersPaginated" :key="char.avatar">
+                <AppListItem @click="addMember(char.avatar)">
+                  <template #start>
+                    <img
+                      :src="getThumbnailUrl('avatar', char.avatar)"
+                      style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover"
+                    />
+                  </template>
+                  <template #default>{{ char.name }}</template>
+                  <template #end><i class="fa-solid fa-plus"></i></template>
+                </AppListItem>
+              </div>
+              <EmptyState v-if="availableCharactersPaginated.length === 0" :description="t('common.noResults')" />
             </div>
-            <div v-if="availableCharactersPaginated.length === 0" class="chat-management-empty-notice">
-              {{ t('common.noResults') }}
-            </div>
+            <Pagination
+              v-if="availableCharactersFiltered.length > settingsStore.settings.account.addMemberPageSize"
+              v-model:current-page="addMemberPage"
+              v-model:items-per-page="settingsStore.settings.account.addMemberPageSize"
+              :total-items="availableCharactersFiltered.length"
+              :items-per-page-options="[10, 25, 50, 100]"
+            />
           </div>
-          <Pagination
-            v-if="availableCharactersFiltered.length > addMemberPageSize"
-            v-model:current-page="addMemberPage"
-            v-model:items-per-page="addMemberPageSize"
-            :total-items="availableCharactersFiltered.length"
-            :items-per-page-options="[10, 25, 50, 100]"
-          />
-        </div>
+        </CollapsibleSection>
 
         <!-- Group Config: Only show if actual group -->
-        <div v-if="isGroup && groupConfig" class="group-config-section">
-          <hr />
-          <label>
-            {{ t('group.replyStrategy') }}
-            <select v-model="groupConfig.config.replyStrategy" class="text-pole">
-              <option :value="GroupReplyStrategy.MANUAL">{{ t('group.strategies.manual') }}</option>
-              <option :value="GroupReplyStrategy.NATURAL_ORDER">{{ t('group.strategies.natural') }}</option>
-              <option :value="GroupReplyStrategy.LIST_ORDER">{{ t('group.strategies.list') }}</option>
-              <option :value="GroupReplyStrategy.POOLED_ORDER">{{ t('group.strategies.pooled') }}</option>
-            </select>
-          </label>
+        <CollapsibleSection
+          v-if="isGroup && groupConfig"
+          v-model:is-open="settingsStore.settings.account.groupConfigExpanded"
+          :title="t('group.configuration')"
+        >
+          <div class="group-config-section">
+            <hr />
+            <AppFormItem :label="t('group.replyStrategy')">
+              <AppSelect v-model="groupConfig.config.replyStrategy" :options="replyStrategyOptions" />
+            </AppFormItem>
 
-          <label>
-            {{ t('group.handlingMode') }}
-            <select v-model="groupConfig.config.handlingMode" class="text-pole">
-              <option :value="GroupGenerationHandlingMode.SWAP">{{ t('group.modes.swap') }}</option>
-              <option :value="GroupGenerationHandlingMode.JOIN_EXCLUDE_MUTED">
-                {{ t('group.modes.joinExclude') }}
-              </option>
-              <option :value="GroupGenerationHandlingMode.JOIN_INCLUDE_MUTED">
-                {{ t('group.modes.joinInclude') }}
-              </option>
-            </select>
-          </label>
+            <AppFormItem :label="t('group.handlingMode')">
+              <AppSelect v-model="groupConfig.config.handlingMode" :options="handlingModeOptions" />
+            </AppFormItem>
 
-          <label class="checkbox-label">
-            <input v-model="groupConfig.config.allowSelfResponses" type="checkbox" />
-            {{ t('group.allowSelfResponses') }}
-          </label>
+            <AppCheckbox v-model="groupConfig.config.allowSelfResponses" :label="t('group.allowSelfResponses')" />
 
-          <label>
-            {{ t('group.autoMode') }} ({{ t('common.seconds') }})
-            <input v-model.number="groupConfig.config.autoMode" type="number" class="text-pole" min="0" />
-            <small>{{ t('group.autoModeHint') }}</small>
-          </label>
-        </div>
+            <AppFormItem :label="t('group.autoMode')" :description="t('group.autoModeHint')">
+              <AppInput
+                v-model="groupConfig.config.autoMode"
+                type="number"
+                :min="0"
+                :placeholder="t('common.seconds')"
+              />
+            </AppFormItem>
+          </div>
+        </CollapsibleSection>
       </div>
 
       <!-- Tab: Prompt Overrides -->
       <div v-show="activeTab === 'prompts'" class="chat-management-prompt-tab">
-        <div>
-          <label>{{ t('chatManagement.scenarioOverride') }}</label>
-          <textarea
-            v-if="chatStore.activeChat?.metadata.promptOverrides"
-            v-model="chatStore.activeChat.metadata.promptOverrides.scenario"
-            class="text-pole"
-            rows="6"
-            :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
-          ></textarea>
+        <div v-if="chatStore.activeChat?.metadata.promptOverrides">
+          <AppFormItem :label="t('chatManagement.scenarioOverride')">
+            <AppTextarea
+              v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
+              :rows="6"
+              :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
+            />
+          </AppFormItem>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.font-bold {
+  font-weight: bold;
+}
+.line-through {
+  text-decoration: line-through;
+}
+.muted {
+  opacity: 0.6;
+}
+</style>

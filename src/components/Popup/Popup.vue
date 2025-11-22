@@ -7,6 +7,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_TYPE, POPUP_RESULT, type CustomPopupButton } from '../../types';
 import 'cropperjs';
 import type { I18nKey } from '../../types/i18n';
+import { AppButton, AppTextarea } from '../UI';
 
 interface CropperSelectionElement extends HTMLElement {
   x: number;
@@ -42,7 +43,7 @@ const emit = defineEmits(['close', 'submit']);
 const { t } = useStrictI18n();
 const settings = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
-const mainInput = ref<HTMLTextAreaElement | null>(null);
+const mainInputComponent = ref<InstanceType<typeof AppTextarea> | null>(null);
 const cropperSelection = ref<CropperSelectionElement | null>(null);
 const internalInputValue = ref(props.inputValue);
 const generatedButtons = ref<CustomPopupButton[]>([]);
@@ -106,6 +107,12 @@ function resolveOptions() {
   generatedButtons.value = buttons;
 }
 
+function getButtonVariant(button: CustomPopupButton): 'default' | 'confirm' | 'danger' {
+  if (button.result === POPUP_RESULT.AFFIRMATIVE) return 'confirm';
+  if (button.result === POPUP_RESULT.NEGATIVE && props.type === POPUP_TYPE.CONFIRM) return 'danger';
+  return 'default';
+}
+
 watch(
   () => props.visible,
   (isVisible) => {
@@ -116,10 +123,11 @@ watch(
         dialog.value?.showModal();
       }
       setTimeout(() => {
-        if (props.type === POPUP_TYPE.INPUT && mainInput.value) {
-          mainInput.value.focus();
+        if (props.type === POPUP_TYPE.INPUT && mainInputComponent.value) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const textarea = (mainInputComponent.value as any).$el.querySelector('textarea');
+          textarea?.focus();
         } else if (props.type !== POPUP_TYPE.CROP) {
-          (dialog.value?.querySelector('.menu-button.default') as HTMLElement)?.focus();
         }
       }, 100);
     } else {
@@ -192,13 +200,14 @@ function handleEnter(evt: KeyboardEvent) {
 
         <component :is="component" v-if="component" v-bind="componentProps" />
 
-        <textarea
+        <AppTextarea
           v-if="type === POPUP_TYPE.INPUT"
-          ref="mainInput"
+          ref="mainInputComponent"
           v-model="internalInputValue"
-          class="popup-input"
+          class="popup-input-wrapper"
           :rows="rows"
-        ></textarea>
+        />
+
         <div v-if="type === POPUP_TYPE.CROP" class="crop-container">
           <cropper-canvas>
             <cropper-image :src="cropImage" alt="Image to crop" translatable></cropper-image>
@@ -218,16 +227,15 @@ function handleEnter(evt: KeyboardEvent) {
       </div>
 
       <div class="popup-controls">
-        <button
+        <AppButton
           v-for="button in generatedButtons"
           :key="button.text"
-          type="button"
-          class="menu-button"
-          :class="[{ default: button.isDefault }, button.classes]"
+          :variant="getButtonVariant(button)"
+          :class="button.classes"
           @click="handleResult(button.result)"
         >
           {{ button.text }}
-        </button>
+        </AppButton>
       </div>
     </div>
   </dialog>

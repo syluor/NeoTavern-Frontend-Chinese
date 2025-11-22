@@ -22,27 +22,18 @@
 }
 
 .nav-item {
-  &-toggle {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    color: var(--theme-text-color);
-  }
-
-  &-icon {
+  .menu-button-icon {
     font-size: var(--nav-bar-icon-size);
     padding: 3px 1px;
     opacity: 0.3;
+    background-color: transparent;
+    border: none;
     transition: all var(--animation-duration-2x);
 
-    &:hover {
-      opacity: 1;
-    }
-
+    &:hover,
     &.active {
       opacity: 1;
+      background-color: transparent;
     }
   }
 

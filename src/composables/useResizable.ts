@@ -1,9 +1,9 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 import { useSettingsStore } from '../stores/settings.store';
-import type { AccountStorageKey } from '../types';
+import type { Settings } from '@/types';
 
 interface UseResizableOptions {
-  storageKey?: AccountStorageKey;
+  storageKey?: keyof Settings['account'];
   initialWidth?: number;
   minWidth?: number;
   maxWidth?: number;
@@ -79,14 +79,16 @@ export function useResizable(
 
     // Save the final width to account storage
     if (element.value && storageKey) {
-      settingsStore.setAccountItem(storageKey, element.value.style.width);
+      // @ts-expect-error never
+      settingsStore.settings.account[storageKey] = parseInt(element.value.style.width, 10);
     }
   };
 
   onMounted(() => {
     // Restore saved width on mount
-    const savedWidthStr = storageKey ? settingsStore.getAccountItem(storageKey) : null;
-    const widthValue = savedWidthStr ? parseInt(savedWidthStr, 10) : initialWidth;
+    const widthValue = storageKey
+      ? (settingsStore.settings.account[storageKey] as number) || initialWidth
+      : initialWidth;
 
     if (element.value) {
       element.value.style.width = `${widthValue}px`;

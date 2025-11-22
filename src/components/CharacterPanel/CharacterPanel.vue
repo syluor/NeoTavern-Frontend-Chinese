@@ -5,8 +5,13 @@ import CharacterEditForm from './CharacterEditForm.vue';
 import Pagination from '../Common/Pagination.vue';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useResizable } from '../../composables/useResizable';
 import { useSettingsStore } from '../../stores/settings.store';
+import { AppIconButton, AppButton, AppSelect } from '../UI';
+import AppSearch from '../UI/AppSearch.vue';
+import AppFileInput from '../UI/AppFileInput.vue';
+import AppListItem from '../UI/AppListItem.vue';
+import SplitPane from '../Common/SplitPane.vue';
+import EmptyState from '../Common/EmptyState.vue';
 
 const { t } = useStrictI18n();
 
@@ -14,23 +19,8 @@ const characterStore = useCharacterStore();
 const settingsStore = useSettingsStore();
 
 const isSearchActive = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
 const characterListEl = ref<HTMLElement | null>(null);
 const highlightedItemRef = ref<HTMLElement | null>(null);
-
-// --- Collapsible & Resizable State ---
-const BROWSER_COLLAPSED_KEY = 'character_browser_collapsed';
-const BROWSER_WIDTH_KEY = 'character_browser_width';
-
-const isBrowserCollapsed = ref(settingsStore.getAccountItem(BROWSER_COLLAPSED_KEY) === 'true');
-const browserPane = ref<HTMLElement | null>(null);
-const dividerEl = ref<HTMLElement | null>(null);
-
-useResizable(browserPane, dividerEl, { storageKey: BROWSER_WIDTH_KEY });
-
-watch(isBrowserCollapsed, (newValue) => {
-  settingsStore.setAccountItem(BROWSER_COLLAPSED_KEY, String(newValue));
-});
 
 // Watch for a character being highlighted by the store
 watch(
@@ -40,22 +30,14 @@ watch(
       highlightedItemRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   },
-  { flush: 'post' }, // Wait for the DOM to update
+  { flush: 'post' },
 );
 
 function createNew() {
   characterStore.startCreating();
 }
 
-function triggerImport() {
-  fileInput.value?.click();
-}
-
-async function handleFileImport(event: Event) {
-  const target = event.target as HTMLInputElement;
-  if (!target.files || target.files.length === 0) return;
-
-  const files = Array.from(target.files);
+async function handleFileImport(files: File[]) {
   const importedAvatars: string[] = [];
 
   for (const file of files) {
@@ -75,11 +57,15 @@ async function handleFileImport(event: Event) {
     const lastAvatar = importedAvatars[importedAvatars.length - 1];
     characterStore.highlightCharacter(lastAvatar);
   }
-
-  if (target) {
-    target.value = '';
-  }
 }
+
+const sortOptions = [
+  { value: 'name:asc', label: t('characterPanel.sorting.nameAsc') },
+  { value: 'name:desc', label: t('characterPanel.sorting.nameDesc') },
+  { value: 'create_date:desc', label: t('characterPanel.sorting.newest') },
+  { value: 'create_date:asc', label: t('characterPanel.sorting.oldest') },
+  { value: 'fav:desc', label: t('characterPanel.sorting.favorites') },
+];
 
 onMounted(() => {
   characterStore.refreshCharacters();
@@ -87,49 +73,45 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="character-panel" :class="{ 'is-collapsed': isBrowserCollapsed }">
-    <!-- Left Pane: Character Browser -->
-    <div ref="browserPane" class="character-panel-browser">
+  <SplitPane
+    v-model:collapsed="settingsStore.settings.account.characterBrowserExpanded"
+    storage-key="characterBrowserWidth"
+    class="character-panel"
+  >
+    <template #side>
       <div class="character-panel-browser-header">
         <div class="character-panel-actions">
-          <div
-            :title="t('characterPanel.createNew')"
-            class="menu-button fa-solid fa-user-plus"
-            @click="createNew"
-          ></div>
-          <div
-            :title="t('characterPanel.importFile')"
-            class="menu-button fa-solid fa-file-import"
-            @click="triggerImport"
-          ></div>
-          <input ref="fileInput" type="file" accept=".json,.png" multiple hidden @change="handleFileImport" />
-          <div :title="t('characterPanel.importUrl')" class="menu-button fa-solid fa-cloud-arrow-down"></div>
-          <div :title="t('characterPanel.createGroup')" class="menu-button fa-solid fa-users-gear"></div>
+          <AppIconButton icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
+          <AppFileInput
+            accept=".json,.png"
+            multiple
+            icon="fa-file-import"
+            :label="t('characterPanel.importFile')"
+            @change="handleFileImport"
+          />
+          <AppIconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
+
           <div id="extension-buttons-container"></div>
-          <div
-            class="menu-button-icon fa-fw fa-solid fa-search character-search-toggle"
+
+          <AppIconButton
+            icon="fa-search"
             :title="t('characterPanel.searchToggle')"
             @click="isSearchActive = !isSearchActive"
-          ></div>
-        </div>
-        <div v-show="isSearchActive" id="character-search-form" class="character-panel-search-form">
-          <input
-            v-model="characterStore.searchTerm"
-            class="text-pole character-panel-search-input"
-            type="search"
-            :placeholder="t('characterPanel.searchPlaceholder')"
           />
-          <select
-            v-model="characterStore.sortOrder"
-            class="text-pole character-sort-order"
-            :title="t('characterPanel.sorting.title')"
-          >
-            <option value="name:asc">{{ t('characterPanel.sorting.nameAsc') }}</option>
-            <option value="name:desc">{{ t('characterPanel.sorting.nameDesc') }}</option>
-            <option value="create_date:desc">{{ t('characterPanel.sorting.newest') }}</option>
-            <option value="create_date:asc">{{ t('characterPanel.sorting.oldest') }}</option>
-            <option value="fav:desc">{{ t('characterPanel.sorting.favorites') }}</option>
-          </select>
+        </div>
+
+        <div v-show="isSearchActive" style="margin-top: 5px">
+          <AppSearch v-model="characterStore.searchTerm" :placeholder="t('characterPanel.searchPlaceholder')">
+            <template #actions>
+              <div style="min-width: 140px">
+                <AppSelect
+                  v-model="characterStore.sortOrder"
+                  :options="sortOptions"
+                  :title="t('characterPanel.sorting.title')"
+                />
+              </div>
+            </template>
+          </AppSearch>
         </div>
       </div>
 
@@ -144,63 +126,66 @@ onMounted(() => {
       </div>
 
       <div id="character-list" ref="characterListEl" class="character-panel-character-list">
-        <div v-if="characterStore.paginatedCharacters.length === 0">{{ t('common.loading') }}</div>
+        <div v-if="characterStore.paginatedCharacters.length === 0" style="padding: 10px; opacity: 0.7">
+          {{ t('common.loading') }}
+        </div>
         <template v-for="character in characterStore.paginatedCharacters" :key="character.id">
-          <div
+          <AppListItem
             :ref="
-              (el) => {
-                if (character.avatar === characterStore.highlightedAvatar) {
-                  highlightedItemRef = el as HTMLElement;
-                }
+              (el: any) => {
+                if (character.avatar === characterStore.highlightedAvatar) highlightedItemRef = el?.$el;
               }
             "
-            class="character-item"
-            :class="{
-              'is-active': characterStore.editFormCharacter?.avatar === character.avatar,
-              'flash animated': character.avatar === characterStore.highlightedAvatar,
-            }"
-            tabindex="0"
+            :active="characterStore.editFormCharacter?.avatar === character.avatar"
+            :class="{ 'flash animated': character.avatar === characterStore.highlightedAvatar }"
             :data-character-avatar="character.avatar"
             @click="characterStore.selectCharacterByAvatar(character.avatar)"
           >
-            <div class="character-item-avatar">
+            <template #start>
               <img :src="getThumbnailUrl('avatar', character.avatar)" :alt="`${character.name} Avatar`" />
-            </div>
-            <div class="character-item-content">
-              <div class="character-item-header">
-                <span class="character-item-name">{{ character.name }}</span>
-                <i v-if="character.fav" class="character-item-fav-icon fa-solid fa-star"></i>
+            </template>
+
+            <template #default>
+              <div style="display: flex; align-items: center; gap: 5px">
+                <span class="font-bold">{{ character.name }}</span>
+                <i
+                  v-if="character.fav"
+                  class="fa-solid fa-star"
+                  style="color: var(--color-golden); font-size: 0.8em"
+                ></i>
               </div>
-              <div class="character-item-description">{{ character.description || '&nbsp;' }}</div>
-            </div>
-          </div>
+              <div
+                style="font-size: 0.8em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+              >
+                {{ character.description || '&nbsp;' }}
+              </div>
+            </template>
+          </AppListItem>
         </template>
       </div>
-    </div>
+    </template>
 
-    <!-- Divider -->
-    <div ref="dividerEl" class="character-panel-divider">
-      <div
-        class="character-panel-collapse-toggle"
-        :title="isBrowserCollapsed ? t('characterPanel.expandBrowser') : t('characterPanel.collapseBrowser')"
-        @click="isBrowserCollapsed = !isBrowserCollapsed"
-      >
-        <i class="fa-solid" :class="isBrowserCollapsed ? 'fa-angles-right' : 'fa-angles-left'"></i>
-      </div>
-    </div>
+    <template #main>
+      <div class="character-panel-editor">
+        <EmptyState
+          v-show="!characterStore.editFormCharacter"
+          icon="fa-user-pen"
+          :title="t('characterPanel.editor.placeholderTitle')"
+          :description="t('characterPanel.editor.placeholderText')"
+        >
+          <AppButton icon="fa-user-plus" @click="createNew">
+            {{ t('characterPanel.editor.placeholderButton') }}
+          </AppButton>
+        </EmptyState>
 
-    <!-- Right Pane: Character Editor -->
-    <div class="character-panel-editor">
-      <div v-show="!characterStore.editFormCharacter" class="character-panel-editor-placeholder">
-        <div class="placeholder-icon fa-solid fa-user-pen"></div>
-        <h2 class="placeholder-title">{{ t('characterPanel.editor.placeholderTitle') }}</h2>
-        <p class="placeholder-text">{{ t('characterPanel.editor.placeholderText') }}</p>
-        <div class="menu-button" @click="createNew">
-          <i class="fa-solid fa-user-plus"></i>&nbsp;
-          <span>{{ t('characterPanel.editor.placeholderButton') }}</span>
-        </div>
+        <CharacterEditForm v-show="characterStore.editFormCharacter" />
       </div>
-      <CharacterEditForm v-show="characterStore.editFormCharacter" />
-    </div>
-  </div>
+    </template>
+  </SplitPane>
 </template>
+
+<style scoped>
+.font-bold {
+  font-weight: bold;
+}
+</style>

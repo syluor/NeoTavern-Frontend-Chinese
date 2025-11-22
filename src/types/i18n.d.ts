@@ -51,6 +51,8 @@ export interface MessageSchema {
     mute: string;
     addMember: string;
     replyStrategy: string;
+    members: string;
+    configuration: string;
     strategies: {
       manual: string;
       natural: string;
@@ -148,8 +150,6 @@ export interface MessageSchema {
     deleteBook: string;
     refresh: string;
     searchPlaceholder: string;
-    selectEntryPlaceholderTitle: string;
-    selectEntryPlaceholderText: string;
     sorting: {
       title: string;
       titleAsc: string;
@@ -161,7 +161,6 @@ export interface MessageSchema {
     entry: {
       toggle: string;
       titlePlaceholder: string;
-      primaryKeywords: string;
       keywordsPlaceholder: string;
       logic: string;
       logicOptions: {
@@ -170,10 +169,10 @@ export interface MessageSchema {
         notAll: string;
         notAny: string;
       };
-      optionalFilter: string;
       filterPlaceholder: string;
       content: string;
       contentPlaceholder: string;
+      positionLabel: string;
       positionTooltip: string;
       positionOptions: {
         beforeChar: string;
@@ -426,8 +425,6 @@ export interface MessageSchema {
   chat: {
     inputPlaceholder: string;
     options: string;
-    extensions: string;
-    continue: string;
     send: string;
     loadError: string;
     createError: string;
@@ -537,7 +534,6 @@ export interface MessageSchema {
     createNew: string;
     importFile: string;
     importUrl: string;
-    createGroup: string;
     searchToggle: string;
     searchPlaceholder: string;
     sorting: {
@@ -553,8 +549,6 @@ export interface MessageSchema {
       placeholderText: string;
       placeholderButton: string;
     };
-    collapseBrowser: string;
-    expandBrowser: string;
   };
   characterEditor: {
     avatar: string;
@@ -567,7 +561,6 @@ export interface MessageSchema {
     delete: string;
     more: string;
     searchTags: string;
-    viewAllTags: string;
     creatorNotes: string;
     toggleStyles: string;
     toggleSpoiler: string;
@@ -575,7 +568,6 @@ export interface MessageSchema {
     detailsHidden: string;
     description: string;
     firstMessage: string;
-    expandEditor: string;
     namePlaceholder: string;
     descriptionPlaceholder: string;
     firstMessagePlaceholder: string;
@@ -585,7 +577,6 @@ export interface MessageSchema {
       title: string;
       total: string;
       permanent: string;
-      warningTooltip: string;
     };
     stats: {
       title: string;

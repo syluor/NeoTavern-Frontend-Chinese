@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import { ref, type PropType, computed } from 'vue';
+import { type PropType, computed } from 'vue';
 import { WorldInfoPosition, type WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { slideTransitionHooks } from '../../utils/dom';
 import { useWorldInfoStore } from '../../stores/world-info.store';
+import {
+  AppInput,
+  AppTextarea,
+  AppSelect,
+  AppCheckbox,
+  AppIconButton,
+  CollapsibleSection,
+  AppIcon,
+  TagInput,
+} from '../../components/UI';
+import AppFormItem from '../UI/AppFormItem.vue';
 
 const props = defineProps({
   modelValue: {
@@ -16,9 +26,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
-const { beforeEnter, enter, afterEnter, beforeLeave, leave } = slideTransitionHooks;
 
-const isAdditionalSourcesExpanded = ref(false);
 const isAtDepth = computed(() => props.modelValue?.position === WorldInfoPosition.AT_DEPTH);
 
 function updateValue<K extends keyof WorldInfoEntry>(key: K, value: WorldInfoEntry[K]) {
@@ -51,212 +59,203 @@ const entryState = computed({
     }
   },
 });
+
+const stateOptions = [
+  { label: t('worldInfo.entry.entryStates.constant'), value: 'constant' },
+  { label: t('worldInfo.entry.entryStates.normal'), value: 'normal' },
+  { label: t('worldInfo.entry.entryStates.vectorized'), value: 'vectorized' },
+];
+
+const positionOptions = [
+  { label: t('worldInfo.entry.positionOptions.beforeChar'), value: WorldInfoPosition.BEFORE_CHAR },
+  { label: t('worldInfo.entry.positionOptions.afterChar'), value: WorldInfoPosition.AFTER_CHAR },
+  { label: t('worldInfo.entry.positionOptions.beforeEM'), value: WorldInfoPosition.BEFORE_EM },
+  { label: t('worldInfo.entry.positionOptions.afterEM'), value: WorldInfoPosition.AFTER_EM },
+  { label: t('worldInfo.entry.positionOptions.beforeAN'), value: WorldInfoPosition.BEFORE_AN },
+  { label: t('worldInfo.entry.positionOptions.afterAN'), value: WorldInfoPosition.AFTER_AN },
+  { label: t('worldInfo.entry.positionOptions.atDepthSystem'), value: WorldInfoPosition.AT_DEPTH },
+  { label: t('worldInfo.entry.positionOptions.outlet'), value: WorldInfoPosition.OUTLET },
+];
+
+const logicOptions = [
+  { label: t('worldInfo.entry.logicOptions.andAny'), value: 0 },
+  { label: t('worldInfo.entry.logicOptions.andAll'), value: 3 },
+  { label: t('worldInfo.entry.logicOptions.notAll'), value: 1 },
+  { label: t('worldInfo.entry.logicOptions.notAny'), value: 2 },
+];
 </script>
 
 <template>
   <div class="world-entry-editor" :class="{ 'is-disabled': modelValue?.disable }">
     <div class="editor-header">
       <div class="editor-header-main">
-        <!-- TODO: This should be near item in WorldInfoDrawer -->
-        <i
-          class="fa-solid"
-          :class="modelValue?.disable ? 'fa-toggle-off' : 'fa-toggle-on'"
+        <!-- Toggle Icon -->
+        <div
+          class="toggle-icon-wrapper"
           :title="t('worldInfo.entry.toggle')"
           @click="updateValue('disable', !modelValue?.disable)"
-        ></i>
-        <textarea
-          class="text-pole"
-          rows="1"
-          :value="modelValue?.comment"
-          :placeholder="t('worldInfo.entry.titlePlaceholder')"
-          @input="updateValue('comment', ($event.target as HTMLTextAreaElement).value)"
-        ></textarea>
+        >
+          <AppIcon :icon="modelValue?.disable ? 'fa-toggle-off' : 'fa-toggle-on'" />
+        </div>
+
+        <!-- Title Input (Using AppInput but ensuring it grows) -->
+        <div style="flex-grow: 1">
+          <AppTextarea
+            :model-value="modelValue?.comment || ''"
+            :rows="1"
+            :placeholder="t('worldInfo.entry.titlePlaceholder')"
+            :resizable="false"
+            @update:model-value="updateValue('comment', $event)"
+          />
+        </div>
       </div>
+
       <div class="editor-header-actions">
-        <i class="menu-button fa-solid fa-right-left" :title="t('worldInfo.entry.move')"></i>
-        <i
-          class="menu-button fa-solid fa-paste"
+        <AppIconButton icon="fa-right-left" :title="t('worldInfo.entry.move')" />
+        <AppIconButton
+          icon="fa-paste"
           :title="t('worldInfo.entry.duplicate')"
           @click="worldInfoStore.duplicateSelectedEntry"
-        ></i>
-        <i
-          class="menu-button fa-solid fa-trash-can"
+        />
+        <AppIconButton
+          icon="fa-trash-can"
+          variant="danger"
           :title="t('worldInfo.entry.delete')"
           @click="worldInfoStore.deleteSelectedEntry"
-        ></i>
+        />
       </div>
     </div>
-    <div class="world-entry-editor-form">
-      <div class="world-entry-editor-grid">
-        <select v-model="entryState" class="text-pole" :title="t('worldInfo.entry.entryState')">
-          <option value="constant">{{ t('worldInfo.entry.entryStates.constant') }}</option>
-          <option value="normal">{{ t('worldInfo.entry.entryStates.normal') }}</option>
-          <option value="vectorized">{{ t('worldInfo.entry.entryStates.vectorized') }}</option>
-        </select>
 
-        <select
-          class="text-pole"
-          :title="t('worldInfo.entry.positionTooltip')"
-          :value="modelValue?.position"
-          @change="updateValue('position', Number(($event.target as HTMLSelectElement).value) as WorldInfoPosition)"
-        >
-          <option :value="WorldInfoPosition.BEFORE_CHAR">{{ t('worldInfo.entry.positionOptions.beforeChar') }}</option>
-          <option :value="WorldInfoPosition.AFTER_CHAR">{{ t('worldInfo.entry.positionOptions.afterChar') }}</option>
-          <option :value="WorldInfoPosition.BEFORE_EM">{{ t('worldInfo.entry.positionOptions.beforeEM') }}</option>
-          <option :value="WorldInfoPosition.AFTER_EM">{{ t('worldInfo.entry.positionOptions.afterEM') }}</option>
-          <option :value="WorldInfoPosition.BEFORE_AN">{{ t('worldInfo.entry.positionOptions.beforeAN') }}</option>
-          <option :value="WorldInfoPosition.AFTER_AN">{{ t('worldInfo.entry.positionOptions.afterAN') }}</option>
-          <option :value="WorldInfoPosition.AT_DEPTH">{{ t('worldInfo.entry.positionOptions.atDepthSystem') }}</option>
-          <option :value="WorldInfoPosition.OUTLET">{{ t('worldInfo.entry.positionOptions.outlet') }}</option>
-        </select>
-        <input
-          v-show="isAtDepth"
-          type="number"
-          class="text-pole"
-          :title="t('worldInfo.entry.depth')"
-          :value="modelValue?.depth"
-          @input="updateValue('depth', Number(($event.target as HTMLInputElement).value))"
-        />
-        <input
-          type="number"
-          class="text-pole"
-          :title="t('worldInfo.entry.order')"
-          :value="modelValue?.order"
-          @input="updateValue('order', Number(($event.target as HTMLInputElement).value))"
-        />
-        <input
-          type="number"
-          class="text-pole"
-          :title="t('worldInfo.entry.trigger')"
-          :value="modelValue?.probability"
-          min="0"
-          max="100"
-          @input="updateValue('probability', Number(($event.target as HTMLInputElement).value))"
-        />
+    <div class="world-entry-editor-form">
+      <!-- Top Grid: State, Position, Order, Probability -->
+      <div class="world-entry-editor-grid">
+        <AppFormItem :label="t('worldInfo.entry.entryState')">
+          <AppSelect v-model="entryState" :options="stateOptions" />
+        </AppFormItem>
+
+        <AppFormItem :label="t('worldInfo.entry.positionLabel')">
+          <AppSelect
+            :model-value="modelValue?.position ?? WorldInfoPosition.BEFORE_CHAR"
+            :options="positionOptions"
+            :title="t('worldInfo.entry.positionTooltip')"
+            @update:model-value="(val) => updateValue('position', val as WorldInfoPosition)"
+          />
+        </AppFormItem>
+
+        <AppFormItem v-show="isAtDepth" :label="t('worldInfo.entry.depth')">
+          <AppInput
+            type="number"
+            :model-value="modelValue?.depth ?? 0"
+            :placeholder="t('worldInfo.entry.depth')"
+            @update:model-value="(val) => updateValue('depth', Number(val))"
+          />
+        </AppFormItem>
+
+        <AppFormItem :label="t('worldInfo.entry.order')">
+          <AppInput
+            type="number"
+            :model-value="modelValue?.order ?? 0"
+            :placeholder="t('worldInfo.entry.order')"
+            @update:model-value="(val) => updateValue('order', Number(val))"
+          />
+        </AppFormItem>
+
+        <AppFormItem :label="t('worldInfo.entry.trigger')">
+          <AppInput
+            type="number"
+            :model-value="modelValue?.probability ?? 100"
+            :placeholder="t('worldInfo.entry.trigger')"
+            :min="0"
+            :max="100"
+            @update:model-value="(val) => updateValue('probability', Number(val))"
+          />
+        </AppFormItem>
       </div>
 
+      <!-- Keywords Section -->
       <div class="world-entry-editor-section">
         <div class="control-group flex-1">
-          <small>{{ t('worldInfo.entry.primaryKeywords') }}</small>
-          <textarea
-            class="text-pole"
-            rows="1"
-            :value="modelValue?.key.join(', ')"
-            :placeholder="t('worldInfo.entry.keywordsPlaceholder')"
-            @input="
-              updateValue(
-                'key',
-                ($event.target as HTMLTextAreaElement).value.split(',').map((k) => k.trim()),
-              )
-            "
-          ></textarea>
+          <AppFormItem :label="t('worldInfo.entry.keywordsPlaceholder')">
+            <TagInput
+              :model-value="modelValue?.key || []"
+              :placeholder="t('worldInfo.entry.keywordsPlaceholder')"
+              @update:model-value="(val) => updateValue('key', val)"
+            />
+          </AppFormItem>
         </div>
-        <div class="control-group">
-          <small>{{ t('worldInfo.entry.logic') }}</small>
-          <select
-            class="text-pole"
-            :value="modelValue?.selectiveLogic"
-            @change="updateValue('selectiveLogic', Number(($event.target as HTMLSelectElement).value))"
-          >
-            <option value="0">{{ t('worldInfo.entry.logicOptions.andAny') }}</option>
-            <option value="3">{{ t('worldInfo.entry.logicOptions.andAll') }}</option>
-            <option value="1">{{ t('worldInfo.entry.logicOptions.notAll') }}</option>
-            <option value="2">{{ t('worldInfo.entry.logicOptions.notAny') }}</option>
-          </select>
+
+        <div class="control-group" style="min-width: 150px">
+          <AppFormItem :label="t('worldInfo.entry.logic')">
+            <AppSelect
+              :model-value="modelValue?.selectiveLogic ?? 0"
+              :options="logicOptions"
+              @update:model-value="(val) => updateValue('selectiveLogic', Number(val))"
+            />
+          </AppFormItem>
         </div>
+
         <div class="control-group flex-1">
-          <small>{{ t('worldInfo.entry.optionalFilter') }}</small>
-          <textarea
-            class="text-pole"
-            rows="1"
-            :value="modelValue?.keysecondary.join(', ')"
-            :placeholder="t('worldInfo.entry.filterPlaceholder')"
-            @input="
-              updateValue(
-                'keysecondary',
-                ($event.target as HTMLTextAreaElement).value.split(',').map((k) => k.trim()),
-              )
-            "
-          ></textarea>
+          <AppFormItem :label="t('worldInfo.entry.filterPlaceholder')">
+            <TagInput
+              :model-value="modelValue?.keysecondary || []"
+              :placeholder="t('worldInfo.entry.filterPlaceholder')"
+              @update:model-value="(val) => updateValue('keysecondary', val)"
+            />
+          </AppFormItem>
         </div>
       </div>
 
-      <div class="world-entry-editor-section world-entry-editor-section--column">
-        <label class="world-entry-editor-label--with-uid">
-          <small>{{ t('worldInfo.entry.content') }}</small>
-          <small>(UID: {{ modelValue?.uid }})</small>
-        </label>
-        <textarea
-          class="text-pole"
-          rows="8"
-          :value="modelValue?.content"
-          :placeholder="t('worldInfo.entry.contentPlaceholder')"
-          @input="updateValue('content', ($event.target as HTMLTextAreaElement).value)"
-        ></textarea>
+      <!-- Content Section -->
+      <div class="world-entry-editor-section--column">
+        <AppFormItem :label="t('worldInfo.entry.content')">
+          <AppTextarea
+            :model-value="modelValue?.content ?? ''"
+            :rows="8"
+            :placeholder="t('worldInfo.entry.contentPlaceholder')"
+            @update:model-value="updateValue('content', $event)"
+          >
+            <template #footer>
+              <small class="uid-label">UID: {{ modelValue?.uid }}</small>
+            </template>
+          </AppTextarea>
+        </AppFormItem>
       </div>
 
-      <div class="additional-sources inline-drawer">
-        <div class="inline-drawer-header" @click="isAdditionalSourcesExpanded = !isAdditionalSourcesExpanded">
-          <b>{{ t('worldInfo.entry.additionalSources') }}</b>
-          <div
-            class="fa-solid fa-circle-chevron-down inline-drawer-icon"
-            :class="{ 'is-open': isAdditionalSourcesExpanded }"
-          ></div>
+      <!-- Collapsible Additional Sources -->
+      <CollapsibleSection :title="t('worldInfo.entry.additionalSources')">
+        <div class="world-entry-editor-checkbox-grid">
+          <AppCheckbox
+            :model-value="modelValue?.matchCharacterDescription ?? false"
+            :label="t('worldInfo.entry.charDescription')"
+            @update:model-value="updateValue('matchCharacterDescription', $event)"
+          />
+          <AppCheckbox
+            :model-value="modelValue?.matchPersonaDescription ?? false"
+            :label="t('worldInfo.entry.personaDescription')"
+            @update:model-value="updateValue('matchPersonaDescription', $event)"
+          />
+          <AppCheckbox
+            :model-value="modelValue?.matchCharacterPersonality ?? false"
+            :label="t('worldInfo.entry.charPersonality')"
+            @update:model-value="updateValue('matchCharacterPersonality', $event)"
+          />
+          <AppCheckbox
+            :model-value="modelValue?.matchCharacterDepthPrompt ?? false"
+            :label="t('worldInfo.entry.charNote')"
+            @update:model-value="updateValue('matchCharacterDepthPrompt', $event)"
+          />
+          <AppCheckbox
+            :model-value="modelValue?.matchScenario ?? false"
+            :label="t('worldInfo.entry.scenario')"
+            @update:model-value="updateValue('matchScenario', $event)"
+          />
+          <AppCheckbox
+            :model-value="modelValue?.matchCreatorNotes ?? false"
+            :label="t('worldInfo.entry.creatorNotes')"
+            @update:model-value="updateValue('matchCreatorNotes', $event)"
+          />
         </div>
-        <transition
-          name="slide-js"
-          @before-enter="beforeEnter"
-          @enter="enter"
-          @after-enter="afterEnter"
-          @before-leave="beforeLeave"
-          @leave="leave"
-        >
-          <div v-show="isAdditionalSourcesExpanded" class="inline-drawer-content world-entry-editor-checkbox-grid">
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchCharacterDescription"
-                @change="updateValue('matchCharacterDescription', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.charDescription') }}</span></label
-            >
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchPersonaDescription"
-                @change="updateValue('matchPersonaDescription', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.personaDescription') }}</span></label
-            >
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchCharacterPersonality"
-                @change="updateValue('matchCharacterPersonality', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.charPersonality') }}</span></label
-            >
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchCharacterDepthPrompt"
-                @change="updateValue('matchCharacterDepthPrompt', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.charNote') }}</span></label
-            >
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchScenario"
-                @change="updateValue('matchScenario', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.scenario') }}</span></label
-            >
-            <label class="checkbox-label"
-              ><input
-                type="checkbox"
-                :checked="modelValue?.matchCreatorNotes"
-                @change="updateValue('matchCreatorNotes', ($event.target as HTMLInputElement).checked)"
-              /><span>{{ t('worldInfo.entry.creatorNotes') }}</span></label
-            >
-          </div>
-        </transition>
-      </div>
+      </CollapsibleSection>
     </div>
   </div>
 </template>

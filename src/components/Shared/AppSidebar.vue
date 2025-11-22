@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useResizable } from '../../composables/useResizable';
-import type { AccountStorageKey } from '../../types';
+import type { Settings } from '@/types';
 
 const props = defineProps<{
   side: 'left' | 'right';
   isOpen: boolean;
-  storageKey?: AccountStorageKey;
+  storageKey?: keyof Settings['account'];
 }>();
 
 const sidebarRef = ref<HTMLElement | null>(null);

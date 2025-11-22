@@ -35,7 +35,6 @@ import { ApiTokenizer } from '../api/tokenizer';
 
 const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
-const CHARACTER_SORT_ORDER_KEY = 'character_sort_order';
 
 export const useCharacterStore = defineStore('character', () => {
   const { t } = useStrictI18n();
@@ -55,8 +54,8 @@ export const useCharacterStore = defineStore('character', () => {
   const searchTerm = ref('');
 
   const sortOrder = computed({
-    get: () => settingsStore.getAccountItem(CHARACTER_SORT_ORDER_KEY) ?? 'name:asc',
-    set: (value) => settingsStore.setAccountItem(CHARACTER_SORT_ORDER_KEY, value),
+    get: () => settingsStore.settings.account.characterSortOrder ?? 'name:asc',
+    set: (value) => (settingsStore.settings.account.characterSortOrder = value),
   });
 
   const isCreating = ref(false);

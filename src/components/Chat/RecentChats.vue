@@ -10,25 +10,26 @@ import { POPUP_TYPE, POPUP_RESULT, type ChatInfo } from '../../types';
 import { listRecentChats, deleteChat } from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import Pagination from '../Common/Pagination.vue';
+import { AppIconButton, AppButton } from '../UI';
+import SmartAvatar from '../Common/SmartAvatar.vue';
+import EmptyState from '../Common/EmptyState.vue';
+import DrawerHeader from '../Common/DrawerHeader.vue';
+import AppListItem from '../UI/AppListItem.vue';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 
-// Persistence for page size
-const STORAGE_KEY = 'recent_chats_page_size';
-const savedSize = settingsStore.getAccountItem(STORAGE_KEY);
-
 const currentPage = ref(1);
-const itemsPerPage = ref(savedSize ? parseInt(savedSize, 10) : 10);
+const itemsPerPage = ref(settingsStore.settings.account.recentChatsPageSize ?? 10);
 
 // Selection Mode
 const isSelectionMode = ref(false);
 const selectedChats = ref<Set<string>>(new Set());
 
 watch(itemsPerPage, (newVal) => {
-  settingsStore.setAccountItem(STORAGE_KEY, newVal.toString());
+  settingsStore.settings.account.recentChatsPageSize = newVal;
   currentPage.value = 1;
 });
 
@@ -50,15 +51,10 @@ watch(
   },
 );
 
-function getChatAvatar(chat: ChatInfo) {
+function getChatAvatars(chat: ChatInfo): string[] {
   const members = chat.chat_metadata.members || [];
-  if (members.length === 0) return null;
-  if (members.length === 1) return getThumbnailUrl('avatar', members[0]);
+  if (members.length === 0) return [];
   return members.slice(0, 4).map((m) => getThumbnailUrl('avatar', m));
-}
-
-function isGroup(chat: ChatInfo) {
-  return (chat.chat_metadata.members?.length ?? 0) > 1;
 }
 
 async function onItemClick(chat: ChatInfo) {
@@ -110,9 +106,7 @@ async function deleteSelected() {
       for (const id of idsToDelete) {
         await deleteChat(id);
       }
-      // Update store
       chatStore.recentChats = chatStore.recentChats.filter((c) => !selectedChats.value.has(c.file_id));
-      // If active chat was deleted, clear it
       if (chatStore.activeChatFile && selectedChats.value.has(chatStore.activeChatFile)) {
         chatStore.activeChatFile = null;
         await chatStore.clearChat(false);
@@ -145,89 +139,60 @@ onMounted(() => {
 
 <template>
   <div class="recent-chats">
-    <div class="recent-chats-header">
-      <h3>{{ t('navbar.recentChats') }}</h3>
-      <div class="recent-chats-actions">
-        <button
-          class="menu-button-icon fa-solid"
-          :class="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
+    <DrawerHeader :title="t('navbar.recentChats')">
+      <template #actions>
+        <AppIconButton
+          :icon="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
           :title="isSelectionMode ? t('common.cancel') : t('common.select')"
           @click="toggleSelectionMode"
-        ></button>
-        <button
-          class="menu-button-icon fa-solid fa-rotate-right"
-          :title="t('common.refresh')"
-          @click="refresh"
-        ></button>
-      </div>
-    </div>
+        />
+        <AppIconButton icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
+      </template>
+    </DrawerHeader>
 
-    <div v-if="isSelectionMode" class="recent-chats-selection-bar">
+    <div v-show="isSelectionMode" class="recent-chats-selection-bar">
       <div class="selection-info">{{ selectedChats.size }} {{ t('common.selected') }}</div>
       <div class="selection-actions">
-        <button class="menu-button small" @click="selectAllVisible">
+        <AppButton class="small" @click="selectAllVisible">
           {{ t('common.selectAll') }}
-        </button>
-        <button
-          class="menu-button menu-button--danger small"
-          :disabled="selectedChats.size === 0"
-          @click="deleteSelected"
-        >
+        </AppButton>
+        <AppButton variant="danger" class="small" :disabled="selectedChats.size === 0" @click="deleteSelected">
           <i class="fa-solid fa-trash"></i>
-        </button>
+        </AppButton>
       </div>
     </div>
 
     <div class="recent-chats-content">
-      <div
-        v-for="chat in paginatedRecentChats"
-        :key="chat.file_id"
-        class="recent-chat-item"
-        :class="{
-          active: chatStore.activeChatFile === chat.file_id,
-          selected: selectedChats.has(chat.file_id),
-          'selection-mode': isSelectionMode,
-        }"
-        @click="onItemClick(chat)"
-      >
-        <div class="recent-chat-item-avatar">
-          <template v-if="isGroup(chat)">
-            <div class="group-avatar-grid">
-              <img
-                v-for="(avatar, index) in (getChatAvatar(chat) as string[]) || []"
-                :key="index"
-                :src="avatar"
-                onerror="this.src='img/ai4.png'"
-              />
+      <div v-for="chat in paginatedRecentChats" :key="chat.file_id">
+        <AppListItem
+          :active="chatStore.activeChatFile === chat.file_id"
+          :selected="selectedChats.has(chat.file_id)"
+          @click="onItemClick(chat)"
+        >
+          <template #start>
+            <div class="recent-chat-item-avatar-wrapper">
+              <SmartAvatar :urls="getChatAvatars(chat)" style="width: 45px; height: 45px" />
+              <div v-show="isSelectionMode" class="selection-checkbox">
+                <i v-if="selectedChats.has(chat.file_id)" class="fa-solid fa-check"></i>
+              </div>
             </div>
           </template>
-          <template v-else>
-            <img :src="getChatAvatar(chat) as string" onerror="this.src='img/ai4.png'" />
+          <template #default>
+            <div class="recent-chat-item-name" :title="chat.file_name">
+              {{ chat.file_name.replace('.jsonl', '') }}
+            </div>
+            <div class="recent-chat-item-preview">
+              {{ chat.mes || t('chat.emptyLog') }}
+            </div>
+            <div class="recent-chat-item-meta">
+              <span>{{ formatTimeStamp(chat.last_mes) }}</span>
+              <span>{{ chat.chat_items }} {{ t('common.messages').toLowerCase() }}</span>
+            </div>
           </template>
-
-          <div v-if="isSelectionMode" class="selection-checkbox">
-            <i v-if="selectedChats.has(chat.file_id)" class="fa-solid fa-check"></i>
-          </div>
-        </div>
-
-        <div class="recent-chat-item-details">
-          <div class="recent-chat-item-name" :title="chat.file_name">
-            {{ chat.file_name.replace('.jsonl', '') }}
-          </div>
-          <div class="recent-chat-item-preview">
-            {{ chat.mes || t('chat.emptyLog') }}
-          </div>
-          <div class="recent-chat-item-meta">
-            <span>{{ formatTimeStamp(chat.last_mes) }}</span>
-            <span>{{ chat.chat_items }} {{ t('common.messages').toLowerCase() }}</span>
-          </div>
-        </div>
+        </AppListItem>
       </div>
 
-      <div v-if="recentChats.length === 0" class="recent-chats-empty">
-        <i class="fa-solid fa-comments"></i>
-        <p>{{ t('chatManagement.noRecentChats') }}</p>
-      </div>
+      <EmptyState v-if="recentChats.length === 0" icon="fa-comments" :description="t('chatManagement.noRecentChats')" />
     </div>
 
     <div class="recent-chats-pagination">
@@ -241,3 +206,53 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.recent-chat-item-avatar-wrapper {
+  position: relative;
+  width: 45px;
+  height: 45px;
+
+  .selection-checkbox {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background-color: var(--theme-emphasis-color);
+    color: var(--black-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 5;
+    border: 2px solid var(--theme-background-tint);
+  }
+}
+
+.recent-chat-item-name {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95em;
+  color: var(--theme-text-color);
+}
+
+.recent-chat-item-preview {
+  font-size: 0.85em;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-chat-item-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75em;
+  opacity: 0.5;
+}
+</style>

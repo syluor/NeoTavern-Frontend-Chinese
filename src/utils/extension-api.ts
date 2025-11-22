@@ -63,6 +63,28 @@ function deepClone<T>(obj: T): T {
  */
 const mountableComponents: Record<MountableComponent, () => Promise<{ default: Vue.Component }>> = {
   ConnectionProfileSelector: () => import('../components/Common/ConnectionProfileSelector.vue'),
+  AppButton: () => import('../components/UI/AppButton.vue'),
+  AppCheckbox: () => import('../components/UI/AppCheckbox.vue'),
+  AppFileInput: () => import('../components/UI/AppFileInput.vue'),
+  AppFormItem: () => import('../components/UI/AppFormItem.vue'),
+  AppIcon: () => import('../components/UI/AppIcon.vue'),
+  AppIconButton: () => import('../components/UI/AppIconButton.vue'),
+  AppInput: () => import('../components/UI/AppInput.vue'),
+  AppListItem: () => import('../components/UI/AppListItem.vue'),
+  AppSearch: () => import('../components/UI/AppSearch.vue'),
+  AppSelect: () => import('../components/UI/AppSelect.vue'),
+  AppTabs: () => import('../components/UI/AppTabs.vue'),
+  AppTextarea: () => import('../components/UI/AppTextarea.vue'),
+  AppToggle: () => import('../components/UI/AppToggle.vue'),
+  CollapsibleSection: () => import('../components/UI/CollapsibleSection.vue'),
+  RangeControl: () => import('../components/UI/RangeControl.vue'),
+  TagInput: () => import('../components/UI/TagInput.vue'),
+  Pagination: () => import('../components/Common/Pagination.vue'),
+  DraggableList: () => import('../components/Common/DraggableList.vue'),
+  DrawerHeader: () => import('../components/Common/DrawerHeader.vue'),
+  EmptyState: () => import('../components/Common/EmptyState.vue'),
+  SmartAvatar: () => import('../components/Common/SmartAvatar.vue'),
+  SplitPane: () => import('../components/Common/SplitPane.vue'),
 };
 
 // Add a variable to hold the main app instance

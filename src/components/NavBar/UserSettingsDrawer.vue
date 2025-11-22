@@ -3,13 +3,15 @@ import { ref, computed } from 'vue';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { slideTransitionHooks } from '../../utils/dom';
 import type { ValueForPath } from '../../types/utils';
+import { AppSelect, AppCheckbox, RangeControl, CollapsibleSection } from '../../components/UI';
+import AppSearch from '../UI/AppSearch.vue';
+import AppFormItem from '../UI/AppFormItem.vue';
+import type { I18nKey } from '@/types/i18n';
 
 const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();
 const searchTerm = ref('');
-const collapsedCategories = ref<string[]>([]);
 
 const filteredDefinitions = computed(() => {
   if (!searchTerm.value.trim()) {
@@ -32,7 +34,6 @@ const groupedSettings = computed(() => {
     }
     groups[setting.category].push(setting);
   }
-  // Ensure consistent order
   const orderedGroups: Record<string, SettingDefinition[]> = {};
   const categoryOrder = [...new Set(settingsStore.definitions.map((def) => def.category))];
   for (const category of categoryOrder) {
@@ -47,117 +48,86 @@ function getSettingValue(id: string) {
   return settingsStore.getSetting(id as SettingsPath);
 }
 
-function updateSetting<P extends SettingsPath>(id: P, event: Event) {
-  const target = event.target as HTMLInputElement | HTMLSelectElement;
-  let value: ValueForPath<Settings, P> = target.value as ValueForPath<Settings, P>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateSetting<P extends SettingsPath>(id: P, value: any) {
   const definition = settingsStore.definitions.find((d) => d.id === id);
 
-  if (definition?.type === 'boolean') {
-    value = (target as HTMLInputElement).checked as ValueForPath<Settings, P>;
-  } else if (definition?.type === 'number') {
-    value = parseFloat(value as unknown as string) as ValueForPath<Settings, P>;
+  let typedValue = value;
+
+  if (definition?.type === 'number') {
+    typedValue = parseFloat(value);
+  } else if (definition?.type === 'boolean') {
+    typedValue = !!value;
   }
 
-  settingsStore.setSetting(id, value);
+  settingsStore.setSetting(id, typedValue as ValueForPath<Settings, P>);
 }
 
-function toggleCategoryCollapse(category: string) {
-  const index = collapsedCategories.value.indexOf(category);
-  if (index > -1) {
-    collapsedCategories.value.splice(index, 1);
-  } else {
-    collapsedCategories.value.push(category);
-  }
+function formatOptions(options: { label: I18nKey; value: string | number }[]) {
+  return options.map((o) => ({ label: t(o.label), value: o.value }));
 }
-
-// --- Transition Hooks for Drawers ---
-const { beforeEnter, enter, afterEnter, beforeLeave, leave, afterLeave } = slideTransitionHooks;
 </script>
 
 <template>
   <div class="user-settings-drawer">
     <div class="user-settings-drawer-header">
       <h3>{{ t('userSettings.title') }}</h3>
-      <input
-        v-model="searchTerm"
-        type="search"
-        class="text-pole user-settings-drawer-search"
-        :placeholder="t('userSettings.searchPlaceholder')"
-      />
+    </div>
+
+    <div style="margin-bottom: 10px">
+      <AppSearch v-model="searchTerm" :placeholder="t('userSettings.searchPlaceholder')" />
     </div>
 
     <div class="user-settings-drawer-content">
       <div v-show="Object.keys(groupedSettings).length === 0" class="user-settings-drawer-no-results">
         {{ t('userSettings.noResults') }}
       </div>
+
       <div v-for="(settings, category) in groupedSettings" :key="category" class="user-settings-drawer-category">
-        <div class="user-settings-drawer-category-header" @click="toggleCategoryCollapse(category)">
-          <h4>{{ category }}</h4>
-          <i
-            class="fa-solid fa-chevron-down user-settings-drawer-chevron"
-            :class="{ 'is-collapsed': collapsedCategories.includes(category) }"
-          ></i>
-        </div>
+        <CollapsibleSection :title="category" :is-open="!searchTerm">
+          <div class="user-settings-list">
+            <div v-for="setting in settings" :key="setting.id">
+              <!-- Checkbox -->
+              <div v-if="setting.widget === 'checkbox'">
+                <AppCheckbox
+                  :model-value="getSettingValue(setting.id) as boolean"
+                  :label="t(setting.label)"
+                  :description="setting.description ? t(setting.description) : undefined"
+                  @update:model-value="(val) => updateSetting(setting.id, val)"
+                />
+              </div>
 
-        <Transition
-          name="slide-js"
-          @before-enter="beforeEnter"
-          @enter="enter"
-          @after-enter="afterEnter"
-          @before-leave="beforeLeave"
-          @leave="leave"
-          @after-leave="afterLeave"
-        >
-          <div v-show="!collapsedCategories.includes(category)">
-            <div class="user-settings-drawer-category-content">
-              <div v-for="setting in settings" :key="setting.id" class="user-settings-drawer-setting">
-                <div class="setting-details">
-                  <label :for="setting.id">{{ t(setting.label) }}</label>
-                  <small v-show="setting.description">{{ setting.description ? t(setting.description) : '' }}</small>
-                </div>
-                <div class="setting-control">
-                  <!-- Checkbox -->
-                  <label v-if="setting.widget === 'checkbox'" class="checkbox-label-wrapper">
-                    <!-- @vue-ignore -->
-                    <input
-                      :id="setting.id"
-                      type="checkbox"
-                      :checked="getSettingValue(setting.id)"
-                      @change="updateSetting(setting.id, $event)"
-                    />
-                  </label>
-
+              <!-- Standard Inputs (Horizontal Layout) -->
+              <template v-else>
+                <AppFormItem
+                  :label="t(setting.label)"
+                  :description="setting.description ? t(setting.description) : undefined"
+                  horizontal
+                >
                   <!-- Select -->
-                  <select
-                    v-if="setting.widget === 'select'"
-                    :id="setting.id"
-                    class="text-pole"
-                    :value="getSettingValue(setting.id)"
-                    @change="updateSetting(setting.id, $event)"
-                  >
-                    <option v-for="option in setting.options" :key="option.value" :value="option.value">
-                      {{ t(option.label) }}
-                    </option>
-                  </select>
+                  <div v-if="setting.widget === 'select'" style="width: 220px">
+                    <AppSelect
+                      :model-value="getSettingValue(setting.id)"
+                      :options="formatOptions(setting.options || [])"
+                      @update:model-value="(val) => updateSetting(setting.id, val)"
+                    />
+                  </div>
 
                   <!-- Slider -->
-                  <div v-if="setting.widget === 'slider'" class="slider-control">
-                    <input
-                      :id="setting.id"
-                      type="range"
+                  <div v-if="setting.widget === 'slider'" style="width: 220px">
+                    <RangeControl
+                      :model-value="getSettingValue(setting.id) as number"
                       :min="setting.min"
                       :max="setting.max"
                       :step="setting.step"
-                      :value="getSettingValue(setting.id)"
-                      @input="updateSetting(setting.id, $event)"
+                      @update:model-value="(val) => updateSetting(setting.id, val)"
                     />
-                    <span class="slider-value">{{ getSettingValue(setting.id) }}</span>
                   </div>
-                </div>
-              </div>
+                </AppFormItem>
+              </template>
             </div>
           </div>
-        </Transition>
+        </CollapsibleSection>
       </div>
     </div>
   </div>

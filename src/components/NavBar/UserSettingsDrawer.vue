@@ -5,7 +5,7 @@ import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ValueForPath } from '../../types/utils';
 import { Select, Checkbox, RangeControl, CollapsibleSection, Search, FormItem } from '../../components/UI';
-import type { I18nKey } from '@/types/i18n';
+import type { I18nKey } from '../../types/i18n';
 
 const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();
@@ -104,6 +104,7 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
                 >
                   <!-- Select -->
                   <div v-if="setting.widget === 'select'" style="width: 220px">
+                    <!-- @vue-ignore -->
                     <Select
                       :model-value="getSettingValue(setting.id)"
                       :options="formatOptions(setting.options || [])"

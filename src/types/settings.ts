@@ -10,9 +10,9 @@ import {
 import type { ChatCompletionSource, ConnectionProfile } from './api';
 import type { BackgroundFitting, MessageRole } from './common';
 import type { I18nKey } from './i18n';
-import type { Persona } from './persona';
+import type { Persona, PersonaConnection } from './persona';
 import type { Path } from './utils';
-import type { WorldInfoSettings } from './world-info';
+import type { LegacyWorldInfoSettings, WorldInfoSettings } from './world-info';
 
 export type SettingsPath = Path<Settings>;
 export type OaiSettingsPath = Path<LegacyOaiSettings>;
@@ -284,7 +284,15 @@ export interface LegacySettings {
     zoomed_avatar_magnification: boolean;
     personas: Record<string, string>;
     default_persona: string | null;
-    persona_descriptions: Record<string, Omit<Persona, 'avatarId' | 'name'>>;
+    persona_descriptions: Record<
+      string,
+      {
+        description: string;
+        lorebook: string;
+        connections: PersonaConnection[];
+        title: string;
+      }
+    >;
     persona_show_notifications: boolean;
     persona_allow_multi_connections: boolean;
     persona_auto_lock: boolean;
@@ -297,7 +305,7 @@ export interface LegacySettings {
     animation: boolean;
   };
   oai_settings: LegacyOaiSettings;
-  world_info_settings: WorldInfoSettings;
+  world_info_settings: LegacyWorldInfoSettings;
   username?: string;
   user_avatar?: string;
   main_api?: string;

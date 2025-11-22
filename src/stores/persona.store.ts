@@ -13,7 +13,7 @@ import { useStrictI18n } from '../composables/useStrictI18n';
 import { usePopupStore } from './popup.store';
 import { getBase64Async } from '../utils/file';
 import { eventEmitter } from '../utils/event-emitter';
-import { default_user_avatar } from '@/constants';
+import { default_user_avatar } from '../constants';
 import { getThumbnailUrl } from '../utils/image';
 
 export const usePersonaStore = defineStore('persona', () => {
@@ -40,7 +40,7 @@ export const usePersonaStore = defineStore('persona', () => {
   function createDefaultDescription(): Omit<Persona, 'avatarId' | 'name'> {
     return {
       description: '',
-      lorebook: '',
+      lorebooks: [],
       connections: [],
       title: '',
     };
@@ -197,6 +197,37 @@ export const usePersonaStore = defineStore('persona', () => {
     }
   }
 
+  async function duplicatePersona(avatarId: string) {
+    const persona = personas.value.find((p) => p.avatarId === avatarId);
+    if (!persona) return;
+
+    try {
+      const newName = `${persona.name} (Copy)`;
+      const url = getThumbnailUrl('persona', persona.avatarId);
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], 'avatar.png', { type: blob.type });
+
+      const newAvatarId = `persona_${Date.now()}.png`;
+      await uploadPersonaAvatar(newAvatarId, file, true);
+
+      const newPersona: Persona = {
+        ...JSON.parse(JSON.stringify(persona)),
+        avatarId: newAvatarId,
+        name: newName,
+      };
+
+      personas.value.push(newPersona);
+      toast.success(t('personaManagement.duplicate.success', { name: persona.name }));
+      await nextTick();
+      await eventEmitter.emit('persona:created', newPersona);
+      await setActivePersona(newAvatarId);
+    } catch (error) {
+      console.error('Failed to duplicate persona:', error);
+      toast.error(t('personaManagement.duplicate.error'));
+    }
+  }
+
   async function createPersona() {
     const newAvatarId = `persona_${Date.now()}.png`;
     const res = await fetch(default_user_avatar);
@@ -295,6 +326,7 @@ export const usePersonaStore = defineStore('persona', () => {
     updateActivePersonaName,
     uploadPersonaAvatar,
     deletePersona,
+    duplicatePersona,
     createPersona,
     createPersonaFromCharacter,
     isDefault,

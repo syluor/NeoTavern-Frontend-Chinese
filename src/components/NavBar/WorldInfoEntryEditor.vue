@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type PropType, computed } from 'vue';
-import { WorldInfoPosition, type WorldInfoEntry } from '../../types';
+import { type WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useWorldInfoStore } from '../../stores/world-info.store';
 import {
@@ -14,6 +14,7 @@ import {
   TagInput,
   FormItem,
 } from '../../components/UI';
+import { WorldInfoPosition } from '../../constants';
 
 const props = defineProps({
   modelValue: {

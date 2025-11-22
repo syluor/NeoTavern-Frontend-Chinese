@@ -6,7 +6,7 @@ import type { MessageRole } from './common';
 import type { Persona } from './persona';
 import type { SamplerSettings, Settings } from './settings';
 import type { Tokenizer } from './tokenizer';
-import type { WorldInfoEntry } from './world-info';
+import type { WorldInfoBook, WorldInfoEntry, WorldInfoSettings } from './world-info';
 
 export { type ReasoningEffort, type MessageRole };
 
@@ -95,6 +95,8 @@ export type PromptBuilderOptions = {
   characters: Character[];
   chatMetadata: ChatMetadata;
   chatHistory: ChatMessage[];
+  worldInfo: WorldInfoSettings;
+  books: WorldInfoBook[];
   samplerSettings: SamplerSettings;
   persona: Persona;
   tokenizer: Tokenizer;

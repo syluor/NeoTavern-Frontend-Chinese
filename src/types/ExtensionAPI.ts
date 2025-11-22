@@ -301,7 +301,7 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
     getAllBookNames: () => readonly string[];
     getBook: (name: string) => Promise<Readonly<WorldInfoBook> | null>;
     getActiveBookNames: () => readonly string[];
-    setActiveBookNames: (names: string[]) => void;
+    setGlobalBookNames: (names: string[]) => void;
     updateEntry: (bookName: string, entry: WorldInfoEntry) => Promise<void>;
   };
   ui: {

@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from '@/types/';
+import type { ExtensionAPI } from '../../../types/';
 import { manifest } from './manifest';
 import ClockWidget from './ClockWidget.vue';
 

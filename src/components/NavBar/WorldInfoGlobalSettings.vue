@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useWorldInfoStore, defaultWorldInfoSettings } from '../../stores/world-info.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { WorldInfoInsertionStrategy } from '../../types';
 import { Button, Checkbox, Select, RangeControl, FormItem } from '../UI';
+import { defaultWorldInfoSettings, WorldInfoInsertionStrategy } from '../../constants';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
+const settingsStore = useSettingsStore();
 
 function resetToDefaults() {
-  worldInfoStore.settings = { ...defaultWorldInfoSettings };
+  settingsStore.settings.worldInfo = {
+    ...defaultWorldInfoSettings,
+    activeBookNames: settingsStore.settings.worldInfo.activeBookNames,
+  };
 }
 
 const strategyOptions = computed(() => [
@@ -36,7 +41,7 @@ const bookOptions = computed(() => {
     <div class="settings-section">
       <FormItem :description="t('worldInfo.activeWorldsHint')">
         <Select
-          v-model="worldInfoStore.activeBookNames"
+          v-model="worldInfoStore.globalBookNames"
           :options="bookOptions"
           multiple
           :label="t('worldInfo.activeWorlds')"
@@ -52,19 +57,19 @@ const bookOptions = computed(() => {
       <div class="wi-settings-grid">
         <div class="wi-settings-grid-sliders">
           <RangeControl
-            v-model="worldInfoStore.settings.world_info_depth"
+            v-model="settingsStore.settings.worldInfo.depth"
             :label="t('worldInfo.scanDepth')"
             :min="0"
             :max="1000"
           />
           <RangeControl
-            v-model="worldInfoStore.settings.world_info_budget"
+            v-model="settingsStore.settings.worldInfo.budget"
             :label="t('worldInfo.contextPercent')"
             :min="1"
             :max="100"
           />
           <RangeControl
-            v-model="worldInfoStore.settings.world_info_budget_cap"
+            v-model="settingsStore.settings.worldInfo.budgetCap"
             :label="t('worldInfo.budgetCap')"
             :min="0"
             :max="65536"
@@ -73,32 +78,32 @@ const bookOptions = computed(() => {
         </div>
         <div class="wi-settings-grid-checkboxes">
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_include_names"
+            v-model="settingsStore.settings.worldInfo.includeNames"
             :label="t('worldInfo.includeNames')"
             :title="t('worldInfo.includeNamesHint')"
           />
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_recursive"
+            v-model="settingsStore.settings.worldInfo.recursive"
             :label="t('worldInfo.recursiveScan')"
             :title="t('worldInfo.recursiveScanHint')"
           />
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_case_sensitive"
+            v-model="settingsStore.settings.worldInfo.caseSensitive"
             :label="t('worldInfo.caseSensitive')"
             :title="t('worldInfo.caseSensitiveHint')"
           />
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_match_whole_words"
+            v-model="settingsStore.settings.worldInfo.matchWholeWords"
             :label="t('worldInfo.matchWholeWords')"
             :title="t('worldInfo.matchWholeWordsHint')"
           />
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_use_group_scoring"
+            v-model="settingsStore.settings.worldInfo.useGroupScoring"
             :label="t('worldInfo.useGroupScoring')"
             :title="t('worldInfo.useGroupScoringHint')"
           />
           <Checkbox
-            v-model="worldInfoStore.settings.world_info_overflow_alert"
+            v-model="settingsStore.settings.worldInfo.overflowAlert"
             :label="t('worldInfo.alertOnOverflow')"
             :title="t('worldInfo.alertOnOverflowHint')"
           />
@@ -112,7 +117,7 @@ const bookOptions = computed(() => {
       <h4>{{ t('worldInfo.advancedSettings') }}</h4>
       <FormItem>
         <Select
-          v-model="worldInfoStore.settings.world_info_character_strategy"
+          v-model="settingsStore.settings.worldInfo.characterStrategy"
           :label="t('worldInfo.insertionStrategy')"
           :title="t('worldInfo.insertionStrategyHint')"
           :options="strategyOptions"

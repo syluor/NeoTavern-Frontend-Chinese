@@ -11,7 +11,7 @@ import * as api from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import { GenerationMode, GroupGenerationHandlingMode, GroupReplyStrategy } from '../../constants';
 import { getThumbnailUrl } from '../../utils/image';
-import { useUiStore } from '@/stores/ui.store';
+import { useUiStore } from '../../stores/ui.store';
 import { Button, Input, Select, Textarea, Checkbox, Tabs, Search, ListItem, FormItem, CollapsibleSection } from '../UI';
 import { EmptyState, Pagination, DraggableList } from '../Common';
 

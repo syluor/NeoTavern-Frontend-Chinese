@@ -1,16 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useSettingsStore } from './settings.store';
-import {
-  type WorldInfoBook,
-  type WorldInfoSettings,
-  WorldInfoInsertionStrategy,
-  POPUP_TYPE,
-  POPUP_RESULT,
-  type WorldInfoEntry,
-  WorldInfoPosition,
-  WorldInfoLogic,
-} from '../types';
+import { type WorldInfoBook, POPUP_TYPE, POPUP_RESULT, type WorldInfoEntry } from '../types';
 import * as api from '../api/world-info';
 import { toast } from '../composables/useToast';
 import { debounce } from 'lodash-es';
@@ -18,32 +9,17 @@ import { usePopupStore } from './popup.store';
 import { downloadFile } from '../utils/file';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { eventEmitter } from '../utils/event-emitter';
-
-export const defaultWorldInfoSettings: WorldInfoSettings = {
-  world_info: {},
-  world_info_depth: 2,
-  world_info_min_activations: 0,
-  world_info_min_activations_depth_max: 0,
-  world_info_budget: 25,
-  world_info_include_names: true,
-  world_info_recursive: false,
-  world_info_overflow_alert: false,
-  world_info_case_sensitive: false,
-  world_info_match_whole_words: false,
-  world_info_character_strategy: WorldInfoInsertionStrategy.CHARACTER_FIRST,
-  world_info_budget_cap: 0,
-  world_info_use_group_scoring: false,
-  world_info_max_recursion_steps: 0,
-};
+import { usePersonaStore } from './persona.store';
+import { WorldInfoLogic, WorldInfoPosition } from '../constants';
 
 export const useWorldInfoStore = defineStore('world-info', () => {
   const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
   const popupStore = usePopupStore();
+  const personaStore = usePersonaStore();
 
   const isPanelPinned = ref(false);
   const bookNames = ref<string[]>([]);
-  const activeBookNames = ref<string[]>([]);
   const worldInfoCache = ref<Record<string, WorldInfoBook>>({});
 
   const selectedItemId = ref<'global-settings' | string | null>('global-settings');
@@ -51,16 +27,25 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   const browserSearchTerm = ref('');
   const loadingBooks = ref<Set<string>>(new Set());
 
+  const activeBookNames = computed<string[]>(() => {
+    const personaBookNames = personaStore.activePersona?.lorebooks || [];
+    const uniqueNames = new Set<string>([
+      ...(settingsStore.settings.worldInfo.activeBookNames || []),
+      ...personaBookNames,
+    ]);
+    return Array.from(uniqueNames);
+  });
+
+  const globalBookNames = computed<string[]>({
+    get: () => settingsStore.settings.worldInfo.activeBookNames || [],
+    set: (value) => {
+      settingsStore.settings.worldInfo.activeBookNames = value;
+    },
+  });
+
   const sortOrder = computed({
     get: () => settingsStore.settings.account.worldInfoSortOrder ?? 'order:asc',
     set: (value) => (settingsStore.settings.account.worldInfoSortOrder = value),
-  });
-
-  const settings = computed({
-    get: () => settingsStore.settings.worldInfo,
-    set: (value) => {
-      settingsStore.settings.worldInfo = { ...value };
-    },
   });
 
   const selectedEntry = computed<WorldInfoEntry | null>(() => {
@@ -112,18 +97,6 @@ export const useWorldInfoStore = defineStore('world-info', () => {
 
     return entries;
   }
-
-  watch(
-    activeBookNames,
-    (newActive) => {
-      if (!settings.value.world_info) {
-        settings.value.world_info = {};
-      }
-      settings.value.world_info.globalSelect = newActive;
-      saveBookDebounced();
-    },
-    { deep: true },
-  );
 
   async function getBookFromCache(name: string, force?: boolean): Promise<WorldInfoBook | undefined> {
     if (force && !worldInfoCache.value[name]) {
@@ -423,9 +396,9 @@ export const useWorldInfoStore = defineStore('world-info', () => {
 
   return {
     isPanelPinned,
-    settings,
     bookNames,
     activeBookNames,
+    globalBookNames,
     worldInfoCache,
     selectedItemId,
     expandedBooks,

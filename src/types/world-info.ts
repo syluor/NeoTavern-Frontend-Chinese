@@ -1,38 +1,9 @@
+import type { WorldInfoInsertionStrategy, WorldInfoLogic, WorldInfoPosition, WorldInfoRole } from '../constants';
 import type { Character } from './character';
 import type { ChatMessage } from './chat';
 import type { MessageRole } from './common';
 import type { Persona } from './persona';
 import type { Tokenizer } from './tokenizer';
-
-export enum WorldInfoPosition {
-  BEFORE_CHAR = 0,
-  AFTER_CHAR = 1,
-  BEFORE_AN = 2,
-  AFTER_AN = 3,
-  AT_DEPTH = 4,
-  BEFORE_EM = 5,
-  AFTER_EM = 6,
-  OUTLET = 7,
-}
-
-export enum WorldInfoLogic {
-  AND_ANY = 0,
-  NOT_ALL = 1,
-  NOT_ANY = 2,
-  AND_ALL = 3,
-}
-
-export enum WorldInfoInsertionStrategy {
-  EVENLY = 0,
-  CHARACTER_FIRST = 1,
-  GLOBAL_FIRST = 2,
-}
-
-export enum WorldInfoRole {
-  SYSTEM = 0,
-  USER = 1,
-  ASSISTANT = 2,
-}
 
 export interface WorldInfoEntry {
   uid: number;
@@ -85,9 +56,9 @@ export interface WorldInfoBook {
   entries: WorldInfoEntry[];
 }
 
-export interface WorldInfoSettings {
+export interface LegacyWorldInfoSettings {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  world_info: Record<string, any>; // TODO: I don't remember why is this any
+  world_info: Record<string, any>;
   world_info_depth: number;
   world_info_min_activations: number;
   world_info_min_activations_depth_max: number;
@@ -103,6 +74,23 @@ export interface WorldInfoSettings {
   world_info_max_recursion_steps: number;
 }
 
+export interface ExperimentalWorldInfoSettings {
+  activeBookNames: string[];
+  depth: number;
+  minActivations: number;
+  minActivationsDepthMax: number;
+  budget: number;
+  includeNames: boolean;
+  recursive: boolean;
+  overflowAlert: boolean;
+  caseSensitive: boolean;
+  matchWholeWords: boolean;
+  characterStrategy: WorldInfoInsertionStrategy;
+  budgetCap: number;
+  useGroupScoring: boolean;
+  maxRecursionSteps: number;
+}
+
 export interface ProcessedWorldInfo {
   worldInfoBefore: string;
   worldInfoAfter: string;
@@ -114,6 +102,8 @@ export interface ProcessedWorldInfo {
   outletEntries: Record<string, string[]>;
   triggeredEntries: Record<string, WorldInfoEntry[]>;
 }
+
+export type WorldInfoSettings = ExperimentalWorldInfoSettings;
 
 export type WorldInfoOptions = {
   chat: ChatMessage[];

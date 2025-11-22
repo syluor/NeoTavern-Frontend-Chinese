@@ -100,12 +100,11 @@
       "showNotifications": "Show notifications on switching personas"
     },
     "actions": {
-      "rename": "Rename Persona",
-      "syncName": "Click to set user name for all messages",
-      "lore": "Persona Lore",
-      "changeImage": "Change Persona Image",
-      "duplicate": "Duplicate Persona",
-      "delete": "Delete Persona"
+      "rename": "Rename",
+      "syncName": "Sync Name to Chat",
+      "changeImage": "Change Image",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
     },
     "rename": {
       "title": "Rename Persona",
@@ -116,6 +115,17 @@
       "confirmMessage": "Are you sure you want to delete the persona \"{name}\"? All associated information will be lost.",
       "success": "Persona deleted.",
       "error": "Failed to delete persona."
+    },
+    "duplicate": {
+      "success": "Persona '{name}' duplicated.",
+      "error": "Failed to duplicate persona."
+    },
+    "syncName": {
+      "success": "Synced name to {count} messages.",
+      "noChanges": "No messages needed name synchronization."
+    },
+    "lorebooks": {
+      "label": "Lorebooks"
     }
   },
   "worldInfo": {

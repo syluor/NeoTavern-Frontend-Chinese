@@ -105,7 +105,6 @@ export interface MessageSchema {
     actions: {
       rename: string;
       syncName: string;
-      lore: string;
       changeImage: string;
       duplicate: string;
       delete: string;
@@ -119,6 +118,17 @@ export interface MessageSchema {
       confirmMessage: string;
       success: string;
       error: string;
+    };
+    duplicate: {
+      success: string;
+      error: string;
+    };
+    syncName: {
+      success: string;
+      noChanges: string;
+    };
+    lorebooks: {
+      label: string;
     };
   };
   worldInfo: {

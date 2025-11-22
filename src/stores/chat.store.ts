@@ -14,6 +14,7 @@ import {
   type ChatHeader,
   type ChatInfo,
   type Character,
+  type WorldInfoBook,
 } from '../types';
 import { usePromptStore } from './prompt.store';
 import { useCharacterStore } from './character.store';
@@ -21,7 +22,7 @@ import { useUiStore } from './ui.store';
 import { useApiStore } from './api.store';
 import { fetchChat, saveChat as apiSaveChat, saveChat } from '../api/chat';
 import { getMessageTimeStamp } from '../utils/date';
-import { uuidv4 } from '@/utils/common';
+import { uuidv4 } from '../utils/common';
 import { getFirstMessage } from '../utils/chat';
 import { toast } from '../composables/useToast';
 import { useStrictI18n } from '../composables/useStrictI18n';
@@ -41,6 +42,7 @@ import { usePersonaStore } from './persona.store';
 import { eventEmitter } from '../utils/event-emitter';
 import { ApiTokenizer } from '../api/tokenizer';
 import { getCharactersForContext } from '../utils/group-chat';
+import { useWorldInfoStore } from './world-info.store';
 
 export type ChatStoreState = {
   messages: ChatMessage[];
@@ -71,6 +73,7 @@ export const useChatStore = defineStore('chat', () => {
   const characterStore = useCharacterStore();
   const promptStore = usePromptStore();
   const settingsStore = useSettingsStore();
+  const worldInfoStore = useWorldInfoStore();
 
   const chatsMetadataByCharacterAvatars = computed(() => {
     const mapping: Record<string, ChatInfo[]> = {};
@@ -426,6 +429,28 @@ export const useChatStore = defineStore('chat', () => {
     saveChatDebounced();
   }
 
+  async function syncPersonaName(personaId: string, newName: string) {
+    if (!activeChat.value) return;
+
+    let updatedCount = 0;
+    const messages = activeChat.value.messages;
+    for (let i = 0; i < messages.length; i++) {
+      const msg = messages[i];
+      if (msg.original_avatar === personaId && msg.name !== newName) {
+        msg.name = newName;
+        updatedCount++;
+        await eventEmitter.emit('message:updated', i, msg);
+      }
+    }
+
+    if (updatedCount > 0) {
+      saveChatDebounced();
+      toast.success(t('personaManagement.syncName.success', { count: updatedCount }));
+    } else {
+      toast.info(t('personaManagement.syncName.noChanges'));
+    }
+  }
+
   function abortGeneration() {
     if (generationController.value) {
       generationController.value.abort();
@@ -559,6 +584,12 @@ export const useChatStore = defineStore('chat', () => {
         persona: context.persona,
         samplerSettings: context.settings.sampler,
         tokenizer: context.tokenizer,
+        books: (
+          await Promise.all(
+            worldInfoStore.activeBookNames.map(async (name) => await worldInfoStore.getBookFromCache(name, true)),
+          )
+        ).filter((book): book is WorldInfoBook => book !== undefined),
+        worldInfo: settingsStore.settings.worldInfo,
       });
       const messages = await promptBuilder.build();
 
@@ -1132,5 +1163,6 @@ export const useChatStore = defineStore('chat', () => {
     addMember,
     removeMember,
     toggleChatPersona,
+    syncPersonaName,
   };
 });

@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from '@/types';
+import type { ExtensionManifest } from '../../../types';
 
 export const manifest: ExtensionManifest = {
   name: 'core.reroll-continue',

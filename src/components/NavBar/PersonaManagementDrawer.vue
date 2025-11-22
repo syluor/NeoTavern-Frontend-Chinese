@@ -10,7 +10,7 @@ import { Pagination } from '../Common';
 import { Button, Select, Checkbox, Textarea, Search, ListItem, FileInput, FormItem } from '../UI';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
-import { storeToRefs } from 'pinia';
+import { useWorldInfoStore } from '../../stores/world-info.store';
 
 const { t } = useStrictI18n();
 const personaStore = usePersonaStore();
@@ -18,9 +18,7 @@ const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
-
-const { activeChat } = storeToRefs(chatStore);
-const { activeCharacters } = storeToRefs(characterStore);
+const worldInfoStore = useWorldInfoStore();
 
 const searchTerm = ref('');
 const sortOrder = ref('asc');
@@ -62,18 +60,22 @@ const connectedCharacters = computed(() => {
 });
 
 const isChatLocked = computed(() => {
-  if (!activeChat.value || !personaStore.activePersonaId) return false;
-  return activeChat.value.metadata.active_persona === personaStore.activePersonaId;
+  if (!chatStore.activeChat || !personaStore.activePersonaId) return false;
+  return chatStore.activeChat.metadata.active_persona === personaStore.activePersonaId;
 });
 
 const isCharacterLocked = computed(() => {
-  if (activeCharacters.value.length !== 1 || !personaStore.activePersonaId) return false;
-  return personaStore.isLinkedToCharacter(personaStore.activePersonaId, activeCharacters.value[0].avatar);
+  if (characterStore.activeCharacters.length !== 1 || !personaStore.activePersonaId) return false;
+  return personaStore.isLinkedToCharacter(personaStore.activePersonaId, characterStore.activeCharacters[0].avatar);
 });
 
 const isDefaultPersona = computed(() => {
   if (!personaStore.activePersonaId) return false;
   return personaStore.isDefault(personaStore.activePersonaId);
+});
+
+const lorebookOptions = computed(() => {
+  return worldInfoStore.bookNames.map((name) => ({ label: name, value: name }));
 });
 
 function handleFileImport(files: File[]) {
@@ -106,13 +108,13 @@ function toggleDefault() {
 }
 
 function toggleCharacterLock() {
-  if (activeCharacters.value.length === 1 && personaStore.activePersonaId) {
-    personaStore.toggleCharacterConnection(personaStore.activePersonaId, activeCharacters.value[0].avatar);
+  if (characterStore.activeCharacters.length === 1 && personaStore.activePersonaId) {
+    personaStore.toggleCharacterConnection(personaStore.activePersonaId, characterStore.activeCharacters[0].avatar);
   }
 }
 
 function toggleChatLock() {
-  if (activeChat.value && personaStore.activePersonaId) {
+  if (chatStore.activeChat && personaStore.activePersonaId) {
     chatStore.toggleChatPersona(personaStore.activePersonaId);
   }
 }
@@ -123,9 +125,24 @@ function removeConnection(charAvatar: string) {
   }
 }
 
+async function handleDuplicate() {
+  if (personaStore.activePersonaId) {
+    await personaStore.duplicatePersona(personaStore.activePersonaId);
+  }
+}
+
+function handleSyncName() {
+  if (personaStore.activePersona && chatStore.activeChat) {
+    chatStore.syncPersonaName(personaStore.activePersona.avatarId, personaStore.activePersona.name);
+  }
+}
+
 onMounted(() => {
   if (personaStore.personas.length === 0) {
     personaStore.initialize();
+  }
+  if (worldInfoStore.bookNames.length === 0) {
+    worldInfoStore.initialize();
   }
 });
 </script>
@@ -216,8 +233,13 @@ onMounted(() => {
                 :title="t('personaManagement.actions.rename')"
                 @click="personaStore.updateActivePersonaName"
               />
-              <Button variant="ghost" icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
-              <Button variant="ghost" icon="fa-globe" :title="t('personaManagement.actions.lore')" />
+              <Button
+                variant="ghost"
+                icon="fa-sync"
+                :title="t('personaManagement.actions.syncName')"
+                :disabled="!chatStore.activeChat"
+                @click="handleSyncName"
+              />
 
               <FileInput
                 accept="image/*"
@@ -226,7 +248,12 @@ onMounted(() => {
                 @change="handleAvatarChange"
               />
 
-              <Button variant="ghost" icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
+              <Button
+                variant="ghost"
+                icon="fa-clone"
+                :title="t('personaManagement.actions.duplicate')"
+                @click="handleDuplicate"
+              />
               <Button
                 variant="danger"
                 icon="fa-skull"
@@ -244,6 +271,17 @@ onMounted(() => {
               @update:model-value="personaStore.updateActivePersonaField('description', $event)"
             />
           </FormItem>
+
+          <FormItem :label="t('personaManagement.lorebooks.label')">
+            <!-- @vue-ignore -->
+            <Select
+              :model-value="personaStore.activePersona?.lorebooks ?? []"
+              :options="lorebookOptions"
+              multiple
+              @update:model-value="personaStore.updateActivePersonaField('lorebooks', $event)"
+            />
+          </FormItem>
+
           <!-- TODO: Add token counter -->
 
           <h4 class="standoutHeader">{{ t('personaManagement.connections.title') }}</h4>
@@ -254,12 +292,12 @@ onMounted(() => {
             <Button
               icon="fa-user-lock"
               :active="isCharacterLocked"
-              :disabled="activeCharacters.length !== 1"
+              :disabled="characterStore.activeCharacters.length !== 1"
               @click="toggleCharacterLock"
             >
               {{ t('personaManagement.connections.character') }}
             </Button>
-            <Button icon="fa-lock" :active="isChatLocked" :disabled="!activeChat" @click="toggleChatLock">
+            <Button icon="fa-lock" :active="isChatLocked" :disabled="!chatStore.activeChat" @click="toggleChatLock">
               {{ t('personaManagement.connections.chat') }}
             </Button>
           </div>

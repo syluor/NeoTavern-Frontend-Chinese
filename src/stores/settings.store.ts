@@ -8,6 +8,7 @@ import {
   OpenrouterMiddleoutType,
   TokenizerType,
   defaultAccountSettings,
+  defaultWorldInfoSettings,
 } from '../constants';
 import { isMobile } from '../utils/browser';
 import {
@@ -28,7 +29,6 @@ import { toast } from '../composables/useToast';
 import { set, get, defaultsDeep, debounce, cloneDeep } from 'lodash-es';
 import { useUiStore } from './ui.store';
 import type { ValueForPath } from '../types/utils';
-import { defaultWorldInfoSettings } from './world-info.store';
 import { migratePreset, saveExperimentalPreset } from '../api/presets';
 import { eventEmitter } from '../utils/event-emitter';
 
@@ -99,7 +99,10 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     migratedPersonas.push({
       avatarId: avatarId,
       name: oldPersonaNames[avatarId] ?? '[Unnamed]',
-      ...(oldPersonaDescriptions[avatarId] ?? {}),
+      connections: oldPersonaDescriptions[avatarId]?.connections ?? [],
+      description: oldPersonaDescriptions[avatarId]?.description ?? '',
+      lorebooks: [],
+      title: oldPersonaDescriptions[avatarId]?.title ?? '',
     } as Persona);
   }
 
@@ -242,7 +245,28 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
       tokenizer: TokenizerType.AUTO,
     },
     account: defaultAccountSettings,
-    worldInfo: legacy.world_info_settings,
+    worldInfo: {
+      activeBookNames: [],
+      depth: legacy.world_info_settings.world_info_depth ?? defaultWorldInfoSettings.depth,
+      minActivations: legacy.world_info_settings.world_info_min_activations ?? defaultWorldInfoSettings.minActivations,
+      minActivationsDepthMax:
+        legacy.world_info_settings.world_info_min_activations_depth_max ??
+        defaultWorldInfoSettings.minActivationsDepthMax,
+      budget: legacy.world_info_settings.world_info_budget ?? defaultWorldInfoSettings.budget,
+      includeNames: legacy.world_info_settings.world_info_include_names ?? defaultWorldInfoSettings.includeNames,
+      recursive: legacy.world_info_settings.world_info_recursive ?? defaultWorldInfoSettings.recursive,
+      overflowAlert: legacy.world_info_settings.world_info_overflow_alert ?? defaultWorldInfoSettings.overflowAlert,
+      caseSensitive: legacy.world_info_settings.world_info_case_sensitive ?? defaultWorldInfoSettings.caseSensitive,
+      matchWholeWords:
+        legacy.world_info_settings.world_info_match_whole_words ?? defaultWorldInfoSettings.matchWholeWords,
+      characterStrategy:
+        legacy.world_info_settings.world_info_character_strategy ?? defaultWorldInfoSettings.characterStrategy,
+      budgetCap: legacy.world_info_settings.world_info_budget_cap ?? defaultWorldInfoSettings.budgetCap,
+      useGroupScoring:
+        legacy.world_info_settings.world_info_use_group_scoring ?? defaultWorldInfoSettings.useGroupScoring,
+      maxRecursionSteps:
+        legacy.world_info_settings.world_info_max_recursion_steps ?? defaultWorldInfoSettings.maxRecursionSteps,
+    },
     disabledExtensions: [],
     extensionSettings: {}, // Since old extensions not going to work, start fresh
   };

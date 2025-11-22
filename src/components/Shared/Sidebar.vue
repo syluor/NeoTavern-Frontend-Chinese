@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useResizable } from '../../composables/useResizable';
-import type { Settings } from '@/types';
+import type { Settings } from '../../types';
 
 const props = defineProps<{
   side: 'left' | 'right';

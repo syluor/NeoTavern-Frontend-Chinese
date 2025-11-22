@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 import { useSettingsStore } from '../stores/settings.store';
-import type { Settings } from '@/types';
+import type { Settings } from '../types';
 
 interface UseResizableOptions {
   storageKey?: keyof Settings['account'];

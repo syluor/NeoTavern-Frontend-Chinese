@@ -459,7 +459,7 @@ const baseExtensionAPI: ExtensionAPI = {
      * @returns A deep copy of the World Info settings object.
      */
     getSettings: (): Readonly<WorldInfoSettings> => {
-      return deepClone(useWorldInfoStore().settings);
+      return deepClone(useSettingsStore().settings.worldInfo);
     },
 
     /**
@@ -467,8 +467,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * @param settings A partial WorldInfoSettings object with the fields to update.
      */
     updateSettings: (settings: Partial<WorldInfoSettings>): void => {
-      const store = useWorldInfoStore();
-      store.settings = { ...store.settings, ...settings };
+      const store = useSettingsStore();
+      store.settings.worldInfo = { ...store.settings.worldInfo, ...settings };
     },
 
     /**
@@ -503,8 +503,8 @@ const baseExtensionAPI: ExtensionAPI = {
      * Sets which lorebooks are active globally.
      * @param names An array of lorebook names to activate.
      */
-    setActiveBookNames: (names: string[]): void => {
-      useWorldInfoStore().activeBookNames = names;
+    setGlobalBookNames: (names: string[]): void => {
+      useWorldInfoStore().globalBookNames = names;
     },
 
     /**

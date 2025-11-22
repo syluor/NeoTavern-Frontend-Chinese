@@ -1,4 +1,4 @@
-import type { ApiChatMessage, ExtensionAPI } from '@/types';
+import type { ApiChatMessage, ExtensionAPI } from '../../../types';
 import Handlebars from 'handlebars';
 import { type ChatTranslationSettings, DEFAULT_PROMPT } from './types';
 

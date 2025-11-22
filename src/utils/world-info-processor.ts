@@ -1,11 +1,10 @@
+import { WorldInfoLogic, WorldInfoPosition } from '../constants';
 import {
   type ChatMessage,
   type Character,
   type WorldInfoBook,
   type WorldInfoEntry,
   type WorldInfoSettings,
-  WorldInfoLogic,
-  WorldInfoPosition,
   type Persona,
   type ProcessedWorldInfo,
   type WorldInfoOptions,
@@ -53,13 +52,13 @@ class WorldInfoBuffer {
   }
 
   #transformString(str: string, entry: WorldInfoEntry): string {
-    const caseSensitive = entry.caseSensitive ?? this.#settings.world_info_case_sensitive;
+    const caseSensitive = entry.caseSensitive ?? this.#settings.caseSensitive;
     return caseSensitive ? str : str.toLowerCase();
   }
 
   // Gets the full text to be scanned for a given entry
   get(entry: WorldInfoEntry): string {
-    const depth = entry.scanDepth ?? this.#settings.world_info_depth;
+    const depth = entry.scanDepth ?? this.#settings.depth;
     let buffer = this.#depthBuffer.slice(0, depth).join('\n');
 
     // Add other scannable sources
@@ -82,7 +81,7 @@ class WorldInfoBuffer {
     // TODO: Implement regex support from original `parseRegexFromString`
     const transformedHaystack = this.#transformString(haystack, entry);
     const transformedNeedle = this.#transformString(needle, entry);
-    const matchWholeWords = entry.matchWholeWords ?? this.#settings.world_info_match_whole_words;
+    const matchWholeWords = entry.matchWholeWords ?? this.#settings.matchWholeWords;
 
     if (matchWholeWords) {
       // Simple whole word match for single words
@@ -101,14 +100,14 @@ class WorldInfoBuffer {
 
 // --- Main Processor ---
 export class WorldInfoProcessor {
-  private chat: ChatMessage[];
-  private characters: Character[];
-  private character: Character;
-  private settings: WorldInfoSettings;
-  private books: WorldInfoBook[];
-  private maxContext: number;
-  private persona: Persona;
-  private tokenizer: Tokenizer;
+  public chat: ChatMessage[];
+  public characters: Character[];
+  public character: Character;
+  public settings: WorldInfoSettings;
+  public maxContext: number;
+  public books: WorldInfoBook[];
+  public persona: Persona;
+  public tokenizer: Tokenizer;
 
   constructor({ chat, characters, settings, books, maxContext, persona, tokenizer }: WorldInfoOptions) {
     this.chat = chat;
@@ -139,9 +138,9 @@ export class WorldInfoProcessor {
     let loopCount = 0;
     let tokenBudgetOverflowed = false;
 
-    let budget = Math.round((this.settings.world_info_budget * this.maxContext) / 100) || 1;
-    if (this.settings.world_info_budget_cap > 0 && budget > this.settings.world_info_budget_cap) {
-      budget = this.settings.world_info_budget_cap;
+    let budget = Math.round((this.settings.budget * this.maxContext) / 100) || 1;
+    if (this.settings.budgetCap > 0 && budget > this.settings.budgetCap) {
+      budget = this.settings.budgetCap;
     }
 
     const allEntries: ProcessingEntry[] = this.books.flatMap((book) =>
@@ -152,11 +151,7 @@ export class WorldInfoProcessor {
     // TODO: Implement TimedEffects for sticky/cooldown
     // TODO: Implement Min Activations logic more fully with skew
 
-    while (
-      continueScanning &&
-      loopCount < (this.settings.world_info_max_recursion_steps || 10) &&
-      sortedEntries.length > 0
-    ) {
+    while (continueScanning && loopCount < (this.settings.maxRecursionSteps || 10) && sortedEntries.length > 0) {
       loopCount++;
       const activatedInThisLoop = new Set<ProcessingEntry>();
       let newContentForRecursion = '';
@@ -249,7 +244,7 @@ export class WorldInfoProcessor {
           allActivatedEntries.add(entry);
           await eventEmitter.emit('world-info:entry-activated', entry);
 
-          if (this.settings.world_info_recursive && !entry.preventRecursion) {
+          if (this.settings.recursive && !entry.preventRecursion) {
             newContentForRecursion += `\n${substitutedContent}`;
           }
         }

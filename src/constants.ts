@@ -5,6 +5,7 @@ import {
   type PromptOrderConfig,
   type SamplerSettings,
   type Settings,
+  type WorldInfoSettings,
 } from './types';
 
 export enum OpenrouterMiddleoutType {
@@ -272,4 +273,51 @@ export const defaultAccountSettings: Settings['account'] = {
   rightSidebarExpanded: true,
   leftSidebarWidth: 300,
   rightSidebarWidth: 300,
+};
+
+export enum WorldInfoPosition {
+  BEFORE_CHAR = 0,
+  AFTER_CHAR = 1,
+  BEFORE_AN = 2,
+  AFTER_AN = 3,
+  AT_DEPTH = 4,
+  BEFORE_EM = 5,
+  AFTER_EM = 6,
+  OUTLET = 7,
+}
+
+export enum WorldInfoLogic {
+  AND_ANY = 0,
+  NOT_ALL = 1,
+  NOT_ANY = 2,
+  AND_ALL = 3,
+}
+
+export enum WorldInfoInsertionStrategy {
+  EVENLY = 0,
+  CHARACTER_FIRST = 1,
+  GLOBAL_FIRST = 2,
+}
+
+export enum WorldInfoRole {
+  SYSTEM = 0,
+  USER = 1,
+  ASSISTANT = 2,
+}
+
+export const defaultWorldInfoSettings: WorldInfoSettings = {
+  activeBookNames: [],
+  depth: 2,
+  minActivations: 0,
+  minActivationsDepthMax: 0,
+  budget: 25,
+  includeNames: true,
+  recursive: false,
+  overflowAlert: false,
+  caseSensitive: false,
+  matchWholeWords: false,
+  characterStrategy: WorldInfoInsertionStrategy.CHARACTER_FIRST,
+  budgetCap: 0,
+  useGroupScoring: false,
+  maxRecursionSteps: 0,
 };

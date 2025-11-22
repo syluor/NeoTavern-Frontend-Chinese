@@ -5,7 +5,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
-import { listChats, listRecentChats } from '@/api/chat';
+import { listChats, listRecentChats } from '../../api/chat';
 import { Button } from '../UI';
 
 const chatStore = useChatStore();

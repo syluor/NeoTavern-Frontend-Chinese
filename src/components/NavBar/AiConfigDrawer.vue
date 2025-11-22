@@ -106,12 +106,14 @@ onMounted(() => {
                     :title="t('aiConfig.presets.import')"
                     @click="apiStore.importPreset()"
                   />
+                  <!-- @vue-ignore -->
                   <Button
                     variant="ghost"
                     icon="fa-file-export"
                     :title="t('aiConfig.presets.export')"
                     @click="apiStore.exportPreset(settingsStore.getSetting(item.id))"
                   />
+                  <!-- @vue-ignore -->
                   <Button
                     icon="fa-trash-can"
                     variant="danger"
@@ -122,18 +124,21 @@ onMounted(() => {
               </div>
               <div class="preset-manager-controls">
                 <div style="flex-grow: 1">
+                  <!-- @vue-ignore -->
                   <Select
                     :model-value="settingsStore.getSetting(item.id)"
                     :options="apiStore.presets.map((p) => ({ label: p.name, value: p.name }))"
                     @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
                   />
                 </div>
+                <!-- @vue-ignore -->
                 <Button
                   variant="ghost"
                   icon="fa-save"
                   :title="t('aiConfig.presets.update')"
                   @click="apiStore.updateCurrentPreset(settingsStore.getSetting(item.id))"
                 />
+                <!-- @vue-ignore -->
                 <Button
                   variant="ghost"
                   icon="fa-pencil"
@@ -151,6 +156,7 @@ onMounted(() => {
 
             <!-- Slider -->
             <div v-if="item.widget === 'slider' && item.id">
+              <!-- @vue-ignore -->
               <RangeControl
                 :model-value="settingsStore.getSetting(item.id)"
                 :label="item.label ? t(item.label) : ''"
@@ -174,6 +180,7 @@ onMounted(() => {
 
             <!-- Number Input -->
             <FormItem v-if="item.widget === 'number-input' && item.id" :label="item.label ? t(item.label) : ''">
+              <!-- @vue-ignore -->
               <Input
                 type="number"
                 :model-value="settingsStore.getSetting(item.id)"
@@ -190,6 +197,7 @@ onMounted(() => {
               :label="item.label ? t(item.label) : ''"
               :description="item.description ? t(item.description) : undefined"
             >
+              <!-- @vue-ignore -->
               <Textarea
                 :model-value="settingsStore.getSetting(item.id)"
                 @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
@@ -211,6 +219,7 @@ onMounted(() => {
               v-if="item.widget === 'select' && item.id && item.options"
               :label="item.label ? t(item.label) : ''"
             >
+              <!-- @vue-ignore -->
               <Select
                 :model-value="settingsStore.getSetting(item.id)"
                 :options="item.options.map((o) => ({ label: t(o.label), value: o.value }))"

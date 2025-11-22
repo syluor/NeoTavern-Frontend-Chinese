@@ -1,6 +1,6 @@
-import type { ExtensionAPI } from '@/types';
+import type { ExtensionAPI } from '../../../types';
 import { manifest } from './manifest';
-import { MountableComponent } from '@/types/ExtensionAPI';
+import { MountableComponent } from '../../../types/ExtensionAPI';
 
 export { manifest };
 

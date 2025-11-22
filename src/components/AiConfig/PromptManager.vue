@@ -5,7 +5,7 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { Prompt } from '../../types/settings';
 import { cloneDeep } from 'lodash-es';
 import { toast } from '../../composables/useToast';
-import type { MessageRole } from '@/types';
+import type { MessageRole } from '../../types';
 import { Button, Input, Select, Textarea, FormItem } from '../UI';
 import { EmptyState, DraggableList } from '../Common';
 

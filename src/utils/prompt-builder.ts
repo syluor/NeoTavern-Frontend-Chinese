@@ -8,8 +8,9 @@ import type {
   Tokenizer,
   ProcessedWorldInfo,
   ChatMetadata,
+  WorldInfoBook,
+  WorldInfoSettings,
 } from '../types';
-import { useWorldInfoStore } from '../stores/world-info.store';
 import { WorldInfoProcessor } from './world-info-processor';
 import { defaultSamplerSettings } from '../constants';
 import { eventEmitter } from './event-emitter';
@@ -32,17 +33,28 @@ function substitute(text: string, chars: Character[], user: string): string {
 }
 
 export class PromptBuilder {
-  private characters: Character[];
-  private character: Character;
-  private chatMetadata: ChatMetadata;
-  private chatHistory: ChatMessage[];
-  private samplerSettings: SamplerSettings;
-  private persona: Persona;
-  private maxContext: number;
-  private tokenizer: Tokenizer;
+  public characters: Character[];
+  public character: Character;
+  public chatMetadata: ChatMetadata;
+  public chatHistory: ChatMessage[];
+  public samplerSettings: SamplerSettings;
+  public persona: Persona;
+  public maxContext: number;
+  public tokenizer: Tokenizer;
   public processedWorldInfo: ProcessedWorldInfo | null = null;
+  public worldInfo: WorldInfoSettings;
+  public books: WorldInfoBook[];
 
-  constructor({ characters, chatHistory, samplerSettings, persona, tokenizer, chatMetadata }: PromptBuilderOptions) {
+  constructor({
+    characters,
+    chatHistory,
+    samplerSettings,
+    persona,
+    tokenizer,
+    chatMetadata,
+    worldInfo,
+    books,
+  }: PromptBuilderOptions) {
     this.characters = characters;
     this.character = characters[0];
     this.chatMetadata = chatMetadata;
@@ -50,11 +62,13 @@ export class PromptBuilder {
     this.samplerSettings = samplerSettings;
     this.persona = persona;
     this.tokenizer = tokenizer;
+    this.worldInfo = worldInfo;
+    this.books = books;
 
     this.maxContext = this.samplerSettings.max_context ?? defaultSamplerSettings.max_context;
   }
 
-  private getContent(fieldGetter: (char: Character) => string | undefined, singleCharContent?: string): string {
+  public getContent(fieldGetter: (char: Character) => string | undefined, singleCharContent?: string): string {
     if (this.characters.length > 1) {
       return joinCharacterField(this.characters, fieldGetter);
     }
@@ -63,30 +77,26 @@ export class PromptBuilder {
 
   public async build(): Promise<ApiChatMessage[]> {
     const options: PromptBuilderOptions = {
+      books: this.books,
       characters: this.characters,
       chatMetadata: this.chatMetadata,
       chatHistory: this.chatHistory,
       samplerSettings: this.samplerSettings,
       persona: this.persona,
       tokenizer: this.tokenizer,
+      worldInfo: this.worldInfo,
     };
     await eventEmitter.emit('prompt:building-started', options);
     const finalMessages: ApiChatMessage[] = [];
     let currentTokenCount = 0;
 
     // 1. Process World Info
-    const worldInfoStore = useWorldInfoStore();
-    const activeBooks = await Promise.all(
-      worldInfoStore.bookNames
-        .filter((name) => worldInfoStore.activeBookNames.includes(name))
-        .map(async (name) => await worldInfoStore.getBookFromCache(name, true)),
-    );
 
     const processor = new WorldInfoProcessor({
-      books: activeBooks.filter((book): book is NonNullable<typeof book> => book !== null),
+      books: this.books,
       chat: this.chatHistory,
       characters: this.characters,
-      settings: worldInfoStore.settings,
+      settings: this.worldInfo,
       persona: this.persona,
       maxContext: this.maxContext,
       tokenizer: this.tokenizer,

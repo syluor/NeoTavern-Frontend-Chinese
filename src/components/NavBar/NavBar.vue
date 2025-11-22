@@ -9,8 +9,8 @@ import WorldInfoDrawer from './WorldInfoDrawer.vue';
 import PersonaManagementDrawer from './PersonaManagementDrawer.vue';
 import FormattingDrawer from './FormattingDrawer.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useUiStore } from '@/stores/ui.store';
-import type { DrawerType } from '@/types';
+import { useUiStore } from '../../stores/ui.store';
+import type { DrawerType } from '../../types';
 import { Button } from '../UI';
 
 const { t } = useStrictI18n();

@@ -3,9 +3,9 @@ import { computed } from 'vue';
 import { useUiStore } from '../../stores/ui.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import { getThumbnailUrl } from '@/utils/image';
-import { useChatStore } from '@/stores/chat.store';
-import { formatTimeStamp } from '@/utils/date';
+import { getThumbnailUrl } from '../../utils/image';
+import { useChatStore } from '../../stores/chat.store';
+import { formatTimeStamp } from '../../utils/date';
 import { Button } from '../UI';
 import { SmartAvatar } from '../Common';
 

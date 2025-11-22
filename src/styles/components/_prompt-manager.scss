@@ -1,7 +1,7 @@
 .prompt-manager {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   padding: 5px;
   height: 100%;
   overflow: hidden;
@@ -9,7 +9,7 @@
   &-header {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--theme-border-color);
     flex-shrink: 0;
@@ -59,13 +59,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   &-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-grow: 1;
     overflow: hidden;
     cursor: pointer;
@@ -101,7 +101,7 @@
 
   &-badges {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-shrink: 0;
   }
 
@@ -145,7 +145,7 @@
     border-top: 1px dashed var(--theme-border-color);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     animation: slideDown 0.2s ease;
   }
 }

@@ -98,7 +98,7 @@ function resetPrompt() {
 
 .setting-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .header-row {

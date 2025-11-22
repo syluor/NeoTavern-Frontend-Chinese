@@ -338,7 +338,7 @@ async function handleMoreAction(action: string) {
           <div
             v-show="!isCreating"
             class="character-primary-actions"
-            style="display: flex; gap: 5px; margin-bottom: 5px"
+            style="display: flex; gap: 4px; margin-bottom: 5px"
           >
             <AppButton
               variant="confirm"

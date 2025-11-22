@@ -4,12 +4,12 @@
   height: 100%;
   width: 100%;
   padding: 10px;
-  gap: 15px;
+  gap: 12px;
 
   &-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
     flex-wrap: wrap;
 
@@ -17,7 +17,7 @@
       margin: 0;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-grow: 1;
     }
 
@@ -33,13 +33,13 @@
 
   &-header-actions {
     display: flex;
-    gap: 5px;
+    gap: 4px;
   }
 
   &-content {
     flex-grow: 1;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     overflow: hidden;
   }
 
@@ -47,7 +47,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
   }
 
@@ -60,7 +60,7 @@
 
   &-list-controls {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     align-items: flex-start;
   }
 }
@@ -70,7 +70,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding-right: 2px;
 }
 
@@ -85,7 +85,7 @@
 .persona-editor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   overflow-y: auto;
   padding-right: 5px;
 
@@ -98,7 +98,7 @@
   &-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   &-name {
@@ -113,19 +113,19 @@
 
   .buttons_block {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-shrink: 0;
   }
 
   &-connections {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-wrap: wrap;
   }
 
   &-global-settings {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 }

@@ -146,7 +146,7 @@ onMounted(() => {
             </template>
 
             <template #default>
-              <div style="display: flex; align-items: center; gap: 5px">
+              <div style="display: flex; align-items: center; gap: 4px">
                 <span class="font-bold">{{ character.name }}</span>
                 <i
                   v-if="character.fav"

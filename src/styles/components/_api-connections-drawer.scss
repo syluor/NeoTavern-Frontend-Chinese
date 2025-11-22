@@ -7,13 +7,13 @@
   &-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
   }
 
   &-section {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   h3 {
@@ -53,7 +53,7 @@
   &-input-group {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     width: 100%;
 
     .menu-button {
@@ -71,7 +71,7 @@
 .preset-manager-controls {
   display: flex;
   align-items: flex-start;
-  gap: 5px;
+  gap: 4px;
 
   .app-select-wrapper {
     flex-grow: 1;

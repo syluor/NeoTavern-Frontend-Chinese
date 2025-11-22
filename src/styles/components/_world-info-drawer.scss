@@ -16,7 +16,7 @@
 
   .browser-item-actions {
     display: flex;
-    gap: 2px;
+    gap: 4px;
     opacity: 0;
     transition: opacity var(--animation-duration-2x);
 
@@ -55,11 +55,11 @@
   .world-info-controls {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
 
     &-row {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       align-items: flex-start;
     }
   }

@@ -1,14 +1,14 @@
 .prompt-itemization {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   font-size: 0.9rem;
 
   .pi-header {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     opacity: 0.8;
 
     .separator {
@@ -33,7 +33,7 @@
 
   .pi-content {
     display: flex;
-    gap: 15px;
+    gap: 12px;
 
     @media (max-width: 700px) {
       flex-direction: column;
@@ -103,7 +103,7 @@
   .pi-details-section {
     flex-grow: 1;
     display: flex;
-    gap: 15px;
+    gap: 12px;
     overflow-y: auto;
 
     @media (max-width: 700px) {
@@ -115,7 +115,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   .pi-row {
@@ -157,13 +157,13 @@
 
     .pi-stat {
       display: flex;
-      gap: 5px;
+      gap: 4px;
     }
   }
 
   .pi-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
     flex-wrap: wrap;
   }
@@ -210,7 +210,7 @@
           border-radius: 3px;
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 4px;
 
           .pi-wi-entry-header {
             display: flex;

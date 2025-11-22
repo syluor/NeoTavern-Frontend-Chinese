@@ -139,7 +139,6 @@ watch(
         </div>
 
         <div v-show="isOptionsMenuVisible" ref="optionsMenu" class="options-menu">
-          <hr />
           <a class="options-menu-item" @click="regenerate">
             <i class="fa-solid fa-repeat"></i>
             <span>{{ t('chat.optionsMenu.regenerate') }}</span>

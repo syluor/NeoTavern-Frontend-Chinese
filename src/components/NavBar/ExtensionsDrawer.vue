@@ -40,7 +40,7 @@ onMounted(() => {
   >
     <template #side>
       <div class="extensions-panel-browser-header">
-        <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px">
+        <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 5px">
           <AppIconButton icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
           <AppIconButton icon="fa-cloud-arrow-down" :title="t('extensions.install')" @click="installExtension" />
           <AppToggle v-model="notifyOnUpdates" :title="t('extensions.notifyUpdates')" style="margin-left: auto" />

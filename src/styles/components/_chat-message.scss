@@ -147,7 +147,7 @@
   &-swipe-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background-color: var(--black-30a);
     border-radius: 15px;
     padding: 2px 5px;
@@ -170,7 +170,7 @@
   &-edit-area {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   &-reasoning {
@@ -241,7 +241,7 @@
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
 
     label {
       font-weight: bold;

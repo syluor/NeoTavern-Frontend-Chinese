@@ -257,7 +257,7 @@ async function removeMember(avatar: string) {
                 >
                   {{ file.file_id }}
                 </div>
-                <div style="font-size: 0.85em; opacity: 0.7; display: flex; gap: 15px">
+                <div style="font-size: 0.85em; opacity: 0.7; display: flex; gap: 12px">
                   <span>{{ formatTimeStamp(file.last_mes) }}</span>
                   <span>{{ file.chat_items }} msgs</span>
                 </div>

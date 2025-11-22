@@ -182,7 +182,7 @@ function resetState() {
 .draggable-list {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   padding-block: 4px;
 }
 

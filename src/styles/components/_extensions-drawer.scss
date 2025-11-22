@@ -2,7 +2,7 @@
   &-browser-header {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   &-list {
@@ -12,14 +12,14 @@
     margin-top: 10px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
   }
 }
 
 .extension-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 
   &-header {
     border-bottom: 1px solid var(--theme-border-color);
@@ -30,7 +30,7 @@
       margin: 0;
       display: flex;
       align-items: baseline;
-      gap: 10px;
+      gap: 8px;
     }
 
     .version {

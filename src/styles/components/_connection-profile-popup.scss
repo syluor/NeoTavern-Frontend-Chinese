@@ -1,19 +1,19 @@
 .connection-profile-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   .fields-grid {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 10px 15px;
+    gap: 8px 12px;
 
     .app-checkbox-container {
       margin: 0;

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 15px;
+  gap: 12px;
   transition:
     opacity var(--animation-duration-3x),
     filter var(--animation-duration-3x);
@@ -16,13 +16,13 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
 
     &-main {
       flex-grow: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .toggle-icon-wrapper {
@@ -38,14 +38,14 @@
 
     &-actions {
       display: flex;
-      gap: 5px;
+      gap: 4px;
     }
   }
 
   &-form {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     height: 100%;
     overflow-y: auto;
     padding-right: 5px;
@@ -54,13 +54,13 @@
   &-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    gap: 8px;
     align-items: flex-end;
   }
 
   &-section {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 
     .flex-1 {
@@ -71,7 +71,7 @@
     .control-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
 
     &--column {
@@ -85,7 +85,7 @@
   &-checkbox-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px 20px;
+    gap: 12px 20px;
   }
 
   .uid-label {

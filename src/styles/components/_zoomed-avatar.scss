@@ -25,7 +25,7 @@
     min-width: 55px;
     display: flex;
     justify-content: flex-end;
-    gap: 0;
+    gap: 4px;
     transition: all var(--animation-duration-2x);
 
     .drag-grabber {

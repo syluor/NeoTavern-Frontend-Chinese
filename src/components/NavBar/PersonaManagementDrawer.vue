@@ -299,7 +299,7 @@ onMounted(() => {
 .persona-name-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   width: 100%;
 }
 
@@ -329,14 +329,14 @@ onMounted(() => {
 .chips-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   margin-top: 5px;
 }
 
 .character-chip {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background-color: var(--black-30a);
   border: 1px solid var(--theme-border-color);
   border-radius: 15px;

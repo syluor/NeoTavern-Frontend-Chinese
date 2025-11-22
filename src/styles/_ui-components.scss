@@ -210,7 +210,7 @@
 // --- AppTabs ---
 .app-tabs {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   border-bottom: 1px solid var(--theme-border-color);
   padding-bottom: 5px;
   margin-bottom: 10px;
@@ -247,7 +247,7 @@
 .app-list-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px;
   border-radius: var(--base-border-radius);
   cursor: pointer;
@@ -288,21 +288,21 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 2px;
+    gap: 4px;
   }
 
   &-end {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 }
 
 // --- AppSearch ---
 .app-search-bar {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   align-items: flex-start;
   width: 100%;
 
@@ -317,7 +317,7 @@
   .search-actions {
     flex-shrink: 0;
     display: flex;
-    gap: 5px;
+    gap: 4px;
   }
 }
 
@@ -330,13 +330,13 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   margin-bottom: 10px;
 }
 
 .form-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 
   .form-column {
     flex: 1;
@@ -421,7 +421,7 @@
   .inline-drawer-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     padding: 8px;
     background-color: var(--black-30a);
@@ -449,7 +449,7 @@
 
   .header-actions {
     display: flex;
-    gap: 5px;
+    gap: 4px;
   }
 
   .inline-drawer-icon {
@@ -474,7 +474,7 @@
 .range-block {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 
   &-title {
     text-align: center;
@@ -486,7 +486,7 @@
   &-range-and-counter {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .neo-range-slider {
@@ -522,7 +522,7 @@
 // Tag Input Controls
 .tag-input-controls {
   display: flex;
-  gap: 5px;
+  gap: 4px;
 
   .text-pole {
     flex-grow: 1;
@@ -533,7 +533,7 @@
 .tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   margin-top: 5px;
 }
 
@@ -545,7 +545,7 @@
   font-size: 0.9em;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 
   .tag-close {
     cursor: pointer;
@@ -564,7 +564,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--theme-border-color);
   padding-bottom: 5px;
@@ -573,7 +573,7 @@
   &-main {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-grow: 1;
 
     h3 {
@@ -585,7 +585,7 @@
   &-actions {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 }
 
@@ -613,7 +613,7 @@
     height: 100%;
     border-right: 1px solid var(--theme-border-color);
     padding: 5px;
-    gap: 5px;
+    gap: 4px;
     background-color: var(--theme-background-tint);
 
     body:not(.is-resizing) & {
@@ -675,7 +675,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 15px;
+  gap: 12px;
   text-align: center;
   opacity: 0.6;
   padding: 20px;

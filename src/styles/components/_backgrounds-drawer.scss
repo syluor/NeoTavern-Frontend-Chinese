@@ -55,7 +55,7 @@
       display: flex;
       gap: 4px;
 
-      .menu-button-icon {
+      .menu-button {
         padding: 4px;
       }
     }
@@ -205,7 +205,7 @@
     transform-origin: top right;
     transition: all var(--animation-duration) ease-out;
 
-    .menu-button-icon {
+    .menu-button {
       width: 24px;
       height: 24px;
       font-size: 0.9em;

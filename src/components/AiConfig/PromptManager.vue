@@ -6,10 +6,8 @@ import type { Prompt } from '../../types/settings';
 import { cloneDeep } from 'lodash-es';
 import { toast } from '../../composables/useToast';
 import type { MessageRole } from '@/types';
-import DraggableList from '../Common/DraggableList.vue';
-import { Button, IconButton, Input, Select, Textarea } from '../UI';
-import FormItem from '../UI/FormItem.vue';
-import EmptyState from '../Common/EmptyState.vue';
+import { Button, Input, Select, Textarea, FormItem } from '../UI';
+import { EmptyState, DraggableList } from '../Common';
 
 const settingsStore = useSettingsStore();
 const { t } = useStrictI18n();
@@ -167,7 +165,7 @@ function getBadgeClass(role?: string) {
             <div class="prompt-item-header">
               <div class="prompt-item-actions">
                 <div
-                  class="menu-button-icon fa-solid fa-grip-lines prompt-item-drag-handle"
+                  class="menu-button fa-solid fa-grip-lines prompt-item-drag-handle"
                   :title="t('common.dragToReorder')"
                 ></div>
               </div>
@@ -181,13 +179,14 @@ function getBadgeClass(role?: string) {
               </div>
 
               <div class="prompt-item-actions">
-                <IconButton
+                <Button
                   :icon="prompt.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"
+                  variant="ghost"
                   :title="t('common.toggle')"
                   @click.stop="toggleEnabled(index)"
                 />
 
-                <IconButton
+                <Button
                   icon="fa-trash"
                   variant="danger"
                   :disabled="!!prompt.marker"

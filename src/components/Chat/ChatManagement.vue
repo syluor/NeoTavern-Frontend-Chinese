@@ -11,16 +11,9 @@ import * as api from '../../api/chat';
 import { toast } from '../../composables/useToast';
 import { GenerationMode, GroupGenerationHandlingMode, GroupReplyStrategy } from '../../constants';
 import { getThumbnailUrl } from '../../utils/image';
-import Pagination from '../Common/Pagination.vue';
-import DraggableList from '../Common/DraggableList.vue';
 import { useUiStore } from '@/stores/ui.store';
-import { Button, IconButton, Input, Select, Textarea, Checkbox } from '../UI';
-import Tabs from '../UI/Tabs.vue';
-import Search from '../UI/Search.vue';
-import ListItem from '../UI/ListItem.vue';
-import FormItem from '../UI/FormItem.vue';
-import CollapsibleSection from '../UI/CollapsibleSection.vue';
-import EmptyState from '../Common/EmptyState.vue';
+import { Button, Input, Select, Textarea, Checkbox, Tabs, Search, ListItem, FormItem, CollapsibleSection } from '../UI';
+import { EmptyState, Pagination, DraggableList } from '../Common';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
@@ -263,12 +256,13 @@ async function removeMember(avatar: string) {
                 </div>
               </template>
               <template #end>
-                <IconButton
+                <Button
                   icon="fa-pencil"
+                  variant="ghost"
                   :title="t('chatManagement.actions.rename')"
                   @click.stop="renameChat(file.file_id)"
                 />
-                <IconButton
+                <Button
                   icon="fa-trash-can"
                   variant="danger"
                   :title="t('chatManagement.actions.delete')"
@@ -299,7 +293,7 @@ async function removeMember(avatar: string) {
               <ListItem :class="{ muted: groupConfig?.members[member.avatar]?.muted }" style="margin-bottom: 2px">
                 <template #start>
                   <div
-                    class="menu-button-icon fa-solid fa-grip-lines group-member-handle"
+                    class="menu-button fa-solid fa-grip-lines group-member-handle"
                     style="cursor: grab; opacity: 0.5; margin-right: 5px"
                   ></div>
                   <img
@@ -313,25 +307,28 @@ async function removeMember(avatar: string) {
                   }}</span>
                 </template>
                 <template #end>
-                  <IconButton
+                  <Button
                     v-if="isGroup"
+                    variant="ghost"
                     icon="fa-address-card"
                     :title="t('group.peek')"
                     @click="peekCharacter(member.avatar)"
                   />
-                  <IconButton
+                  <Button
                     v-if="isGroup"
+                    variant="ghost"
                     icon="fa-comment-dots"
                     :title="t('group.forceTalk')"
                     @click="forceTalk(member.avatar)"
                   />
-                  <IconButton
+                  <Button
                     v-if="isGroup"
+                    variant="ghost"
                     :icon="groupConfig?.members[member.avatar]?.muted ? 'fa-comment-slash' : 'fa-comment'"
                     :title="t('group.mute')"
                     @click="toggleMute(member.avatar)"
                   />
-                  <IconButton
+                  <Button
                     icon="fa-trash-can"
                     variant="danger"
                     :title="t('common.remove')"

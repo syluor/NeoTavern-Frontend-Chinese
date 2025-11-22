@@ -4,9 +4,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ValueForPath } from '../../types/utils';
-import { Select, Checkbox, RangeControl, CollapsibleSection } from '../../components/UI';
-import Search from '../UI/Search.vue';
-import FormItem from '../UI/FormItem.vue';
+import { Select, Checkbox, RangeControl, CollapsibleSection, Search, FormItem } from '../../components/UI';
 import type { I18nKey } from '@/types/i18n';
 
 const { t } = useStrictI18n();

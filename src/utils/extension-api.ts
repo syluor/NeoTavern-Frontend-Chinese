@@ -68,7 +68,6 @@ const mountableComponents: Record<MountableComponent, () => Promise<{ default: V
   FileInput: () => import('../components/UI/FileInput.vue'),
   FormItem: () => import('../components/UI/FormItem.vue'),
   Icon: () => import('../components/UI/Icon.vue'),
-  IconButton: () => import('../components/UI/IconButton.vue'),
   Input: () => import('../components/UI/Input.vue'),
   ListItem: () => import('../components/UI/ListItem.vue'),
   Search: () => import('../components/UI/Search.vue'),

@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import Icon from './Icon.vue';
 
 interface Props {
-  variant?: 'default' | 'danger' | 'confirm';
+  variant?: 'default' | 'danger' | 'confirm' | 'ghost';
   icon?: string;
   disabled?: boolean;
   loading?: boolean;
@@ -28,6 +28,7 @@ const classes = computed(() => {
     'menu-button': true,
     'menu-button--danger': props.variant === 'danger',
     'menu-button--confirm': props.variant === 'confirm',
+    'menu-button--ghost': props.variant === 'ghost',
     disabled: props.disabled || props.loading,
     active: props.active,
   };

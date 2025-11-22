@@ -22,19 +22,13 @@
 }
 
 .nav-item {
-  .menu-button-icon {
+  .menu-button {
     font-size: var(--nav-bar-icon-size);
     padding: 4px 2px;
     opacity: 0.3;
     background-color: transparent;
     border: none;
     transition: all var(--animation-duration-2x);
-
-    &:hover,
-    &.active {
-      opacity: 1;
-      background-color: transparent;
-    }
   }
 
   &-content {

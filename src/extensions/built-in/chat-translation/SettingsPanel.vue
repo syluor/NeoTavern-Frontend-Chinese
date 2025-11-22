@@ -2,9 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import type { ExtensionAPI } from '@/types';
 import { AutoTranslateMode, type ChatTranslationSettings, DEFAULT_PROMPT } from './types';
-import ConnectionProfileSelector from '@/components/Common/ConnectionProfileSelector.vue';
-import { Input, Select, Textarea, Button } from '@/components/UI';
-import FormItem from '@/components/UI/FormItem.vue';
+import { ConnectionProfileSelector } from '@/components/Common';
+import { Input, Select, Textarea, Button, FormItem } from '@/components/UI';
 import { useStrictI18n } from '@/composables/useStrictI18n';
 
 const props = defineProps<{

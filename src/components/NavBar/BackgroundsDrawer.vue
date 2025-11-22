@@ -6,9 +6,7 @@ import { usePopupStore } from '../../stores/popup.store';
 import { getThumbnailUrl } from '../../utils/image';
 import { POPUP_RESULT, POPUP_TYPE, type BackgroundFitting } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { Button, IconButton, Select } from '../UI';
-import Search from '../UI/Search.vue';
-import FileInput from '../UI/FileInput.vue';
+import { Button, Select, Search, FileInput } from '../UI';
 
 const { t } = useStrictI18n();
 const backgroundStore = useBackgroundStore();
@@ -130,13 +128,15 @@ onMounted(() => {
       <div class="heading-container">
         <h3>{{ t('backgrounds.systemBackgrounds') }}</h3>
         <div class="heading-controls">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-minus"
             :title="t('backgrounds.zoomIn')"
             :disabled="backgroundStore.thumbnailColumns <= THUMBNAIL_COLUMNS_MIN"
             @click="zoomIn"
           />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-plus"
             :title="t('backgrounds.zoomOut')"
             :disabled="backgroundStore.thumbnailColumns >= THUMBNAIL_COLUMNS_MAX"
@@ -161,22 +161,26 @@ onMounted(() => {
             <div class="background-item-title">{{ getBgFileName(bg) }}</div>
           </div>
           <div class="background-item-menu">
-            <IconButton
+            <Button
+              variant="ghost"
               icon="fa-lock"
               :title="t('backgrounds.actions.lock')"
               @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
             />
-            <IconButton
+            <Button
+              variant="ghost"
               icon="fa-lock-open"
               :title="t('backgrounds.actions.unlock')"
               @click.stop="backgroundStore.unlockBackground()"
             />
-            <IconButton
+            <Button
+              variant="ghost"
               icon="fa-pen-to-square"
               :title="t('backgrounds.actions.rename')"
               @click.stop="handleRename(bg)"
             />
-            <IconButton
+            <Button
+              variant="danger"
               icon="fa-trash-can"
               :title="t('backgrounds.actions.delete')"
               @click.stop="handleDelete(bg, false)"

@@ -8,9 +8,7 @@ import { POPUP_TYPE } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import PromptManager from '../AiConfig/PromptManager.vue';
-import { IconButton, Select, Input, Textarea, Checkbox, RangeControl } from '../../components/UI';
-import Tabs from '../UI/Tabs.vue';
-import FormItem from '../UI/FormItem.vue';
+import { Button, Select, Input, Textarea, Checkbox, RangeControl, Tabs, FormItem } from '../../components/UI';
 
 const { t } = useStrictI18n();
 const apiStore = useApiStore();
@@ -76,7 +74,8 @@ onMounted(() => {
       />
 
       <div class="header-actions">
-        <IconButton
+        <Button
+          variant="ghost"
           :icon="isPanelPinned ? 'fa-lock' : 'fa-unlock'"
           :title="t('characterPanel.pinToggle')"
           @click="isPanelPinned = !isPanelPinned"
@@ -101,17 +100,19 @@ onMounted(() => {
               <div class="standout-header">
                 <strong>{{ item.label ? t(item.label) : '' }}</strong>
                 <div class="preset-manager-actions">
-                  <IconButton
+                  <Button
+                    variant="ghost"
                     icon="fa-file-import"
                     :title="t('aiConfig.presets.import')"
                     @click="apiStore.importPreset()"
                   />
-                  <IconButton
+                  <Button
+                    variant="ghost"
                     icon="fa-file-export"
                     :title="t('aiConfig.presets.export')"
                     @click="apiStore.exportPreset(settingsStore.getSetting(item.id))"
                   />
-                  <IconButton
+                  <Button
                     icon="fa-trash-can"
                     variant="danger"
                     :title="t('aiConfig.presets.delete')"
@@ -127,17 +128,20 @@ onMounted(() => {
                     @update:model-value="(val) => settingsStore.setSetting(item.id!, val)"
                   />
                 </div>
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-save"
                   :title="t('aiConfig.presets.update')"
                   @click="apiStore.updateCurrentPreset(settingsStore.getSetting(item.id))"
                 />
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-pencil"
                   :title="t('aiConfig.presets.rename')"
                   @click="apiStore.renamePreset(settingsStore.getSetting(item.id))"
                 />
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-file-circle-plus"
                   :title="t('aiConfig.presets.saveAs')"
                   @click="handleNewPreset()"

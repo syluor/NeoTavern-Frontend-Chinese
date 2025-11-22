@@ -2,11 +2,8 @@
 import { onMounted, ref } from 'vue';
 import { useExtensionStore } from '../../stores/extension.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { IconButton, Toggle } from '../UI';
-import Search from '../UI/Search.vue';
-import ListItem from '../UI/ListItem.vue';
-import SplitPane from '../Common/SplitPane.vue';
-import EmptyState from '../Common/EmptyState.vue';
+import { Button, Toggle, Search, ListItem } from '../UI';
+import { EmptyState, SplitPane } from '../Common';
 
 const { t } = useStrictI18n();
 const extensionStore = useExtensionStore();
@@ -41,8 +38,13 @@ onMounted(() => {
     <template #side>
       <div class="extensions-panel-browser-header">
         <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 5px">
-          <IconButton icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
-          <IconButton icon="fa-cloud-arrow-down" :title="t('extensions.install')" @click="installExtension" />
+          <Button variant="ghost" icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
+          <Button
+            variant="ghost"
+            icon="fa-cloud-arrow-down"
+            :title="t('extensions.install')"
+            @click="installExtension"
+          />
           <Toggle v-model="notifyOnUpdates" :title="t('extensions.notifyUpdates')" style="margin-left: auto" />
         </div>
         <Search v-model="extensionStore.searchTerm" :placeholder="t('common.search')" />

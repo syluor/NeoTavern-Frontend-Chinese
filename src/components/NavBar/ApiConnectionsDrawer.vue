@@ -5,10 +5,9 @@ import { chat_completion_sources, type ConnectionProfile } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
-import ConnectionProfileSelector from '../Common/ConnectionProfileSelector.vue';
 import { OpenrouterMiddleoutType, TokenizerType } from '../../constants';
-import { Button, Checkbox, IconButton, Input, Select } from '../UI';
-import FormItem from '../UI/FormItem.vue';
+import { ConnectionProfileSelector } from '../Common';
+import { Button, Checkbox, Input, Select, FormItem } from '../UI';
 
 const { t } = useStrictI18n();
 
@@ -105,27 +104,32 @@ onMounted(() => {
         <h3>{{ t('apiConnections.profile') }}</h3>
         <div class="preset-manager-controls">
           <ConnectionProfileSelector v-model="apiStore.selectedConnectionProfileName" />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-file-circle-plus"
             :title="t('apiConnections.profileManagement.create')"
             @click="isProfilePopupVisible = true"
           />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-pencil"
             :title="t('apiConnections.profileManagement.rename')"
             @click="apiStore.renameConnectionProfile"
           />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-trash-can"
             :title="t('apiConnections.profileManagement.delete')"
             @click="apiStore.deleteConnectionProfile"
           />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-file-import"
             :title="t('apiConnections.profileManagement.import')"
             @click="apiStore.importConnectionProfiles"
           />
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-file-export"
             :title="t('apiConnections.profileManagement.export')"
             @click="apiStore.exportConnectionProfile"

@@ -3,8 +3,17 @@ import { type PropType, computed } from 'vue';
 import { WorldInfoPosition, type WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useWorldInfoStore } from '../../stores/world-info.store';
-import { Input, Textarea, Select, Checkbox, IconButton, CollapsibleSection, Icon, TagInput } from '../../components/UI';
-import FormItem from '../UI/FormItem.vue';
+import {
+  Input,
+  Textarea,
+  Select,
+  Checkbox,
+  Button,
+  CollapsibleSection,
+  Icon,
+  TagInput,
+  FormItem,
+} from '../../components/UI';
 
 const props = defineProps({
   modelValue: {
@@ -102,13 +111,14 @@ const logicOptions = [
       </div>
 
       <div class="editor-header-actions">
-        <IconButton icon="fa-right-left" :title="t('worldInfo.entry.move')" />
-        <IconButton
+        <Button variant="ghost" icon="fa-right-left" :title="t('worldInfo.entry.move')" />
+        <Button
+          variant="ghost"
           icon="fa-paste"
           :title="t('worldInfo.entry.duplicate')"
           @click="worldInfoStore.duplicateSelectedEntry"
         />
-        <IconButton
+        <Button
           icon="fa-trash-can"
           variant="danger"
           :title="t('worldInfo.entry.delete')"

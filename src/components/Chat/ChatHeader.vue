@@ -6,8 +6,8 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { getThumbnailUrl } from '@/utils/image';
 import { useChatStore } from '@/stores/chat.store';
 import { formatTimeStamp } from '@/utils/date';
-import { IconButton } from '../UI';
-import SmartAvatar from '../Common/SmartAvatar.vue';
+import { Button } from '../UI';
+import { SmartAvatar } from '../Common';
 
 const uiStore = useUiStore();
 const characterStore = useCharacterStore();
@@ -57,8 +57,9 @@ function toggleFullScreen() {
   <header class="chat-header">
     <div class="chat-header-group left">
       <template v-for="[id, def] in uiStore.leftSidebarRegistry" :key="id">
-        <IconButton
+        <Button
           v-if="def.icon"
+          variant="ghost"
           class="chat-header-icon"
           :icon="def.icon"
           :active="uiStore.leftSidebarView === id"
@@ -82,16 +83,18 @@ function toggleFullScreen() {
     </div>
 
     <div class="chat-header-group right">
-      <IconButton
+      <Button
         class="chat-header-icon"
+        variant="ghost"
         :icon="settingsStore.settings.account.chatFullScreen ? 'fa-compress' : 'fa-expand'"
         :active="settingsStore.settings.account.chatFullScreen"
         title="Toggle Full Screen"
         @click="toggleFullScreen"
       />
       <template v-for="([id, def], index) in uiStore.rightSidebarRegistry" :key="index">
-        <IconButton
+        <Button
           v-if="def.icon"
+          variant="ghost"
           class="chat-header-icon"
           :icon="def.icon"
           :active="uiStore.rightSidebarView === id"

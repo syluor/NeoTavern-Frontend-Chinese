@@ -14,8 +14,7 @@ import { toast } from '../../composables/useToast';
 import { usePopupStore } from '../../stores/popup.store';
 import { cloneDeep, set } from 'lodash-es';
 import { humanizedDateTime } from '../../utils/date';
-import { Input, Textarea, Button, IconButton, Select, TagInput, CollapsibleSection, RangeControl } from '../UI';
-import FormItem from '../UI/FormItem.vue';
+import { Input, Textarea, Button, Select, TagInput, CollapsibleSection, RangeControl, FormItem } from '../UI';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -292,7 +291,12 @@ async function handleMoreAction(action: string) {
               </small>
             </div>
           </div>
-          <IconButton v-show="!isCreating" icon="fa-ranking-star" :title="t('characterEditor.stats.title')" />
+          <Button
+            v-show="!isCreating"
+            variant="ghost"
+            icon="fa-ranking-star"
+            :title="t('characterEditor.stats.title')"
+          />
         </div>
       </div>
 
@@ -346,19 +350,20 @@ async function handleMoreAction(action: string) {
           </div>
 
           <div v-show="!isCreating" class="character-edit-form-buttons">
-            <IconButton
+            <Button
+              variant="ghost"
               icon="fa-star"
               :active="!!localCharacter.fav"
               :class="{ 'is-favorite': localCharacter.fav }"
               :title="t('characterEditor.favorite')"
               @click="toggleFavorite"
             />
-            <IconButton icon="fa-globe" :title="t('characterEditor.lore')" />
-            <IconButton icon="fa-passport" :title="t('characterEditor.chatLore')" />
-            <IconButton icon="fa-face-smile" :title="t('characterEditor.personas')" />
-            <IconButton icon="fa-file-export" :title="t('characterEditor.export')" />
-            <IconButton icon="fa-clone" :title="t('characterEditor.duplicate')" @click="handleDuplicate" />
-            <IconButton icon="fa-skull" variant="danger" :title="t('characterEditor.delete')" @click="handleDelete" />
+            <Button variant="ghost" icon="fa-globe" :title="t('characterEditor.lore')" />
+            <Button variant="ghost" icon="fa-passport" :title="t('characterEditor.chatLore')" />
+            <Button variant="ghost" icon="fa-face-smile" :title="t('characterEditor.personas')" />
+            <Button variant="ghost" icon="fa-file-export" :title="t('characterEditor.export')" />
+            <Button variant="ghost" icon="fa-clone" :title="t('characterEditor.duplicate')" @click="handleDuplicate" />
+            <Button icon="fa-skull" variant="danger" :title="t('characterEditor.delete')" @click="handleDelete" />
           </div>
 
           <div v-show="!isCreating">
@@ -375,8 +380,13 @@ async function handleMoreAction(action: string) {
       <!-- Creator's Notes Inline Drawer -->
       <CollapsibleSection v-model:is-open="isCreatorNotesOpen!" :title="t('characterEditor.creatorNotes')">
         <template #actions>
-          <IconButton icon="fa-palette" :title="t('characterEditor.toggleStyles')" @click.stop="() => {}" />
-          <IconButton icon="fa-eye" :title="t('characterEditor.toggleSpoiler')" @click.stop="peekSpoilerMode" />
+          <Button variant="ghost" icon="fa-palette" :title="t('characterEditor.toggleStyles')" @click.stop="() => {}" />
+          <Button
+            variant="ghost"
+            icon="fa-eye"
+            :title="t('characterEditor.toggleSpoiler')"
+            @click.stop="peekSpoilerMode"
+          />
         </template>
 
         <!-- eslint-disable-next-line vue/no-v-html -->

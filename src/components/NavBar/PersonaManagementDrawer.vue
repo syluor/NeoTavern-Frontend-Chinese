@@ -4,14 +4,10 @@ import { usePersonaStore } from '../../stores/persona.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { getThumbnailUrl } from '../../utils/image';
-import Pagination from '../Common/Pagination.vue';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
-import { Button, IconButton, Select, Checkbox, Textarea } from '../UI';
-import Search from '../UI/Search.vue';
-import ListItem from '../UI/ListItem.vue';
-import FileInput from '../UI/FileInput.vue';
-import FormItem from '../UI/FormItem.vue';
+import { Pagination } from '../Common';
+import { Button, Select, Checkbox, Textarea, Search, ListItem, FileInput, FormItem } from '../UI';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { storeToRefs } from 'pinia';
@@ -165,7 +161,7 @@ onMounted(() => {
                 {{ t('personaManagement.create') }}
               </Button>
               <Select v-model="sortOrder" :options="sortOptions" />
-              <IconButton icon="fa-table-cells-large" @click="isGridView = !isGridView" />
+              <Button variant="ghost" icon="fa-table-cells-large" @click="isGridView = !isGridView" />
             </template>
           </Search>
         </div>
@@ -214,13 +210,14 @@ onMounted(() => {
           <div class="persona-editor-controls">
             <h5 class="persona-editor-name">{{ personaStore.activePersona?.name ?? '' }}</h5>
             <div class="buttons_block">
-              <IconButton
+              <Button
+                variant="ghost"
                 icon="fa-pencil"
                 :title="t('personaManagement.actions.rename')"
                 @click="personaStore.updateActivePersonaName"
               />
-              <IconButton icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
-              <IconButton icon="fa-globe" :title="t('personaManagement.actions.lore')" />
+              <Button variant="ghost" icon="fa-sync" :title="t('personaManagement.actions.syncName')" />
+              <Button variant="ghost" icon="fa-globe" :title="t('personaManagement.actions.lore')" />
 
               <FileInput
                 accept="image/*"
@@ -229,8 +226,8 @@ onMounted(() => {
                 @change="handleAvatarChange"
               />
 
-              <IconButton icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
-              <IconButton
+              <Button variant="ghost" icon="fa-clone" :title="t('personaManagement.actions.duplicate')" />
+              <Button
                 variant="danger"
                 icon="fa-skull"
                 :title="t('personaManagement.actions.delete')"

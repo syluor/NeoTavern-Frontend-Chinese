@@ -2,16 +2,11 @@
 import { onMounted, ref, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
 import CharacterEditForm from './CharacterEditForm.vue';
-import Pagination from '../Common/Pagination.vue';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
-import { IconButton, Button, Select } from '../UI';
-import Search from '../UI/Search.vue';
-import FileInput from '../UI/FileInput.vue';
-import ListItem from '../UI/ListItem.vue';
-import SplitPane from '../Common/SplitPane.vue';
-import EmptyState from '../Common/EmptyState.vue';
+import { Button, Search, Select, FileInput, ListItem } from '../UI';
+import { EmptyState, Pagination, SplitPane } from '../Common';
 
 const { t } = useStrictI18n();
 
@@ -81,7 +76,7 @@ onMounted(() => {
     <template #side>
       <div class="character-panel-browser-header">
         <div class="character-panel-actions">
-          <IconButton icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
+          <Button variant="ghost" icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
           <FileInput
             accept=".json,.png"
             multiple
@@ -89,11 +84,12 @@ onMounted(() => {
             :label="t('characterPanel.importFile')"
             @change="handleFileImport"
           />
-          <IconButton icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
+          <Button variant="ghost" icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
 
           <div id="extension-buttons-container"></div>
 
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-search"
             :title="t('characterPanel.searchToggle')"
             @click="isSearchActive = !isSearchActive"

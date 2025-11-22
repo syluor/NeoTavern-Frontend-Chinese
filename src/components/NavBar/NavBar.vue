@@ -11,7 +11,7 @@ import FormattingDrawer from './FormattingDrawer.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useUiStore } from '@/stores/ui.store';
 import type { DrawerType } from '@/types';
-import { IconButton } from '../UI';
+import { Button } from '../UI';
 
 const { t } = useStrictI18n();
 
@@ -31,7 +31,8 @@ function toggleDrawer(drawerName: DrawerType) {
     <div id="nav-bar" class="nav-bar">
       <div class="nav-bar-nav">
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-sliders"
             :active="uiStore.activeDrawer === 'ai-config'"
             :title="t('navbar.aiConfig')"
@@ -39,7 +40,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-plug"
             :active="uiStore.activeDrawer === 'api-status'"
             :title="t('navbar.apiConnections')"
@@ -47,7 +49,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-font"
             :active="uiStore.activeDrawer === 'formatting'"
             :title="t('navbar.formatting')"
@@ -55,7 +58,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-book-atlas"
             :active="uiStore.activeDrawer === 'world-info'"
             :title="t('navbar.worldInfo')"
@@ -63,7 +67,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-user-cog"
             :active="uiStore.activeDrawer === 'user-settings'"
             :title="t('navbar.userSettings')"
@@ -71,7 +76,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-panorama"
             :active="uiStore.activeDrawer === 'backgrounds'"
             :title="t('navbar.backgrounds')"
@@ -79,7 +85,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-cubes"
             :active="uiStore.activeDrawer === 'extensions'"
             :title="t('navbar.extensions')"
@@ -87,7 +94,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-face-smile"
             :active="uiStore.activeDrawer === 'persona'"
             :title="t('navbar.personaManagement')"
@@ -95,7 +103,8 @@ function toggleDrawer(drawerName: DrawerType) {
           />
         </div>
         <div class="nav-item">
-          <IconButton
+          <Button
+            variant="ghost"
             icon="fa-address-card"
             :active="uiStore.activeDrawer === 'character'"
             :title="t('navbar.characterManagement')"

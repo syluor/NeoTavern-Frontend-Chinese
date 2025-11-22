@@ -3,8 +3,7 @@ import { computed } from 'vue';
 import { useWorldInfoStore, defaultWorldInfoSettings } from '../../stores/world-info.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { WorldInfoInsertionStrategy } from '../../types';
-import { Button, Checkbox, Select, RangeControl } from '../UI';
-import FormItem from '../UI/FormItem.vue';
+import { Button, Checkbox, Select, RangeControl, FormItem } from '../UI';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();

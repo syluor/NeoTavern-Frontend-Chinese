@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import IconButton from './IconButton.vue';
 import Button from './Button.vue';
 
 defineProps<{
@@ -39,6 +38,6 @@ function handleChange(e: Event) {
       {{ label || 'Upload' }}
     </Button>
 
-    <IconButton v-else :icon="icon || 'fa-upload'" :title="label || 'Upload'" @click="trigger" />
+    <Button v-else :icon="icon || 'fa-upload'" :title="label || 'Upload'" variant="ghost" @click="trigger" />
   </div>
 </template>

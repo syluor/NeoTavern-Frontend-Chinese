@@ -121,7 +121,7 @@
     }
 
     // Targeted specifically for AppIconButton used for favorites
-    .menu-button-icon.is-favorite {
+    .menu-button.is-favorite {
       color: var(--color-golden);
       filter: drop-shadow(0 0 3px var(--color-golden));
     }

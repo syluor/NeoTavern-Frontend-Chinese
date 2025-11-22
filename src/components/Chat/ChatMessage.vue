@@ -15,8 +15,8 @@ import { formatMessage, formatReasoning } from '../../utils/markdown';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import PromptItemizationPopup from './PromptItemizationPopup.vue';
-import { IconButton, Textarea } from '../UI';
-import SmartAvatar from '../Common/SmartAvatar.vue';
+import { Button, Textarea } from '../UI';
+import { SmartAvatar } from '../Common';
 
 const props = defineProps({
   message: {
@@ -241,18 +241,19 @@ async function showPromptItemization() {
 
         <!-- Buttons for Normal Mode -->
         <div v-show="!isEditing" class="message-buttons">
-          <IconButton
+          <Button
             v-if="hasItemizedPrompt"
+            variant="ghost"
             icon="fa-square-poll-horizontal"
             :title="t('chat.buttons.itemization')"
             @click="showPromptItemization"
           />
           <!-- TODO: Implement extra buttons dropdown -->
-          <IconButton icon="fa-ellipsis" title="Message Actions" />
+          <Button variant="ghost" icon="fa-ellipsis" title="Message Actions" />
           <!-- TODO: Implement bookmark button -->
-          <IconButton icon="fa-flag" title="Bookmark" />
-          <IconButton icon="fa-pencil" title="Edit" @click="startEditing" />
-          <IconButton
+          <Button variant="ghost" icon="fa-flag" title="Bookmark" />
+          <Button variant="ghost" icon="fa-pencil" title="Edit" @click="startEditing" />
+          <Button
             icon="fa-trash-can"
             variant="danger"
             :title="t('chat.buttons.deleteMessage')"
@@ -262,29 +263,24 @@ async function showPromptItemization() {
 
         <!-- Buttons for Editing Mode -->
         <div v-show="isEditing" class="message-edit-actions">
-          <IconButton
+          <Button
             icon="fa-check"
             variant="default"
             class="confirm-btn"
             :title="t('chat.buttons.confirmEdit')"
             @click="saveEdit"
           />
-          <IconButton icon="fa-copy" :title="t('chat.buttons.copyMessage')" @click="copyMessage" />
-          <IconButton
+          <Button variant="ghost" icon="fa-copy" :title="t('chat.buttons.copyMessage')" @click="copyMessage" />
+          <Button
+            variant="ghost"
             icon="fa-lightbulb"
             :active="isEditingReasoning"
             :title="t('chat.buttons.addReasoning')"
             @click="toggleReasoningEdit"
           />
-          <IconButton icon="fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp" />
-          <IconButton icon="fa-chevron-down" :title="t('chat.buttons.moveDown')" @click="moveDown" />
-          <IconButton
-            icon="fa-xmark"
-            variant="danger"
-            class="cancel-btn"
-            :title="t('common.cancel')"
-            @click="cancelEdit"
-          />
+          <Button variant="ghost" icon="fa-chevron-up" :title="t('chat.buttons.moveUp')" @click="moveUp" />
+          <Button variant="ghost" icon="fa-chevron-down" :title="t('chat.buttons.moveDown')" @click="moveDown" />
+          <Button icon="fa-xmark" variant="danger" class="cancel-btn" :title="t('common.cancel')" @click="cancelEdit" />
         </div>
       </div>
 

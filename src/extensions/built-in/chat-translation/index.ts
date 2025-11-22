@@ -30,9 +30,10 @@ export function activate(api: ExtensionAPI<ChatTranslationSettings>) {
 
     buttonsContainer.appendChild(wrapper);
 
-    await api.ui.mountComponent(wrapper, MountableComponent.IconButton, {
+    await api.ui.mountComponent(wrapper, MountableComponent.Button, {
       icon: 'fa-globe',
       title: 'Translate Message',
+      variant: 'ghost',
       onClick: (e: MouseEvent) => {
         e.stopPropagation();
         translator.translateMessage(messageIndex);

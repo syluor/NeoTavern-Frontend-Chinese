@@ -26,7 +26,6 @@ export enum MountableComponent {
   FileInput = 'FileInput',
   FormItem = 'FormItem',
   Icon = 'Icon',
-  IconButton = 'IconButton',
   Input = 'Input',
   ListItem = 'ListItem',
   Search = 'Search',
@@ -55,7 +54,7 @@ export interface MountableComponentPropsMap {
     'onUpdate:modelValue'?: (value: string | undefined) => void;
   };
   [MountableComponent.Button]: {
-    variant?: 'default' | 'danger' | 'confirm';
+    variant?: 'default' | 'danger' | 'confirm' | 'ghost';
     icon?: string;
     disabled?: boolean;
     loading?: boolean;
@@ -87,14 +86,6 @@ export interface MountableComponentPropsMap {
     icon: string;
     spin?: boolean;
     fixedWidth?: boolean;
-  };
-  [MountableComponent.IconButton]: {
-    icon: string;
-    title?: string;
-    active?: boolean;
-    disabled?: boolean;
-    variant?: 'default' | 'danger';
-    onClick?: (event: MouseEvent) => void;
   };
   [MountableComponent.Input]: {
     modelValue: string | number;

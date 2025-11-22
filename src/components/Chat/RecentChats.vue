@@ -9,12 +9,8 @@ import { getThumbnailUrl } from '../../utils/image';
 import { POPUP_TYPE, POPUP_RESULT, type ChatInfo } from '../../types';
 import { listRecentChats, deleteChat } from '../../api/chat';
 import { toast } from '../../composables/useToast';
-import Pagination from '../Common/Pagination.vue';
-import { IconButton, Button } from '../UI';
-import SmartAvatar from '../Common/SmartAvatar.vue';
-import EmptyState from '../Common/EmptyState.vue';
-import DrawerHeader from '../Common/DrawerHeader.vue';
-import ListItem from '../UI/ListItem.vue';
+import { Button, ListItem } from '../UI';
+import { Pagination, SmartAvatar, EmptyState, DrawerHeader } from '../Common';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
@@ -141,12 +137,13 @@ onMounted(() => {
   <div class="recent-chats">
     <DrawerHeader :title="t('navbar.recentChats')">
       <template #actions>
-        <IconButton
+        <Button
+          variant="ghost"
           :icon="isSelectionMode ? 'fa-xmark' : 'fa-check-to-slot'"
           :title="isSelectionMode ? t('common.cancel') : t('common.select')"
           @click="toggleSelectionMode"
         />
-        <IconButton icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
+        <Button variant="ghost" icon="fa-rotate-right" :title="t('common.refresh')" @click="refresh" />
       </template>
     </DrawerHeader>
 

@@ -5,11 +5,8 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import WorldInfoEntryEditor from './WorldInfoEntryEditor.vue';
 import WorldInfoGlobalSettings from './WorldInfoGlobalSettings.vue';
 import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
-import { IconButton, Select } from '../UI';
-import SplitPane from '../Common/SplitPane.vue';
-import Search from '../UI/Search.vue';
-import ListItem from '../UI/ListItem.vue';
-import FileInput from '../UI/FileInput.vue';
+import { Button, Select, Search, ListItem, FileInput } from '../UI';
+import { SplitPane } from '../Common';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
@@ -66,9 +63,14 @@ const sortOptions = computed(() => [
     <template #side>
       <div class="character-panel-browser-header world-info-controls">
         <div class="world-info-controls-row" style="margin-bottom: 5px">
-          <IconButton icon="fa-plus" :title="t('worldInfo.newWorld')" @click="worldInfoStore.createNewBook" />
+          <Button
+            variant="ghost"
+            icon="fa-plus"
+            :title="t('worldInfo.newWorld')"
+            @click="worldInfoStore.createNewBook"
+          />
           <FileInput accept=".json" icon="fa-file-import" :label="t('worldInfo.import')" @change="handleFileImport" />
-          <IconButton icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.refresh" />
+          <Button variant="ghost" icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.refresh" />
         </div>
         <div class="world-info-controls-row">
           <Search v-model="worldInfoStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
@@ -104,27 +106,32 @@ const sortOptions = computed(() => [
             </template>
             <template #end>
               <div class="browser-item-actions" @click.stop>
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-plus"
                   :title="t('worldInfo.newEntryInBook', { bookName })"
                   @click.stop="worldInfoStore.createNewEntry(bookName)"
                 />
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-file-export"
                   :title="t('worldInfo.export')"
                   @click.stop="worldInfoStore.exportBook(bookName)"
                 />
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-clone"
                   :title="t('worldInfo.duplicate')"
                   @click.stop="worldInfoStore.duplicateBook(bookName)"
                 />
-                <IconButton
+                <Button
+                  variant="ghost"
                   icon="fa-pencil"
                   :title="t('worldInfo.rename')"
                   @click.stop="worldInfoStore.renameBook(bookName)"
                 />
-                <IconButton
+                <Button
+                  variant="danger"
                   icon="fa-trash-can"
                   :title="t('worldInfo.deleteBook', { bookName })"
                   @click.stop="worldInfoStore.deleteBook(bookName)"

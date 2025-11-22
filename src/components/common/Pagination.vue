@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { IconButton, Select } from '../UI';
+import { Button, Select } from '../UI';
 
 const props = defineProps({
   totalItems: { type: Number, required: true },
@@ -46,20 +46,29 @@ function onSizeChange(newSize: number) {
   <div v-if="totalItems > 0" class="pagination">
     <div class="pagination-nav">{{ startItem }}-{{ endItem }} {{ t('common.of') }} {{ totalItems }}</div>
     <div class="pagination-pages">
-      <IconButton icon="fa-angles-left" :disabled="!canGoBack" :title="t('pagination.first')" @click="changePage(1)" />
-      <IconButton
+      <Button
+        variant="ghost"
+        icon="fa-angles-left"
+        :disabled="!canGoBack"
+        :title="t('pagination.first')"
+        @click="changePage(1)"
+      />
+      <Button
+        variant="ghost"
         icon="fa-angle-left"
         :disabled="!canGoBack"
         :title="t('pagination.previous')"
         @click="changePage(currentPage - 1)"
       />
-      <IconButton
+      <Button
+        variant="ghost"
         icon="fa-angle-right"
         :disabled="!canGoForward"
         :title="t('pagination.next')"
         @click="changePage(currentPage + 1)"
       />
-      <IconButton
+      <Button
+        variant="ghost"
         icon="fa-angles-right"
         :disabled="!canGoForward"
         :title="t('pagination.last')"

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { StringHash } from '../src/utils/common';
+import { StringHash } from '../src/utils/commons';
 
 test('StringHash.legacy() is backward compatible', () => {
   expect(StringHash.legacy(Symbol.for('not a string') as unknown as string)).toBe(0);

@@ -1,35 +1,29 @@
+import Handlebars from 'handlebars';
+import { defaultSamplerSettings, GroupGenerationHandlingMode } from '../constants';
 import type {
+  ApiChatMessage,
   Character,
   ChatMessage,
-  Persona,
-  SamplerSettings,
-  ApiChatMessage,
-  PromptBuilderOptions,
-  Tokenizer,
-  ProcessedWorldInfo,
   ChatMetadata,
+  Persona,
+  ProcessedWorldInfo,
+  PromptBuilderOptions,
+  SamplerSettings,
+  Tokenizer,
   WorldInfoBook,
   WorldInfoSettings,
 } from '../types';
-import { WorldInfoProcessor } from './world-info-processor';
-import { defaultSamplerSettings, GroupGenerationHandlingMode } from '../constants';
-import { eventEmitter } from './event-emitter';
-import { joinCharacterField } from './group-chat';
-import Handlebars from 'handlebars';
+import { joinCharacterField } from '../utils/chat';
+import { eventEmitter } from '../utils/extensions';
+import { WorldInfoProcessor } from './world-info';
 
-/**
- * Escapes Handlebars control characters in data strings to prevent prompt injection.
- * Specifically prevents {{ and }} from being interpreted as tags if they appear in names.
- */
 function sanitizeHandlebarsData(str: string): string {
   if (!str) return '';
   return str.replace(/{{/g, '\\{\\{').replace(/}}/g, '\\}\\}');
 }
 
-// TODO: Add proper templating engine
 function substitute(text: string, chars: Character[], user: string): string {
   if (!text) return '';
-
   if (!text.includes('{{')) return text;
 
   try {
@@ -126,7 +120,7 @@ export class PromptBuilder {
     this.processedWorldInfo = await processor.process();
     const { worldInfoBefore, worldInfoAfter } = this.processedWorldInfo;
 
-    // 2. Build non-history prompts and count their tokens
+    // 2. Build non-history prompts
     const fixedPrompts: ApiChatMessage[] = [];
     const promptOrderConfig = this.samplerSettings.prompt_order;
     if (!promptOrderConfig) {
@@ -155,9 +149,7 @@ export class PromptBuilder {
             } else {
               content = this.character.description || '';
             }
-            if (content) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
-            }
+            if (content) fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             break;
           }
           case 'charPersonality': {
@@ -167,9 +159,7 @@ export class PromptBuilder {
             } else {
               content = this.character.personality || '';
             }
-            if (content) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
-            }
+            if (content) fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             break;
           }
           case 'scenario': {
@@ -183,10 +173,7 @@ export class PromptBuilder {
                 content = this.character.scenario || '';
               }
             }
-
-            if (content) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
-            }
+            if (content) fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             break;
           }
           case 'dialogueExamples': {
@@ -202,33 +189,24 @@ export class PromptBuilder {
             } else if (this.character.mes_example) {
               content = substitute(this.character.mes_example, [this.character], this.persona.name);
             }
-
-            if (content) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
-            }
+            if (content) fixedPrompts.push({ role: promptDefinition.role ?? 'system', content });
             break;
           }
           case 'worldInfoBefore':
-            if (worldInfoBefore) {
+            if (worldInfoBefore)
               fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: worldInfoBefore });
-            }
             break;
           case 'worldInfoAfter':
-            if (worldInfoAfter) {
-              fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: worldInfoAfter });
-            }
+            if (worldInfoAfter) fixedPrompts.push({ role: promptDefinition.role ?? 'system', content: worldInfoAfter });
             break;
         }
       } else {
         if (promptDefinition.content && promptDefinition.role) {
           const content = substitute(promptDefinition.content, this.characters, this.persona.name);
-          if (content) {
-            fixedPrompts.push({ role: promptDefinition.role, content });
-          }
+          if (content) fixedPrompts.push({ role: promptDefinition.role, content });
         }
       }
     }
-    // TODO: Handle other WI positions like AT_DEPTH, EM, etc.
 
     for (const prompt of fixedPrompts) {
       if (prompt.content !== historyPlaceholder.content) {
@@ -236,7 +214,7 @@ export class PromptBuilder {
       }
     }
 
-    // 3. Build chat history within the remaining token budget
+    // 3. Build chat history
     const historyBudget = this.maxContext - currentTokenCount - (this.samplerSettings.max_tokens ?? 500);
     const historyMessages: ApiChatMessage[] = [];
     let historyTokenCount = 0;
@@ -250,9 +228,6 @@ export class PromptBuilder {
         content: msg.mes,
       };
 
-      // Configuration for appending name to bot messages in group chats
-      // In Join mode or large groups, we often want "Name: Message" to help the model distinguish speakers.
-      // TODO: Configuration?
       if (!msg.is_user && (this.chatMetadata.members?.length ?? 0) > 1) {
         apiMsg.content = `${msg.name}: ${msg.mes}`;
       }
@@ -263,11 +238,11 @@ export class PromptBuilder {
         historyTokenCount += msgTokenCount;
         historyMessages.unshift(apiMsg);
       } else {
-        break; // Stop when budget is exceeded
+        break;
       }
     }
 
-    // 4. Assemble final prompt array
+    // 4. Assemble final
     for (const prompt of fixedPrompts) {
       if (prompt.content === historyPlaceholder.content) {
         finalMessages.push(...historyMessages);

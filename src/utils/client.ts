@@ -1,13 +1,63 @@
+import Bowser from 'bowser';
+import { useAuthStore } from '../stores/auth.store';
+
+// --- API Utils ---
+
+export function getRequestHeaders({ omitContentType = false } = {}) {
+  // Pinia stores must be instantiated within the function call
+  const authStore = useAuthStore();
+  const tokenValue = authStore.token;
+
+  if (!tokenValue) {
+    throw new Error('CSRF token is not set');
+  }
+
+  const headers: {
+    'Content-Type'?: string;
+    'X-CSRF-Token': string;
+  } = {
+    'Content-Type': 'application/json',
+    'X-CSRF-Token': tokenValue,
+  };
+
+  if (omitContentType) {
+    delete headers['Content-Type'];
+  }
+
+  return headers;
+}
+
+// --- Browser Utils ---
+
+let parsedUA: Bowser.Parser.ParsedResult | null = null;
+
+export function getParsedUA() {
+  if (!parsedUA) {
+    try {
+      parsedUA = Bowser.parse(navigator.userAgent);
+    } catch {
+      // Handle empty or invalid UA
+    }
+  }
+  return parsedUA;
+}
+
+export function isMobile() {
+  const mobileTypes = ['mobile', 'tablet'];
+  const result = getParsedUA();
+  if (!result || !result.platform || !result.platform.type) {
+    return false;
+  }
+  return mobileTypes.includes(result.platform.type);
+}
+
+// --- DOM Utils ---
+
 /**
  * Sanitizes a string to be used as a DOM selector.
- * Replaces characters that are not alphanumeric, underscore, or hyphen with an underscore.
- * @param {string} selector - The string to sanitize.
- * @returns {string} - The sanitized selector.
  */
 export function sanitizeSelector(selector: string): string {
-  if (!selector) {
-    return '';
-  }
+  if (!selector) return '';
   return selector.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 

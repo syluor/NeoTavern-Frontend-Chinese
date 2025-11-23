@@ -1,21 +1,20 @@
 import { defineStore } from 'pinia';
-import { ref, watch, computed } from 'vue';
-import type { ApiModel, SamplerSettings, PromptOrderConfig, ConnectionProfile } from '../types';
-import { POPUP_RESULT, POPUP_TYPE, chat_completion_sources } from '../types';
+import { computed, ref, watch } from 'vue';
 import { fetchChatCompletionStatus } from '../api/connection';
-import { toast } from '../composables/useToast';
-import { useSettingsStore } from './settings.store';
-import { useStrictI18n } from '../composables/useStrictI18n';
 import {
+  deletePreset as apiDeletePreset,
   fetchAllExperimentalPresets,
   saveExperimentalPreset,
-  deletePreset as apiDeletePreset,
   type Preset,
 } from '../api/presets';
-import { usePopupStore } from './popup.store';
-import { downloadFile, readFileAsText } from '../utils/file';
+import { useStrictI18n } from '../composables/useStrictI18n';
+import { toast } from '../composables/useToast';
 import { defaultPromptOrder, defaultPrompts } from '../constants';
-import { uuidv4 } from '../utils/common';
+import type { ApiModel, ConnectionProfile, PromptOrderConfig, SamplerSettings } from '../types';
+import { POPUP_RESULT, POPUP_TYPE, chat_completion_sources } from '../types';
+import { downloadFile, readFileAsText, uuidv4 } from '../utils/commons';
+import { usePopupStore } from './popup.store';
+import { useSettingsStore } from './settings.store';
 
 export const useApiStore = defineStore('api', () => {
   const { t } = useStrictI18n();

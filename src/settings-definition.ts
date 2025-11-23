@@ -1,5 +1,5 @@
-import type { SettingDefinition } from './types';
 import { SendOnEnterOptions, TagImportSetting } from './constants';
+import type { SettingDefinition } from './types';
 
 export const settingsDefinition: SettingDefinition[] = [
   // --- Character Handling ---

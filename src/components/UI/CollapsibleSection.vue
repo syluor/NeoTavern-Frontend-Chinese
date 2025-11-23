@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { slideTransitionHooks } from '../../utils/dom';
+import { slideTransitionHooks } from '../../utils/client';
 
 interface Props {
   title: string;

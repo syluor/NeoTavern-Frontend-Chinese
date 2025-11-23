@@ -1,22 +1,22 @@
 <script setup lang="ts">
+import { debounce } from 'lodash-es';
 import { computed, ref } from 'vue';
-import { useChatStore } from '../../stores/chat.store';
-import { useCharacterStore } from '../../stores/character.store';
-import { usePopupStore } from '../../stores/popup.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { useWorldInfoStore } from '../../stores/world-info.store';
-import { POPUP_RESULT, POPUP_TYPE, type ChatInfo, type Character } from '../../types';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { formatTimeStamp, humanizedDateTime } from '../../utils/date';
 import * as api from '../../api/chat';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import { DebounceTimeout, GenerationMode, GroupGenerationHandlingMode, GroupReplyStrategy } from '../../constants';
-import { getThumbnailUrl } from '../../utils/image';
-import { useUiStore } from '../../stores/ui.store';
-import { Button, Input, Select, Textarea, Checkbox, Tabs, Search, ListItem, FormItem, CollapsibleSection } from '../UI';
-import { EmptyState, Pagination, DraggableList, ConnectionProfileSelector } from '../Common';
-import { debounce } from 'lodash-es';
 import { useCharacterUiStore } from '../../stores/character-ui.store';
+import { useCharacterStore } from '../../stores/character.store';
+import { useChatStore } from '../../stores/chat.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useUiStore } from '../../stores/ui.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import { POPUP_RESULT, POPUP_TYPE, type Character, type ChatInfo } from '../../types';
+import { getThumbnailUrl } from '../../utils/character';
+import { formatTimeStamp, humanizedDateTime } from '../../utils/commons';
+import { ConnectionProfileSelector, DraggableList, EmptyState, Pagination } from '../Common';
+import { Button, Checkbox, CollapsibleSection, FormItem, Input, ListItem, Search, Select, Tabs, Textarea } from '../UI';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();

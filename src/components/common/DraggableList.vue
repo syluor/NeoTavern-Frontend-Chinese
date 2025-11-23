@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T">
-import { ref, nextTick } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const props = defineProps<{
   items: T[];

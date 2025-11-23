@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import CharacterPanel from '../CharacterPanel/CharacterPanel.vue';
-import ExtensionsDrawer from './ExtensionsDrawer.vue';
-import UserSettingsDrawer from './UserSettingsDrawer.vue';
-import ApiConnectionsDrawer from './ApiConnectionsDrawer.vue';
-import AiConfigDrawer from './AiConfigDrawer.vue';
-import BackgroundsDrawer from './BackgroundsDrawer.vue';
-import WorldInfoDrawer from './WorldInfoDrawer.vue';
-import PersonaManagementDrawer from './PersonaManagementDrawer.vue';
-import FormattingDrawer from './FormattingDrawer.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useUiStore } from '../../stores/ui.store';
 import type { DrawerType } from '../../types';
+import CharacterPanel from '../CharacterPanel/CharacterPanel.vue';
 import { Button } from '../UI';
+import AiConfigDrawer from './AiConfigDrawer.vue';
+import ApiConnectionsDrawer from './ApiConnectionsDrawer.vue';
+import BackgroundsDrawer from './BackgroundsDrawer.vue';
+import ExtensionsDrawer from './ExtensionsDrawer.vue';
+import FormattingDrawer from './FormattingDrawer.vue';
+import PersonaManagementDrawer from './PersonaManagementDrawer.vue';
+import UserSettingsDrawer from './UserSettingsDrawer.vue';
+import WorldInfoDrawer from './WorldInfoDrawer.vue';
 
 const { t } = useStrictI18n();
 

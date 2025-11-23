@@ -1,6 +1,6 @@
-import { getRequestHeaders } from '../utils/api';
-import type { Character } from '../types';
 import { useUiStore } from '../stores/ui.store';
+import type { Character } from '../types';
+import { getRequestHeaders } from '../utils/client';
 
 const API_BASE = '/api/characters';
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { ItemizedPrompt, PromptTokenBreakdown, WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
+import type { ItemizedPrompt, PromptTokenBreakdown, WorldInfoEntry } from '../../types';
 import { Button } from '../UI';
 
 const props = defineProps<{

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useStrictI18n } from '../../../composables/useStrictI18n';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { Icon } from '../../../components/UI';
+import { useStrictI18n } from '../../../composables/useStrictI18n';
 
 const { t } = useStrictI18n();
 const time = ref(new Date().toLocaleTimeString());

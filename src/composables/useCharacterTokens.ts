@@ -1,11 +1,11 @@
-import { ref, computed } from 'vue';
-import { get, debounce } from 'lodash-es';
-import { type Character } from '../types';
+import { debounce, get } from 'lodash-es';
+import { computed, ref } from 'vue';
 import { ApiTokenizer } from '../api/tokenizer';
+import { DebounceTimeout } from '../constants';
 import { useSettingsStore } from '../stores/settings.store';
+import { type Character } from '../types';
 import { useStrictI18n } from './useStrictI18n';
 import { toast } from './useToast';
-import { DebounceTimeout } from '../constants';
 
 export function useCharacterTokens() {
   const { t } = useStrictI18n();

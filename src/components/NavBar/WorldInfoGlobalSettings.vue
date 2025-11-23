@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { Button, Checkbox, Select, RangeControl, FormItem } from '../UI';
 import { defaultWorldInfoSettings, WorldInfoInsertionStrategy } from '../../constants';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
+import { Button, Checkbox, FormItem, RangeControl, Select } from '../UI';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();

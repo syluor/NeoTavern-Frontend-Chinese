@@ -1,32 +1,32 @@
+import { debounce } from 'lodash-es';
 import { defineStore } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
-import { debounce } from 'lodash-es';
-import {
-  type ChatMessage,
-  type ChatMetadata,
-  type FullChat,
-  type ChatHeader,
-  type ChatInfo,
-  type Character,
-} from '../types';
-import { usePromptStore } from './prompt.store';
-import { useCharacterStore } from './character.store';
-import { useUiStore } from './ui.store';
-import { fetchChat, saveChat as apiSaveChat, saveChat } from '../api/chat';
-import { uuidv4 } from '../utils/common';
-import { getFirstMessage } from '../utils/chat';
+import { saveChat as apiSaveChat, fetchChat, saveChat } from '../api/chat';
+import { useChatGeneration } from '../composables/useChatGeneration';
 import {
   DEFAULT_SAVE_EDIT_TIMEOUT,
+  EventPriority,
   GenerationMode,
   GroupGenerationHandlingMode,
   GroupReplyStrategy,
-  EventPriority,
 } from '../constants';
-import { useSettingsStore } from './settings.store';
+import {
+  type Character,
+  type ChatHeader,
+  type ChatInfo,
+  type ChatMessage,
+  type ChatMetadata,
+  type FullChat,
+} from '../types';
+import { getCharacterDifferences } from '../utils/character';
+import { getFirstMessage } from '../utils/chat';
+import { uuidv4 } from '../utils/commons';
+import { eventEmitter } from '../utils/extensions';
+import { useCharacterStore } from './character.store';
 import { usePersonaStore } from './persona.store';
-import { eventEmitter } from '../utils/event-emitter';
-import { useChatGeneration } from '../composables/useChatGeneration';
-import { getCharacterDifferences } from '../utils/character-manipulation';
+import { usePromptStore } from './prompt.store';
+import { useSettingsStore } from './settings.store';
+import { useUiStore } from './ui.store';
 
 export type ChatStoreState = {
   messages: ChatMessage[];

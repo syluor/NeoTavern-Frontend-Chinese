@@ -1,14 +1,14 @@
 import type { GenerationMode, OpenrouterMiddleoutType, ReasoningEffort } from '../constants';
 import type { ApiModel, ChatCompletionSource } from './api';
 import type { Character } from './character';
-import type { ChatMetadata, ChatMessage } from './chat';
+import type { ChatMessage, ChatMetadata } from './chat';
 import type { MessageRole } from './common';
 import type { Persona } from './persona';
 import type { SamplerSettings, Settings } from './settings';
 import type { Tokenizer } from './tokenizer';
 import type { WorldInfoBook, WorldInfoEntry, WorldInfoSettings } from './world-info';
 
-export { type ReasoningEffort, type MessageRole };
+export { type MessageRole, type ReasoningEffort };
 
 export interface ApiChatMessage {
   role: MessageRole;

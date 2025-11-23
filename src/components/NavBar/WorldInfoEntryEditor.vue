@@ -1,23 +1,22 @@
 <script setup lang="ts">
 import { type PropType, computed } from 'vue';
-import { type WorldInfoEntry } from '../../types';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useWorldInfoStore } from '../../stores/world-info.store';
-import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
-import { usePopupStore } from '../../stores/popup.store';
-import { POPUP_RESULT, POPUP_TYPE } from '../../types';
 import {
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
   Button,
+  Checkbox,
   CollapsibleSection,
-  Icon,
-  TagInput,
   FormItem,
+  Icon,
+  Input,
+  Select,
+  TagInput,
+  Textarea,
 } from '../../components/UI';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { WorldInfoPosition } from '../../constants';
+import { usePopupStore } from '../../stores/popup.store';
+import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import { POPUP_RESULT, POPUP_TYPE, type WorldInfoEntry } from '../../types';
 
 const props = defineProps({
   modelValue: {

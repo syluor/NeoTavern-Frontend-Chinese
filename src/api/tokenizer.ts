@@ -1,10 +1,10 @@
 import localforage from 'localforage';
-import type { Tokenizer } from '../types/tokenizer';
 import { TOKENIZER_GUESS_MAP, TokenizerType } from '../constants';
 import { useApiStore } from '../stores/api.store';
 import { useSettingsStore } from '../stores/settings.store';
-import { getRequestHeaders } from '../utils/api';
-import { StringHash } from '../utils/common';
+import type { Tokenizer } from '../types/tokenizer';
+import { getRequestHeaders } from '../utils/client';
+import { StringHash } from '../utils/commons';
 
 export class TokenCacheHelper {
   private static readonly cacheStorage = localforage.createInstance({ name: 'SillyTavern_TokenCache' });

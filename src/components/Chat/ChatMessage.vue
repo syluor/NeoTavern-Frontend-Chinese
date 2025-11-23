@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, markRaw } from 'vue';
 import type { PropType } from 'vue';
-import type { ChatMessage, PopupShowOptions } from '../../types';
-import { POPUP_TYPE, POPUP_RESULT } from '../../types';
-import { useCharacterStore } from '../../stores/character.store';
-import { useUiStore } from '../../stores/ui.store';
-import { useChatStore } from '../../stores/chat.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { usePopupStore } from '../../stores/popup.store';
-import { usePromptStore } from '../../stores/prompt.store';
-import { resolveAvatarUrls } from '../../utils/image';
-import { formatTimeStamp } from '../../utils/date';
-import { formatMessage, formatReasoning } from '../../utils/markdown';
+import { computed, markRaw, onMounted, ref, watch } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
-import PromptItemizationPopup from './PromptItemizationPopup.vue';
-import { Button, Textarea } from '../UI';
+import { useCharacterStore } from '../../stores/character.store';
+import { useChatStore } from '../../stores/chat.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { usePromptStore } from '../../stores/prompt.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useUiStore } from '../../stores/ui.store';
+import type { ChatMessage, PopupShowOptions } from '../../types';
+import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { resolveAvatarUrls } from '../../utils/character';
+import { formatMessage, formatReasoning } from '../../utils/chat';
+import { formatTimeStamp } from '../../utils/commons';
 import { SmartAvatar } from '../Common';
+import { Button, Textarea } from '../UI';
+import PromptItemizationPopup from './PromptItemizationPopup.vue';
 
 const props = defineProps({
   message: {

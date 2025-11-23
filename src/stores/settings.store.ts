@@ -1,36 +1,36 @@
+import { cloneDeep, debounce, defaultsDeep, get, set } from 'lodash-es';
 import { defineStore } from 'pinia';
-import { ref, computed, watch, nextTick } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import { migratePreset, saveExperimentalPreset } from '../api/presets';
 import {
-  SendOnEnterOptions,
-  DEFAULT_SAVE_EDIT_TIMEOUT,
-  defaultSamplerSettings,
-  defaultProviderModels,
-  OpenrouterMiddleoutType,
-  TokenizerType,
-  defaultAccountSettings,
-  defaultWorldInfoSettings,
-} from '../constants';
-import { isMobile } from '../utils/browser';
-import {
-  type Settings,
-  type LegacySettings,
-  type SettingDefinition,
-  type SettingsPath,
-  type Persona,
-  type ConnectionProfile,
-} from '../types';
-import {
-  fetchUserSettings,
   saveUserSettings as apiSaveUserSettings,
+  fetchUserSettings,
   type ParsedUserSettingsResponse,
 } from '../api/settings';
-import { settingsDefinition } from '../settings-definition';
 import { toast } from '../composables/useToast';
-import { set, get, defaultsDeep, debounce, cloneDeep } from 'lodash-es';
-import { useUiStore } from './ui.store';
+import {
+  DEFAULT_SAVE_EDIT_TIMEOUT,
+  defaultAccountSettings,
+  defaultProviderModels,
+  defaultSamplerSettings,
+  defaultWorldInfoSettings,
+  OpenrouterMiddleoutType,
+  SendOnEnterOptions,
+  TokenizerType,
+} from '../constants';
+import { settingsDefinition } from '../settings-definition';
+import {
+  type ConnectionProfile,
+  type LegacySettings,
+  type Persona,
+  type SettingDefinition,
+  type Settings,
+  type SettingsPath,
+} from '../types';
 import type { ValueForPath } from '../types/utils';
-import { migratePreset, saveExperimentalPreset } from '../api/presets';
-import { eventEmitter } from '../utils/event-emitter';
+import { isMobile } from '../utils/client';
+import { eventEmitter } from '../utils/extensions';
+import { useUiStore } from './ui.store';
 
 type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
 

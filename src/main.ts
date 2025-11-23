@@ -1,13 +1,13 @@
 import { createApp } from 'vue';
-import pinia from './stores';
 import App from './App.vue';
-import { useAuthStore } from './stores/auth.store';
+import type { StrictT } from './composables/useStrictI18n';
 import { setToastContext, toast } from './composables/useToast';
 import i18n from './i18n';
-import type { StrictT } from './composables/useStrictI18n';
+import pinia from './stores';
+import { useAuthStore } from './stores/auth.store';
 
-import './styles/main.scss';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import './styles/main.scss';
 
 async function initializeApp() {
   const app = createApp(App);
@@ -15,7 +15,7 @@ async function initializeApp() {
   app.use(i18n);
 
   // Dynamically import and initialize the extension API
-  const { setMainAppInstance } = await import('./utils/extension-api');
+  const { setMainAppInstance } = await import('./utils/extensions');
   setMainAppInstance(app);
   setToastContext(app);
 

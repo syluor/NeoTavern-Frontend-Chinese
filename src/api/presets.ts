@@ -1,6 +1,6 @@
 import { defaultSamplerSettings } from '../constants';
 import type { LegacyOaiPresetSettings, SamplerSettings } from '../types';
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../utils/client';
 import { fetchUserSettings } from './settings';
 
 export interface Preset {

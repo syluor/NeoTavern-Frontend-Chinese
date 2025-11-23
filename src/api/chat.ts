@@ -1,5 +1,5 @@
-import { getRequestHeaders } from '../utils/api';
 import type { ChatInfo, FullChat } from '../types';
+import { getRequestHeaders } from '../utils/client';
 
 export async function fetchChat(chatFile: string): Promise<FullChat> {
   const response = await fetch('/api/chats/get', {

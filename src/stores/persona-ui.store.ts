@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePersonaStore } from './persona.store';
 import { useSettingsStore } from './settings.store';
 

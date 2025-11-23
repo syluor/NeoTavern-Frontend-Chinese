@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
+import { Checkbox, CollapsibleSection, FormItem, RangeControl, Search, Select } from '../../components/UI';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition, Settings, SettingsPath } from '../../types';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import type { ValueForPath } from '../../types/utils';
-import { Select, Checkbox, RangeControl, CollapsibleSection, Search, FormItem } from '../../components/UI';
 import type { I18nKey } from '../../types/i18n';
+import type { ValueForPath } from '../../types/utils';
 
 const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();

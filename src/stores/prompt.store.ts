@@ -1,6 +1,6 @@
+import localforage from 'localforage';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import localforage from 'localforage';
 import type { ExtensionPrompt, ItemizedPrompt } from '../types';
 
 const promptStorage = localforage.createInstance({ name: 'SillyTavern_Prompts' });

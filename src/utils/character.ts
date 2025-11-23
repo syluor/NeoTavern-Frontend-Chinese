@@ -1,46 +1,41 @@
 import { get, set } from 'lodash-es';
-import { type Character } from '../types';
 import {
   CHARACTER_FIELD_MAPPINGS,
+  default_avatar,
   depth_prompt_depth_default,
   depth_prompt_role_default,
   talkativeness_default,
 } from '../constants';
+import { useCharacterStore } from '../stores/character.store';
+import { usePersonaStore } from '../stores/persona.store';
+import { type Character, type ThumbnailType } from '../types';
 
-/**
- * Calculates the differences between an old character state and a new character state.
- * Returns a partial object containing only the fields that have changed, or null if no changes.
- */
+// --- Manipulation & Form Data ---
+
 export function getCharacterDifferences(oldChar: Character, newChar: Character): Partial<Character> | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const diffs: Record<string, any> = {};
 
-  // 1. Map specific fields based on CHARACTER_FIELD_MAPPINGS
   for (const [frontendKey, backendPath] of Object.entries(CHARACTER_FIELD_MAPPINGS)) {
     const newValue = get(newChar, frontendKey);
     const oldValue = get(oldChar, frontendKey);
 
-    // Only add if the value is present in the update data and different
     if (newValue !== undefined && JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
       set(diffs, backendPath, newValue);
       set(diffs, frontendKey, newValue);
     }
   }
 
-  // 2. Handle 'data' object changes generally (for fields not in mapping but still relevant)
   if (newChar.data) {
     const backendDataPath = 'data';
     const newData = newChar.data;
     const oldData = oldChar.data || {};
-
-    const ignoreKeys = ['extensions']; // Handled via mapping or specific logic
+    const ignoreKeys = ['extensions'];
 
     for (const key in newData) {
       if (ignoreKeys.includes(key)) continue;
-
       const newSubValue = newData[key];
       const oldSubValue = oldData[key];
-
       if (JSON.stringify(newSubValue) !== JSON.stringify(oldSubValue)) {
         set(diffs, `${backendDataPath}.${key}`, newSubValue);
       }
@@ -50,23 +45,17 @@ export function getCharacterDifferences(oldChar: Character, newChar: Character):
   return Object.keys(diffs).length > 0 ? diffs : null;
 }
 
-/**
- * Creates a FormData object for character creation API calls.
- */
 export function createCharacterFormData(character: Character, fileToSend: File | null, uuid: string): FormData {
   const formData = new FormData();
 
-  // Basic fields
   formData.append('ch_name', character.name);
-  if (fileToSend) {
-    formData.append('avatar', fileToSend);
-  }
+  if (fileToSend) formData.append('avatar', fileToSend);
   formData.append('preserved_name', uuid);
   formData.append('fav', String(character.fav || false));
   formData.append('description', character.description || '');
   formData.append('first_mes', character.first_mes || '');
 
-  // Empty fields for compatibility with SillyTavern backend
+  // Legacy/Compatibility fields
   formData.append('json_data', '');
   formData.append('avatar_url', '');
   formData.append('chat', '');
@@ -74,7 +63,7 @@ export function createCharacterFormData(character: Character, fileToSend: File |
   formData.append('last_mes', '');
   formData.append('world', '');
 
-  // Advanced fields
+  // Data fields
   formData.append('system_prompt', character.data?.system_prompt || '');
   formData.append('post_history_instructions', character.data?.post_history_instructions || '');
   formData.append('creator', character.data?.creator || '');
@@ -84,12 +73,11 @@ export function createCharacterFormData(character: Character, fileToSend: File |
   formData.append('personality', character.personality || '');
   formData.append('scenario', character.scenario || '');
 
-  // Depth Prompt (Flattened structure)
+  // Depth Prompt
   formData.append('depth_prompt_prompt', character.data?.depth_prompt?.prompt || '');
   formData.append('depth_prompt_depth', String(character.data?.depth_prompt?.depth ?? depth_prompt_depth_default));
   formData.append('depth_prompt_role', character.data?.depth_prompt?.role || depth_prompt_role_default);
 
-  // Character Book
   if (character.data?.character_book) {
     formData.append('character_book', JSON.stringify(character.data.character_book));
   }
@@ -101,11 +89,7 @@ export function createCharacterFormData(character: Character, fileToSend: File |
   return formData;
 }
 
-/**
- * Filters and sorts a list of characters.
- */
 export function filterAndSortCharacters(characters: Character[], searchTerm: string, sortOrder: string): Character[] {
-  // 1. Filter characters based on search term
   const lowerSearchTerm = searchTerm.toLowerCase();
   const filteredCharacters =
     lowerSearchTerm.length > 0
@@ -118,7 +102,6 @@ export function filterAndSortCharacters(characters: Character[], searchTerm: str
         })
       : characters;
 
-  // 2. Sort the filtered characters
   const [sortKey, sortDir] = sortOrder.split(':') as ['name' | 'create_date' | 'fav', 'asc' | 'desc'];
 
   return [...filteredCharacters].sort((a, b) => {
@@ -134,11 +117,60 @@ export function filterAndSortCharacters(characters: Character[], searchTerm: str
       case 'fav': {
         const favA = a.fav ? 1 : 0;
         const favB = b.fav ? 1 : 0;
-        if (favA !== favB) return (favB - favA) * dir; // Favorites first
-        return a.name.localeCompare(b.name); // Then sort by name
+        if (favA !== favB) return (favB - favA) * dir;
+        return a.name.localeCompare(b.name);
       }
       default:
         return 0;
     }
   });
+}
+
+// --- Image & Assets ---
+
+export function getThumbnailUrl(type: ThumbnailType, file: string | undefined, timestampOverride?: number): string {
+  if (!file || file === 'none') {
+    return default_avatar;
+  }
+
+  let timestamp = timestampOverride;
+
+  if (!timestamp) {
+    if (type === 'persona') {
+      const personaStore = usePersonaStore();
+      timestamp = personaStore.lastAvatarUpdate;
+    } else if (type === 'avatar') {
+      const charStore = useCharacterStore();
+      timestamp = charStore.characterImageTimestamps[file];
+    }
+  }
+
+  const query = timestamp ? `&t=${timestamp}` : '';
+  return `/thumbnail?type=${type}&file=${encodeURIComponent(file)}${query}`;
+}
+
+interface AvatarDetails {
+  type: ThumbnailType;
+  file?: string;
+  isUser: boolean;
+  forceAvatar?: string;
+  activePlayerAvatar?: string | null;
+}
+
+export function resolveAvatarUrls(details: AvatarDetails): { thumbnail: string; full: string } {
+  if (details.forceAvatar) {
+    return { thumbnail: details.forceAvatar, full: details.forceAvatar };
+  }
+
+  if (details.isUser) {
+    const userAvatarFile = details.activePlayerAvatar ?? undefined;
+    const thumbnail = getThumbnailUrl('persona', userAvatarFile);
+    const full = userAvatarFile ? `/personas/${userAvatarFile}` : default_avatar;
+    return { thumbnail, full };
+  }
+
+  const characterAvatarFile = details.file;
+  const thumbnail = getThumbnailUrl(details.type, characterAvatarFile);
+  const full = characterAvatarFile ? `/characters/${characterAvatarFile}` : default_avatar;
+  return { thumbnail, full };
 }

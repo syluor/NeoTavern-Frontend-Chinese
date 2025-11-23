@@ -1,4 +1,4 @@
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../utils/client';
 
 export async function fetchAllPersonaAvatars(): Promise<string[]> {
   const response = await fetch('/api/avatars/get', {

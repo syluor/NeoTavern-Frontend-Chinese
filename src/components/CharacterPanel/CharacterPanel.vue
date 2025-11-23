@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { useCharacterStore } from '../../stores/character.store';
-import { useCharacterUiStore } from '../../stores/character-ui.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import CharacterEditForm from './CharacterEditForm.vue';
-import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { Button, Search, Select, FileInput, ListItem } from '../UI';
-import { EmptyState, Pagination, SplitPane } from '../Common';
 import { toast } from '../../composables/useToast';
+import { useCharacterUiStore } from '../../stores/character-ui.store';
+import { useCharacterStore } from '../../stores/character.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { getThumbnailUrl } from '../../utils/character';
+import { EmptyState, Pagination, SplitPane } from '../Common';
+import { Button, FileInput, ListItem, Search, Select } from '../UI';
+import CharacterEditForm from './CharacterEditForm.vue';
 
 const { t } = useStrictI18n();
 

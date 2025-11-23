@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
-import { useChatStore } from '../../stores/chat.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { useCharacterStore } from '../../stores/character.store';
-import { useWorldInfoStore } from '../../stores/world-info.store';
-import { usePopupStore } from '../../stores/popup.store';
-import ChatMessage from './ChatMessage.vue';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { GenerationMode } from '../../constants';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { listChats, listRecentChats } from '../../api/chat';
-import { Button } from '../UI';
-import { convertCharacterBookToWorldInfoBook } from '../../utils/world-info-conversion';
-import { POPUP_TYPE, POPUP_RESULT } from '../../types';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
+import { GenerationMode } from '../../constants';
+import { convertCharacterBookToWorldInfoBook } from '../../services/world-info';
+import { useCharacterStore } from '../../stores/character.store';
+import { useChatStore } from '../../stores/chat.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { Button } from '../UI';
+import ChatMessage from './ChatMessage.vue';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();

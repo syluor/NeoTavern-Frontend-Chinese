@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useSettingsStore } from '../../stores/settings.store';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import type { Prompt } from '../../types/settings';
 import { cloneDeep } from 'lodash-es';
+import { computed, ref } from 'vue';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
+import { useSettingsStore } from '../../stores/settings.store';
 import type { MessageRole } from '../../types';
-import { Button, Input, Select, Textarea, FormItem } from '../UI';
-import { EmptyState, DraggableList } from '../Common';
+import type { Prompt } from '../../types/settings';
+import { DraggableList, EmptyState } from '../Common';
+import { Button, FormItem, Input, Select, Textarea } from '../UI';
 
 const settingsStore = useSettingsStore();
 const { t } = useStrictI18n();

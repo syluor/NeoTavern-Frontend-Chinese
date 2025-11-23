@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { aiConfigDefinition } from '../../ai-config-definition';
+import { Button, Checkbox, FormItem, Input, RangeControl, Select, Tabs, Textarea } from '../../components/UI';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useApiStore } from '../../stores/api.store';
 import { usePopupStore } from '../../stores/popup.store';
-import { aiConfigDefinition } from '../../ai-config-definition';
+import { useSettingsStore } from '../../stores/settings.store';
 import type { AiConfigCondition, AiConfigSection } from '../../types';
 import { POPUP_TYPE } from '../../types';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useSettingsStore } from '../../stores/settings.store';
 import PromptManager from '../AiConfig/PromptManager.vue';
-import { Button, Select, Input, Textarea, Checkbox, RangeControl, Tabs, FormItem } from '../../components/UI';
 
 const { t } = useStrictI18n();
 const apiStore = useApiStore();

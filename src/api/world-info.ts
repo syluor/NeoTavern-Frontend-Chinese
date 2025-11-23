@@ -1,5 +1,5 @@
-import { getRequestHeaders } from '../utils/api';
 import type { WorldInfoBook, WorldInfoEntry, WorldInfoHeader } from '../types';
+import { getRequestHeaders } from '../utils/client';
 
 export async function listAllWorldInfoBooks(): Promise<WorldInfoHeader[]> {
   const response = await fetch('/api/worldinfo/list', {

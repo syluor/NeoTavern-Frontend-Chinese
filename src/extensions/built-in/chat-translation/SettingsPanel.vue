@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { ConnectionProfileSelector } from '../../../components/Common';
+import { Button, FormItem, Input, Select, Textarea } from '../../../components/UI';
+import { useStrictI18n } from '../../../composables/useStrictI18n';
 import type { ExtensionAPI } from '../../../types';
 import { AutoTranslateMode, type ChatTranslationSettings, DEFAULT_PROMPT } from './types';
-import { ConnectionProfileSelector } from '../../../components/Common';
-import { Input, Select, Textarea, Button, FormItem } from '../../../components/UI';
-import { useStrictI18n } from '../../../composables/useStrictI18n';
 
 const props = defineProps<{
   api: ExtensionAPI;

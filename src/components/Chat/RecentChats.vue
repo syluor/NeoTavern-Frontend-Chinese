@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
-import { useChatStore } from '../../stores/chat.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { usePopupStore } from '../../stores/popup.store';
+import { computed, onMounted, ref, watch } from 'vue';
+import { deleteChat, listRecentChats } from '../../api/chat';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { formatTimeStamp } from '../../utils/date';
-import { getThumbnailUrl } from '../../utils/image';
-import { POPUP_TYPE, POPUP_RESULT, type ChatInfo } from '../../types';
-import { listRecentChats, deleteChat } from '../../api/chat';
 import { toast } from '../../composables/useToast';
+import { useChatStore } from '../../stores/chat.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { POPUP_RESULT, POPUP_TYPE, type ChatInfo } from '../../types';
+import { getThumbnailUrl } from '../../utils/character';
+import { formatTimeStamp } from '../../utils/commons';
+import { DrawerHeader, EmptyState, Pagination, SmartAvatar } from '../Common';
 import { Button, ListItem } from '../UI';
-import { Pagination, SmartAvatar, EmptyState, DrawerHeader } from '../Common';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useBackgroundStore } from '../../stores/background.store';
 import { useChatStore } from '../../stores/chat.store';
 import { usePopupStore } from '../../stores/popup.store';
-import { getThumbnailUrl } from '../../utils/image';
 import { POPUP_RESULT, POPUP_TYPE, type BackgroundFitting } from '../../types';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { Button, Select, Search, FileInput } from '../UI';
+import { getThumbnailUrl } from '../../utils/character';
+import { Button, FileInput, Search, Select } from '../UI';
 
 const { t } = useStrictI18n();
 const backgroundStore = useBackgroundStore();

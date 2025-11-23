@@ -1,6 +1,6 @@
 import fs from 'fs';
-import path from 'path';
 import { glob } from 'glob';
+import path from 'path';
 
 const inputFile = path.resolve(process.cwd(), 'locales/en.json');
 const outputFile = path.resolve(process.cwd(), 'src/types/i18n.d.ts');

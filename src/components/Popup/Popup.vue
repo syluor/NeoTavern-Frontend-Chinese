@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import type { PropType, Component } from 'vue';
+import 'cropperjs';
+import type { Component, PropType } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
-import { POPUP_TYPE, POPUP_RESULT, type CustomPopupButton } from '../../types';
-import 'cropperjs';
+import { POPUP_RESULT, POPUP_TYPE, type CustomPopupButton } from '../../types';
 import type { I18nKey } from '../../types/i18n';
 import { Button, Textarea } from '../UI';
 

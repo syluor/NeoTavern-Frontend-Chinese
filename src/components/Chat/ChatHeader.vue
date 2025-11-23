@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUiStore } from '../../stores/ui.store';
-import { useCharacterStore } from '../../stores/character.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { getThumbnailUrl } from '../../utils/image';
-import { useChatStore } from '../../stores/chat.store';
-import { formatTimeStamp } from '../../utils/date';
-import { Button } from '../UI';
-import { SmartAvatar } from '../Common';
 import { useCharacterUiStore } from '../../stores/character-ui.store';
+import { useCharacterStore } from '../../stores/character.store';
+import { useChatStore } from '../../stores/chat.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useUiStore } from '../../stores/ui.store';
+import { getThumbnailUrl } from '../../utils/character';
+import { formatTimeStamp } from '../../utils/commons';
+import { SmartAvatar } from '../Common';
+import { Button } from '../UI';
 
 const uiStore = useUiStore();
 const characterStore = useCharacterStore();

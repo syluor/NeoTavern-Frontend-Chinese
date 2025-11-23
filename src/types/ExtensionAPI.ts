@@ -1,17 +1,17 @@
-import type { ValueForPath, Path } from './utils';
-import type { PromptBuilder } from '../utils/prompt-builder';
-import type { WorldInfoProcessor } from '../utils/world-info-processor';
-import type { EventPriority } from '../constants';
-import type { ChatMessage, ChatMetadata } from './chat';
-import type { SamplerSettings, Settings, SettingsPath } from './settings';
-import type { ApiChatMessage, ChatCompletionPayload, GenerationResponse, StreamedChunk } from './generation';
-import type { Character } from './character';
-import type { Persona, PersonaDescription } from './persona';
-import type { WorldInfoBook, WorldInfoEntry, WorldInfoHeader, WorldInfoSettings } from './world-info';
-import type { ExtensionEventMap } from './events';
-import type { PopupShowOptions } from './popup';
 import type { Component } from 'vue';
+import type { EventPriority } from '../constants';
+import type { PromptBuilder } from '../services/prompt-engine';
+import type { WorldInfoProcessor } from '../services/world-info';
+import type { Character } from './character';
+import type { ChatMessage, ChatMetadata } from './chat';
 import type { DrawerType } from './common';
+import type { ExtensionEventMap } from './events';
+import type { ApiChatMessage, ChatCompletionPayload, GenerationResponse, StreamedChunk } from './generation';
+import type { Persona, PersonaDescription } from './persona';
+import type { PopupShowOptions } from './popup';
+import type { SamplerSettings, Settings, SettingsPath } from './settings';
+import type { Path, ValueForPath } from './utils';
+import type { WorldInfoBook, WorldInfoEntry, WorldInfoHeader, WorldInfoSettings } from './world-info';
 
 export interface LlmGenerationOptions {
   connectionProfileName?: string;

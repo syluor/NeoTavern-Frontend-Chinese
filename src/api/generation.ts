@@ -1,8 +1,8 @@
-import { getRequestHeaders } from '../utils/api';
-import type { ChatCompletionPayload, ChatCompletionSource, GenerationResponse, StreamedChunk } from '../types';
 import { ReasoningEffort } from '../constants';
+import type { ChatCompletionPayload, ChatCompletionSource, GenerationResponse, StreamedChunk } from '../types';
 import { chat_completion_sources } from '../types';
 import type { BuildChatCompletionPayloadOptions } from '../types/generation';
+import { getRequestHeaders } from '../utils/client';
 
 export function buildChatCompletionPayload({
   samplerSettings,

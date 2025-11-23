@@ -1,54 +1,208 @@
-import { WorldInfoLogic, WorldInfoPosition } from '../constants';
-import {
-  type ChatMessage,
-  type Character,
-  type WorldInfoBook,
-  type WorldInfoEntry,
-  type WorldInfoSettings,
-  type Persona,
-  type ProcessedWorldInfo,
-  type WorldInfoOptions,
-  type Tokenizer,
+import { WorldInfoLogic, WorldInfoPosition, WorldInfoRole } from '../constants';
+import type {
+  Character,
+  CharacterBook,
+  CharacterBookEntry,
+  ChatMessage,
+  Persona,
+  ProcessedWorldInfo,
+  Tokenizer,
+  WorldInfoBook,
+  WorldInfoEntry,
+  WorldInfoOptions,
+  WorldInfoSettings,
 } from '../types';
-import { eventEmitter } from './event-emitter';
+import { eventEmitter } from '../utils/extensions';
 
-// TODO: These should be sourced from a central place or settings
+const DEFAULT_DEPTH = 4;
+const DEFAULT_WEIGHT = 100;
 const MAX_SCAN_DEPTH = 1000;
+
+// --- Factory & Conversion Logic ---
+
+export function createDefaultEntry(uid: number): WorldInfoEntry {
+  return {
+    uid,
+    key: [],
+    keysecondary: [],
+    comment: 'New Entry',
+    content: '',
+    constant: false,
+    vectorized: false,
+    selective: false,
+    selectiveLogic: WorldInfoLogic.AND_ANY,
+    addMemo: false,
+    order: 100,
+    position: WorldInfoPosition.BEFORE_CHAR,
+    disable: false,
+    ignoreBudget: false,
+    excludeRecursion: false,
+    preventRecursion: false,
+    matchPersonaDescription: false,
+    matchCharacterDescription: false,
+    matchCharacterPersonality: false,
+    matchCharacterDepthPrompt: false,
+    matchScenario: false,
+    matchCreatorNotes: false,
+    delayUntilRecursion: false,
+    probability: 100,
+    useProbability: false,
+    depth: 4,
+    outletName: '',
+    group: '',
+    groupOverride: false,
+    groupWeight: 100,
+    scanDepth: null,
+    caseSensitive: null,
+    matchWholeWords: null,
+    useGroupScoring: null,
+    automationId: '',
+    role: 0,
+    sticky: null,
+    cooldown: null,
+    delay: null,
+    characterFilterNames: [],
+    characterFilterTags: [],
+    characterFilterExclude: false,
+    triggers: [],
+  };
+}
+
+export function convertCharacterBookToWorldInfoBook(charBook: CharacterBook): WorldInfoBook {
+  const entries: WorldInfoEntry[] = (charBook.entries || []).map((entry, index) => {
+    const uid = entry.id !== undefined ? entry.id : index;
+    return {
+      uid,
+      key: entry.keys || [],
+      keysecondary: entry.secondary_keys || [],
+      comment: entry.comment || '',
+      content: entry.content || '',
+      constant: entry.constant || false,
+      selective: entry.selective || false,
+      order: entry.insertion_order || 100,
+      position:
+        entry.extensions?.position ??
+        (entry.position === 'before_char' ? WorldInfoPosition.BEFORE_CHAR : WorldInfoPosition.AFTER_CHAR),
+      excludeRecursion: entry.extensions?.exclude_recursion ?? false,
+      preventRecursion: entry.extensions?.prevent_recursion ?? false,
+      delayUntilRecursion: entry.extensions?.delay_until_recursion ?? false,
+      disable: entry.enabled === false,
+      addMemo: !!entry.comment,
+      probability: entry.extensions?.probability ?? 100,
+      useProbability: entry.extensions?.useProbability ?? true,
+      depth: entry.extensions?.depth ?? DEFAULT_DEPTH,
+      selectiveLogic: entry.extensions?.selectiveLogic ?? WorldInfoLogic.AND_ANY,
+      outletName: entry.extensions?.outlet_name ?? '',
+      group: entry.extensions?.group ?? '',
+      groupOverride: entry.extensions?.group_override ?? false,
+      groupWeight: entry.extensions?.group_weight ?? DEFAULT_WEIGHT,
+      scanDepth: entry.extensions?.scan_depth ?? null,
+      caseSensitive: entry.extensions?.case_sensitive ?? null,
+      matchWholeWords: entry.extensions?.match_whole_words ?? null,
+      useGroupScoring: entry.extensions?.use_group_scoring ?? null,
+      automationId: entry.extensions?.automation_id ?? '',
+      role: entry.extensions?.role ?? WorldInfoRole.SYSTEM,
+      vectorized: entry.extensions?.vectorized ?? false,
+      sticky: entry.extensions?.sticky ?? null,
+      cooldown: entry.extensions?.cooldown ?? null,
+      delay: entry.extensions?.delay ?? null,
+      matchPersonaDescription: entry.extensions?.match_persona_description ?? false,
+      matchCharacterDescription: entry.extensions?.match_character_description ?? false,
+      matchCharacterPersonality: entry.extensions?.match_character_personality ?? false,
+      matchCharacterDepthPrompt: entry.extensions?.match_character_depth_prompt ?? false,
+      matchScenario: entry.extensions?.match_scenario ?? false,
+      matchCreatorNotes: entry.extensions?.match_creator_notes ?? false,
+      characterFilterNames: [],
+      characterFilterTags: [],
+      characterFilterExclude: false,
+      triggers: entry.extensions?.triggers || [],
+      ignoreBudget: entry.extensions?.ignore_budget ?? false,
+    };
+  });
+
+  return { name: charBook.name || 'Embedded Lorebook', entries };
+}
+
+export function convertWorldInfoBookToCharacterBook(wiBook: WorldInfoBook): CharacterBook {
+  const entries: CharacterBookEntry[] = wiBook.entries.map((entry) => {
+    return {
+      id: entry.uid,
+      keys: entry.key,
+      secondary_keys: entry.keysecondary,
+      comment: entry.comment,
+      content: entry.content,
+      constant: entry.constant,
+      selective: entry.selective,
+      insertion_order: entry.order,
+      enabled: !entry.disable,
+      position: entry.position === WorldInfoPosition.BEFORE_CHAR ? 'before_char' : 'after_char',
+      use_regex: true,
+      extensions: {
+        position: entry.position,
+        exclude_recursion: entry.excludeRecursion,
+        prevent_recursion: entry.preventRecursion,
+        delay_until_recursion: entry.delayUntilRecursion,
+        probability: entry.probability,
+        useProbability: entry.useProbability,
+        depth: entry.depth,
+        selectiveLogic: entry.selectiveLogic,
+        outlet_name: entry.outletName,
+        group: entry.group,
+        group_override: entry.groupOverride,
+        group_weight: entry.groupWeight,
+        scan_depth: entry.scanDepth,
+        case_sensitive: entry.caseSensitive,
+        match_whole_words: entry.matchWholeWords,
+        use_group_scoring: entry.useGroupScoring,
+        automation_id: entry.automationId,
+        role: entry.role,
+        vectorized: entry.vectorized,
+        sticky: entry.sticky,
+        cooldown: entry.cooldown,
+        delay: entry.delay,
+        match_persona_description: entry.matchPersonaDescription,
+        match_character_description: entry.matchCharacterDescription,
+        match_character_personality: entry.matchCharacterPersonality,
+        match_character_depth_prompt: entry.matchCharacterDepthPrompt,
+        match_scenario: entry.matchScenario,
+        match_creator_notes: entry.matchCreatorNotes,
+        triggers: entry.triggers,
+        ignore_budget: entry.ignoreBudget,
+      },
+    };
+  });
+
+  return { name: wiBook.name, entries };
+}
+
+// --- Processor Logic ---
 
 interface ProcessingEntry extends WorldInfoEntry {
   world: string;
 }
 
-// TODO: A simplified substitution, a full implementation would be more robust
 function substituteParams(text: string, char: Character, user: string): string {
   if (!text) return '';
   return text.replace(/{{char}}/g, char.name).replace(/{{user}}/g, user);
 }
 
-// --- WorldInfoBuffer Class ---
-// Manages the text content (chat history, descriptions) to be scanned.
 class WorldInfoBuffer {
   #depthBuffer: string[] = [];
   #recurseBuffer: string[] = [];
   #settings: WorldInfoSettings;
-  // @ts-expect-error unused
-  #characters: Character[];
   #character: Character;
   #persona: Persona;
-
   #cachedFullString: string | null = null;
   #cachedRecursionString: string | null = null;
 
   constructor(chat: ChatMessage[], settings: WorldInfoSettings, characters: Character[], persona: Persona) {
     this.#settings = settings;
-    this.#characters = characters;
-    this.#character = characters[0]; // Assuming first character for now.
+    this.#character = characters[0];
     this.#persona = persona;
     this.#initDepthBuffer(chat);
   }
 
   #initDepthBuffer(chat: ChatMessage[]) {
-    // We only need the message content, reversed (most recent first)
     this.#depthBuffer = chat
       .map((msg) => msg.mes)
       .reverse()
@@ -60,20 +214,14 @@ class WorldInfoBuffer {
     return caseSensitive ? str : str.toLowerCase();
   }
 
-  // Gets the full text to be scanned for a given entry
   get(entry: WorldInfoEntry): string {
     const depth = entry.scanDepth ?? this.#settings.depth;
-
-    // If this entry's depth matches default, use cached version of history
-    // Otherwise construct specific slice.
     let buffer = '';
 
     if (depth === this.#settings.depth && this.#cachedFullString !== null) {
       buffer = this.#cachedFullString;
     } else {
-      // Build base buffer
       buffer = this.#depthBuffer.slice(0, depth).join('\n');
-
       if (entry.matchCharacterDescription) buffer += `\n${this.#character.description ?? ''}`;
       if (entry.matchCharacterPersonality) buffer += `\n${this.#character.personality ?? ''}`;
       if (entry.matchCharacterDepthPrompt) buffer += `\n${this.#character.data?.depth_prompt?.prompt ?? ''}`;
@@ -81,14 +229,12 @@ class WorldInfoBuffer {
       if (entry.matchScenario) buffer += `\n${this.#character.scenario ?? ''}`;
       if (entry.matchPersonaDescription) buffer += `\n${this.#persona.description ?? ''}`;
 
-      // Cache it if it's using default depth for future calls in this loop
       if (depth === this.#settings.depth) {
         this.#cachedFullString = buffer;
       }
     }
 
     if (this.#recurseBuffer.length > 0) {
-      // Optimization: Cache the recursion string join
       if (!this.#cachedRecursionString) {
         this.#cachedRecursionString = this.#recurseBuffer.join('\n');
       }
@@ -98,11 +244,8 @@ class WorldInfoBuffer {
     return buffer;
   }
 
-  // Checks if a given keyword (needle) exists in the buffer (haystack)
   matchKeys(haystack: string, needle: string, entry: WorldInfoEntry): boolean {
-    // Check for regex pattern like /pattern/flags
     const regexMatch = needle.match(/^\/(.+)\/([a-z]*)$/);
-
     if (regexMatch) {
       try {
         const pattern = regexMatch[1];
@@ -120,8 +263,6 @@ class WorldInfoBuffer {
     const matchWholeWords = entry.matchWholeWords ?? this.#settings.matchWholeWords;
 
     if (matchWholeWords) {
-      // Simple whole word match for single words
-      // Escape special regex characters in the needle to prevent accidental regex matching in the fallback
       const escapedNeedle = transformedNeedle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`\\b${escapedNeedle}\\b`);
       return regex.test(transformedHaystack);
@@ -131,11 +272,10 @@ class WorldInfoBuffer {
 
   addRecurse(message: string) {
     this.#recurseBuffer.push(message);
-    this.#cachedRecursionString = null; // Invalidate cache
+    this.#cachedRecursionString = null;
   }
 }
 
-// --- Main Processor ---
 export class WorldInfoProcessor {
   public chat: ChatMessage[];
   public characters: Character[];
@@ -150,7 +290,7 @@ export class WorldInfoProcessor {
   constructor({ chat, characters, settings, books, maxContext, persona, tokenizer, generationId }: WorldInfoOptions) {
     this.chat = chat;
     this.characters = characters;
-    this.character = characters[0]; // Assuming first character for now
+    this.character = characters[0];
     this.settings = settings;
     this.books = books;
     this.persona = persona;
@@ -188,9 +328,6 @@ export class WorldInfoProcessor {
     );
     const sortedEntries = allEntries.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 
-    // TODO: Implement TimedEffects for sticky/cooldown
-    // TODO: Implement Min Activations logic more fully with skew
-
     while (continueScanning && loopCount < (this.settings.maxRecursionSteps || 10) && sortedEntries.length > 0) {
       loopCount++;
       const activatedInThisLoop = new Set<ProcessingEntry>();
@@ -199,14 +336,10 @@ export class WorldInfoProcessor {
 
       for (const entry of sortedEntries) {
         if (allActivatedEntries.has(entry) || entry.disable) continue;
-
-        // TODO: Add all filters: character, tags, timed effects etc.
-
         if (entry.constant) {
           activatedInThisLoop.add(entry);
           continue;
         }
-
         if (!entry.key || entry.key.length === 0) continue;
 
         const textToScan = buffer.get(entry);
@@ -224,7 +357,6 @@ export class WorldInfoProcessor {
             continue;
           }
 
-          // Handle secondary key logic
           let hasAnySecondaryMatch = false;
           let hasAllSecondaryMatch = true;
           for (const key of entry.keysecondary) {
@@ -258,23 +390,16 @@ export class WorldInfoProcessor {
         }
       }
 
-      // TODO: Filter by inclusion groups
-
       if (activatedInThisLoop.size > 0) {
         const candidates: { entry: ProcessingEntry; content: string; rawContent: string }[] = [];
 
         for (const entry of activatedInThisLoop) {
           if (tokenBudgetOverflowed && !entry.ignoreBudget) continue;
-
-          // Probability Check
           const roll = Math.random() * 100;
-          if (entry.useProbability && roll > entry.probability) {
-            continue;
-          }
+          if (entry.useProbability && roll > entry.probability) continue;
 
           const substitutedContent = substituteParams(entry.content, this.character, this.persona.name);
           const contentForBudget = `\n${substitutedContent}`;
-
           candidates.push({ entry, content: contentForBudget, rawContent: substitutedContent });
         }
 
@@ -291,7 +416,6 @@ export class WorldInfoProcessor {
             }
 
             currentUsedBudget += entryTokens;
-
             allActivatedEntries.add(entry);
             await eventEmitter.emit('world-info:entry-activated', entry, { generationId: this.generationId });
 
@@ -312,7 +436,6 @@ export class WorldInfoProcessor {
       }
     }
 
-    // Build the final prompt strings
     const result: ProcessedWorldInfo = {
       worldInfoBefore: '',
       worldInfoAfter: '',
@@ -356,14 +479,11 @@ export class WorldInfoProcessor {
           result.emAfter.push(content);
           break;
         case WorldInfoPosition.AT_DEPTH:
-          // TODO: Implement role mapping
           result.depthEntries.push({ depth: entry.depth, role: 'system', entries: [content] });
           break;
         case WorldInfoPosition.OUTLET:
           if (entry.outletName) {
-            if (!result.outletEntries[entry.outletName]) {
-              result.outletEntries[entry.outletName] = [];
-            }
+            if (!result.outletEntries[entry.outletName]) result.outletEntries[entry.outletName] = [];
             result.outletEntries[entry.outletName].push(content);
           }
           break;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useDraggable } from '../composables/useDraggable';
 import { useUiStore } from '../stores/ui.store';
 import type { ZoomedAvatar } from '../types';

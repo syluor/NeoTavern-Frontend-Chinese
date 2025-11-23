@@ -1,19 +1,18 @@
-import { defineStore } from 'pinia';
-import { ref, computed, nextTick } from 'vue';
-import { useSettingsStore } from './settings.store';
-import { type WorldInfoEntry, type WorldInfoHeader, type WorldInfoBook } from '../types';
-import * as api from '../api/world-info';
-import { toast } from '../composables/useToast';
 import { debounce } from 'lodash-es';
-import { downloadFile } from '../utils/file';
+import { defineStore } from 'pinia';
+import { computed, nextTick, ref } from 'vue';
+import * as api from '../api/world-info';
 import { useStrictI18n } from '../composables/useStrictI18n';
-import { eventEmitter } from '../utils/event-emitter';
-import { usePersonaStore } from './persona.store';
-import { useChatStore } from './chat.store';
-import { useCharacterStore } from './character.store';
+import { toast } from '../composables/useToast';
 import { DebounceTimeout } from '../constants';
-import { uuidv4 } from '../utils/common';
-import { createDefaultEntry } from '../utils/world-info-factory';
+import { createDefaultEntry } from '../services/world-info';
+import { type WorldInfoBook, type WorldInfoEntry, type WorldInfoHeader } from '../types';
+import { downloadFile, uuidv4 } from '../utils/commons';
+import { eventEmitter } from '../utils/extensions';
+import { useCharacterStore } from './character.store';
+import { useChatStore } from './chat.store';
+import { usePersonaStore } from './persona.store';
+import { useSettingsStore } from './settings.store';
 
 export const useWorldInfoStore = defineStore('world-info', () => {
   const { t } = useStrictI18n();

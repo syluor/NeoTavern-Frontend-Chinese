@@ -1,13 +1,13 @@
 <!-- TODO: Convert to ConnectionProfile and use with popup.show({component: ConnectionProfile}) -->
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useStrictI18n } from '../../composables/useStrictI18n';
+import { toast } from '../../composables/useToast';
 import { useApiStore } from '../../stores/api.store';
 import { useSettingsStore } from '../../stores/settings.store';
-import { useStrictI18n } from '../../composables/useStrictI18n';
 import type { ConnectionProfile } from '../../types';
-import { toast } from '../../composables/useToast';
-import { Input, Checkbox, Button } from '../UI';
+import { Button, Checkbox, Input } from '../UI';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },

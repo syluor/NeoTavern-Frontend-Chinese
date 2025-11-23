@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useExtensionStore } from '../../stores/extension.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { Button, Toggle, Search, ListItem } from '../UI';
+import { useExtensionStore } from '../../stores/extension.store';
 import { EmptyState, SplitPane } from '../Common';
+import { Button, ListItem, Search, Toggle } from '../UI';
 
 const { t } = useStrictI18n();
 const extensionStore = useExtensionStore();

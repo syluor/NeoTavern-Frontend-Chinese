@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
-import { usePersonaStore } from '../../stores/persona.store';
-import { usePersonaUiStore } from '../../stores/persona-ui.store';
-import { useSettingsStore } from '../../stores/settings.store';
-import { useStrictI18n } from '../../composables/useStrictI18n';
-import { getThumbnailUrl } from '../../utils/image';
-import { getBase64Async } from '../../utils/file';
-import { usePopupStore } from '../../stores/popup.store';
-import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
-import { Pagination, SplitPane, EmptyState } from '../Common';
-import { Button, Select, Checkbox, Textarea, Search, ListItem, FileInput, FormItem } from '../UI';
-import { useChatStore } from '../../stores/chat.store';
-import { useCharacterStore } from '../../stores/character.store';
-import { useWorldInfoStore } from '../../stores/world-info.store';
-import { ApiTokenizer } from '../../api/tokenizer';
 import { debounce } from 'lodash-es';
+import { computed, onMounted, ref, watch } from 'vue';
+import { ApiTokenizer } from '../../api/tokenizer';
+import { useStrictI18n } from '../../composables/useStrictI18n';
 import { DebounceTimeout } from '../../constants';
+import { useCharacterStore } from '../../stores/character.store';
+import { useChatStore } from '../../stores/chat.store';
+import { usePersonaUiStore } from '../../stores/persona-ui.store';
+import { usePersonaStore } from '../../stores/persona.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
+import { getThumbnailUrl } from '../../utils/character';
+import { getBase64Async } from '../../utils/commons';
+import { EmptyState, Pagination, SplitPane } from '../Common';
+import { Button, Checkbox, FileInput, FormItem, ListItem, Search, Select, Textarea } from '../UI';
 
 const { t } = useStrictI18n();
 const personaStore = usePersonaStore();

@@ -1,19 +1,19 @@
 import { defineStore } from 'pinia';
-import { ref, computed, toRaw, nextTick } from 'vue';
+import { computed, nextTick, ref, toRaw } from 'vue';
+import {
+  uploadPersonaAvatar as apiUploadPersonaAvatar,
+  deletePersonaAvatar,
+  fetchAllPersonaAvatars,
+} from '../api/personas';
+import { useStrictI18n } from '../composables/useStrictI18n';
+import { toast } from '../composables/useToast';
+import { default_user_avatar } from '../constants';
+import { type Character, type Persona, type PersonaDescription } from '../types';
+import { getThumbnailUrl } from '../utils/character';
+import { uuidv4 } from '../utils/commons';
+import { eventEmitter } from '../utils/extensions';
 import { useSettingsStore } from './settings.store';
 import { useUiStore } from './ui.store';
-import {
-  fetchAllPersonaAvatars,
-  deletePersonaAvatar,
-  uploadPersonaAvatar as apiUploadPersonaAvatar,
-} from '../api/personas';
-import { type Persona, type PersonaDescription, type Character } from '../types';
-import { toast } from '../composables/useToast';
-import { useStrictI18n } from '../composables/useStrictI18n';
-import { eventEmitter } from '../utils/event-emitter';
-import { default_user_avatar } from '../constants';
-import { getThumbnailUrl } from '../utils/image';
-import { uuidv4 } from '../utils/common';
 
 export const usePersonaStore = defineStore('persona', () => {
   const { t } = useStrictI18n();

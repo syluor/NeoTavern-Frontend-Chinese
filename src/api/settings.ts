@@ -1,5 +1,5 @@
 import type { LegacyOaiPresetSettings, LegacyOaiSettings, LegacySettings, SamplerSettings } from '../types';
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../utils/client';
 
 export interface UserSettingsResponse {
   settings: string; // JSON string of LegacySettings

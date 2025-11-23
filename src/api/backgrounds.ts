@@ -1,4 +1,4 @@
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../utils/client';
 
 export interface BackgroundListResponse {
   images: string[];

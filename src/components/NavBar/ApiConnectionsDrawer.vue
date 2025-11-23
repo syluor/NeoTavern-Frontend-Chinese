@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useApiStore } from '../../stores/api.store';
-import { chat_completion_sources, type ConnectionProfile } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useSettingsStore } from '../../stores/settings.store';
-import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
 import { OpenrouterMiddleoutType, TokenizerType } from '../../constants';
+import { useApiStore } from '../../stores/api.store';
+import { useSettingsStore } from '../../stores/settings.store';
+import { chat_completion_sources, type ConnectionProfile } from '../../types';
 import { ConnectionProfileSelector } from '../Common';
-import { Button, Checkbox, Input, Select, FormItem } from '../UI';
+import { Button, Checkbox, FormItem, Input, Select } from '../UI';
+import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
 
 const { t } = useStrictI18n();
 

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref, markRaw } from 'vue';
-import type { ZoomedAvatar, SidebarDefinition, DrawerType } from '../types';
+import { markRaw, ref } from 'vue';
+import type { DrawerType, SidebarDefinition, ZoomedAvatar } from '../types';
 
 export const useUiStore = defineStore('ui', () => {
   const isChatSaving = ref<boolean>(false);

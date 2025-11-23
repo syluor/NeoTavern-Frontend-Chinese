@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import { useSettingsStore } from './settings.store';
-import { useChatStore } from './chat.store';
-import { fetchAllBackgrounds, uploadBackground, deleteBackground, renameBackground } from '../api/backgrounds';
+import { computed, ref, watch } from 'vue';
+import { deleteBackground, fetchAllBackgrounds, renameBackground, uploadBackground } from '../api/backgrounds';
+import { useStrictI18n } from '../composables/useStrictI18n';
 import { toast } from '../composables/useToast';
 import type { BackgroundFitting } from '../types';
-import { useStrictI18n } from '../composables/useStrictI18n';
+import { useChatStore } from './chat.store';
+import { useSettingsStore } from './settings.store';
 
 const BG_METADATA_KEY = 'custom_background';
 const LIST_METADATA_KEY = 'chat_backgrounds';

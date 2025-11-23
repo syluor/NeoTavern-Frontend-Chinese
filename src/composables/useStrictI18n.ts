@@ -1,4 +1,4 @@
-import { useI18n as useOriginalI18n, type NamedValue, type TranslateOptions, type Composer } from 'vue-i18n';
+import { useI18n as useOriginalI18n, type Composer, type NamedValue, type TranslateOptions } from 'vue-i18n';
 import type { I18nKey } from '../types/i18n';
 
 export interface StrictT {

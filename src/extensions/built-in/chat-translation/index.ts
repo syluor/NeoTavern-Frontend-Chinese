@@ -1,9 +1,9 @@
-import type { ExtensionAPI, ChatMessage } from '../../../types';
+import type { ChatMessage, ExtensionAPI } from '../../../types';
+import { MountableComponent } from '../../../types/ExtensionAPI';
 import { manifest } from './manifest';
 import SettingsPanel from './SettingsPanel.vue';
 import { Translator } from './translator';
 import { AutoTranslateMode, type ChatTranslationSettings } from './types';
-import { MountableComponent } from '../../../types/ExtensionAPI';
 
 export { manifest };
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useApiStore } from '../../stores/api.store';
-import { useStrictI18n } from '../../composables/useStrictI18n';
 import { computed } from 'vue';
+import { useStrictI18n } from '../../composables/useStrictI18n';
+import { useApiStore } from '../../stores/api.store';
 import { Select } from '../UI';
 
 const props = defineProps<{

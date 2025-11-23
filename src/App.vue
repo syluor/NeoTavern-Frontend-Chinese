@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import Navbar from './components/NavBar/NavBar.vue';
-import ChatInterface from './components/Chat/ChatInterface.vue';
-import Popup from './components/Popup/Popup.vue';
-import ZoomedAvatar from './components/ZoomedAvatar.vue';
-import Sidebar from './components/Shared/Sidebar.vue';
+import { computed, onMounted } from 'vue';
 import ChatHeader from './components/Chat/ChatHeader.vue';
-import AiConfigDrawer from './components/NavBar/AiConfigDrawer.vue';
-import RecentChats from './components/Chat/RecentChats.vue';
-import { onMounted, computed } from 'vue';
-import { useSettingsStore } from './stores/settings.store';
-import { usePopupStore } from './stores/popup.store';
-import { useUiStore } from './stores/ui.store';
-import { useBackgroundStore } from './stores/background.store';
+import ChatInterface from './components/Chat/ChatInterface.vue';
 import ChatManagement from './components/Chat/ChatManagement.vue';
+import RecentChats from './components/Chat/RecentChats.vue';
+import AiConfigDrawer from './components/NavBar/AiConfigDrawer.vue';
+import Navbar from './components/NavBar/NavBar.vue';
+import Popup from './components/Popup/Popup.vue';
+import Sidebar from './components/Shared/Sidebar.vue';
+import ZoomedAvatar from './components/ZoomedAvatar.vue';
 import { useStrictI18n } from './composables/useStrictI18n';
+import { useBackgroundStore } from './stores/background.store';
+import { usePopupStore } from './stores/popup.store';
+import { useSettingsStore } from './stores/settings.store';
+import { useUiStore } from './stores/ui.store';
 
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();

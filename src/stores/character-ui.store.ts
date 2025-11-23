@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { useCharacterStore } from './character.store';
-import { useSettingsStore } from './settings.store';
+import { computed, ref } from 'vue';
 import { DEFAULT_CHARACTER } from '../constants';
 import { type Character } from '../types';
-import { filterAndSortCharacters } from '../utils/character-manipulation';
+import { filterAndSortCharacters } from '../utils/character';
+import { useCharacterStore } from './character.store';
+import { useSettingsStore } from './settings.store';
 
 export const useCharacterUiStore = defineStore('character-ui', () => {
   const characterStore = useCharacterStore();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import type { PropType } from 'vue';
+import { onMounted, ref } from 'vue';
 // eslint-disable-next-line vue/no-dupe-keys
 import { toast, type Toast } from '../../composables/useToast';
 

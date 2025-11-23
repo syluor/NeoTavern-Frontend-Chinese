@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from '../../../types/';
-import { manifest } from './manifest';
 import ClockWidget from './ClockWidget.vue';
+import { manifest } from './manifest';
 
 export { manifest };
 

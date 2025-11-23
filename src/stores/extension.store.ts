@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { discoverExtensions, fetchManifest } from '../api/extensions';
-import type { BuiltInExtensionModule, ExtensionManifest } from '../types';
-import { loadScript, loadStyle } from '../utils/extension-loader';
-import { sanitizeSelector } from '../utils/dom';
 import { builtInExtensions } from '../extensions/built-in';
-import { createScopedApiProxy, disposeExtension } from '../utils/extension-api';
+import type { BuiltInExtensionModule, ExtensionManifest } from '../types';
+import { sanitizeSelector } from '../utils/client';
+import { createScopedApiProxy, disposeExtension, loadScript, loadStyle } from '../utils/extensions';
 import { useSettingsStore } from './settings.store';
 
 export interface Extension {

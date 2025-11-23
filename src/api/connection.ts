@@ -1,4 +1,4 @@
-import { getRequestHeaders } from '../utils/api';
+import { getRequestHeaders } from '../utils/client';
 
 export async function fetchChatCompletionStatus(settings: {
   chat_completion_source: string;

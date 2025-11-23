@@ -1,37 +1,35 @@
-import { ref, nextTick, type Ref, type ComputedRef } from 'vue';
-import {
-  type ChatMessage,
-  type GenerationContext,
-  type GenerationResponse,
-  type StreamedChunk,
-  type ItemizedPrompt,
-  type PromptTokenBreakdown,
-  type SwipeInfo,
-  type Character,
-  type WorldInfoBook,
-  type ChatMetadata,
-  type ConnectionProfile,
-} from '../types';
-import { GenerationMode, GroupGenerationHandlingMode, default_user_avatar } from '../constants';
-import { eventEmitter } from '../utils/event-emitter';
-import { PromptBuilder } from '../utils/prompt-builder';
+import { nextTick, ref, type ComputedRef, type Ref } from 'vue';
 import { buildChatCompletionPayload, ChatCompletionService } from '../api/generation';
 import { ApiTokenizer } from '../api/tokenizer';
-import { getCharactersForContext } from '../utils/group-chat';
-import { getMessageTimeStamp } from '../utils/date';
-import { getThumbnailUrl } from '../utils/image';
+import { default_user_avatar, GenerationMode, GroupGenerationHandlingMode } from '../constants';
+import {
+  type Character,
+  type ChatMessage,
+  type ChatMetadata,
+  type ConnectionProfile,
+  type GenerationContext,
+  type GenerationResponse,
+  type ItemizedPrompt,
+  type PromptTokenBreakdown,
+  type StreamedChunk,
+  type SwipeInfo,
+  type WorldInfoBook,
+} from '../types';
 import { toast } from './useToast';
-import { determineNextSpeaker } from '../utils/group-chat-logic';
-import { uuidv4 } from '../utils/common';
 
 // Stores
-import { useCharacterStore } from '../stores/character.store';
+import { PromptBuilder } from '../services/prompt-engine';
 import { useApiStore } from '../stores/api.store';
-import { useSettingsStore } from '../stores/settings.store';
-import { usePromptStore } from '../stores/prompt.store';
+import { useCharacterStore } from '../stores/character.store';
 import { usePersonaStore } from '../stores/persona.store';
-import { useWorldInfoStore } from '../stores/world-info.store';
+import { usePromptStore } from '../stores/prompt.store';
+import { useSettingsStore } from '../stores/settings.store';
 import { useUiStore } from '../stores/ui.store';
+import { useWorldInfoStore } from '../stores/world-info.store';
+import { getThumbnailUrl } from '../utils/character';
+import { determineNextSpeaker, getCharactersForContext } from '../utils/chat';
+import { getMessageTimeStamp, uuidv4 } from '../utils/commons';
+import { eventEmitter } from '../utils/extensions';
 import { useStrictI18n } from './useStrictI18n';
 
 export interface ChatStateRef {

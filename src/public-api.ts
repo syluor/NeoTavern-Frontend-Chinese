@@ -1,23 +1,23 @@
+export * from './constants';
+export { type PromptBuilder } from './services/prompt-engine';
+export { type WorldInfoProcessor } from './services/world-info';
 export type {
+  ApiChatMessage,
   Character,
+  ChatCompletionPayload,
   ChatMessage,
+  ExtensionAPI,
+  GenerationResponse,
   Persona,
-  WorldInfoBook,
-  WorldInfoEntry,
   Settings,
   SettingsPath,
-  ApiChatMessage,
-  ChatCompletionPayload,
-  GenerationResponse,
   StreamedChunk,
-  ExtensionAPI,
+  WorldInfoBook,
+  WorldInfoEntry,
 } from './types';
-export * from './constants';
-export { type PromptBuilder } from './utils/prompt-builder';
-export { type WorldInfoProcessor } from './utils/world-info-processor';
 
-import type { ExtensionAPI } from './types';
 import type * as Vue from 'vue';
+import type { ExtensionAPI } from './types';
 
 declare global {
   var SillyTavern: {

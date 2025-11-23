@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { POPUP_TYPE, POPUP_RESULT, type PopupShowOptions, type PopupState } from '../types';
-import { uuidv4 } from '../utils/common';
+import { POPUP_RESULT, POPUP_TYPE, type PopupShowOptions, type PopupState } from '../types';
+import { uuidv4 } from '../utils/commons';
 
 interface PopupPromise<T = unknown> {
   resolve: (payload: { result: number; value: T }) => void;

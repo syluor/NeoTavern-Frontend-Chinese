@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
+import type { WorldInfoBook, WorldInfoEntry } from '../types';
 import { useSettingsStore } from './settings.store';
 import { useWorldInfoStore } from './world-info.store';
-import type { WorldInfoEntry, WorldInfoBook } from '../types';
 
 export const useWorldInfoUiStore = defineStore('world-info-ui', () => {
   const settingsStore = useSettingsStore();

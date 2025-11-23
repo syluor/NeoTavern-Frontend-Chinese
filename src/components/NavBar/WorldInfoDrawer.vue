@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useWorldInfoStore } from '../../stores/world-info.store';
-import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
-import { usePopupStore } from '../../stores/popup.store';
+import { computed, onMounted, ref } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
+import { usePopupStore } from '../../stores/popup.store';
+import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
+import { POPUP_RESULT, POPUP_TYPE } from '../../types';
+import { SplitPane } from '../Common';
+import { Button, FileInput, ListItem, Search, Select } from '../UI';
 import WorldInfoEntryEditor from './WorldInfoEntryEditor.vue';
 import WorldInfoGlobalSettings from './WorldInfoGlobalSettings.vue';
-import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
-import { Button, Select, Search, ListItem, FileInput } from '../UI';
-import { SplitPane } from '../Common';
-import { POPUP_RESULT, POPUP_TYPE } from '../../types';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();

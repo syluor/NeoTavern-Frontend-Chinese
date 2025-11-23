@@ -1,24 +1,22 @@
+import DOMPurify from 'dompurify';
+import { debounce } from 'lodash-es';
 import { defineStore } from 'pinia';
-import { ref, computed, nextTick } from 'vue';
-import { type Character } from '../types';
+import { computed, nextTick, ref } from 'vue';
 import {
-  fetchAllCharacters,
-  saveCharacter as apiSaveCharacter,
-  importCharacter as apiImportCharacter,
   createCharacter as apiCreateCharacter,
   deleteCharacter as apiDeleteCharacter,
+  importCharacter as apiImportCharacter,
+  saveCharacter as apiSaveCharacter,
   updateCharacterImage as apiUpdateCharacterImage,
+  fetchAllCharacters,
 } from '../api/characters';
-import DOMPurify from 'dompurify';
 import { useCharacterTokens } from '../composables/useCharacterTokens';
 import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
+import { type Character } from '../types';
+import { createCharacterFormData, getCharacterDifferences, getThumbnailUrl } from '../utils/character';
+import { onlyUnique, uuidv4 } from '../utils/commons';
+import { eventEmitter } from '../utils/extensions';
 import { useSettingsStore } from './settings.store';
-import { onlyUnique } from '../utils/array';
-import { debounce } from 'lodash-es';
-import { eventEmitter } from '../utils/event-emitter';
-import { getThumbnailUrl } from '../utils/image';
-import { uuidv4 } from '../utils/common';
-import { getCharacterDifferences, createCharacterFormData } from '../utils/character-manipulation';
 
 const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];

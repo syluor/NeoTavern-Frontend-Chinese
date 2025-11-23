@@ -1,7 +1,7 @@
-import globals from 'globals';
-import pluginVue from 'eslint-plugin-vue';
-import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import pluginVue from 'eslint-plugin-vue';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default [
   {

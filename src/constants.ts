@@ -200,6 +200,31 @@ export const defaultProviderModels: Record<ChatCompletionSource, string> = {
   zai: 'glm-4.6',
 };
 
+export const defaultProviderSpecific: Settings['api']['providerSpecific'] = {
+  openrouter: {
+    allowFallbacks: true,
+    middleout: OpenrouterMiddleoutType.ON,
+    useFallback: false,
+    providers: [],
+  },
+  custom: {
+    url: '',
+  },
+  azure_openai: {
+    baseUrl: '',
+    deploymentName: '',
+    apiVersion: '2024-02-15-preview',
+  },
+  vertexai: {
+    region: 'us-central1',
+    auth_mode: 'express',
+    express_project_id: '',
+  },
+  zai: {
+    endpoint: 'common',
+  },
+};
+
 /**
  * Root mapping with data paths for editing
  */

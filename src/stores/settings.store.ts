@@ -12,6 +12,7 @@ import {
   DEFAULT_SAVE_EDIT_TIMEOUT,
   defaultAccountSettings,
   defaultProviderModels,
+  defaultProviderSpecific,
   defaultSamplerSettings,
   defaultWorldInfoSettings,
   OpenrouterMiddleoutType,
@@ -52,24 +53,9 @@ function createDefaultSettings(): Settings {
     samplers: defaultSamplerSettings,
     connectionProfiles: [],
     selectedConnectionProfile: undefined,
-    selectedProviderModels: { ...defaultProviderModels },
+    selectedProviderModels: structuredClone(defaultProviderModels),
     tokenizer: TokenizerType.AUTO,
-    providerSpecific: {
-      openrouter: {
-        allowFallbacks: true,
-        middleout: OpenrouterMiddleoutType.ON,
-        useFallback: false,
-        providers: [],
-      },
-      custom: {
-        url: '',
-      },
-      azure_openai: {
-        baseUrl: '',
-        deploymentName: '',
-        apiVersion: '',
-      },
-    },
+    providerSpecific: structuredClone(defaultProviderSpecific),
   };
   defaultSettings.worldInfo = defaultWorldInfoSettings;
   defaultSettings.account = defaultAccountSettings;
@@ -196,18 +182,26 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
       },
       providerSpecific: {
         openrouter: {
-          allowFallbacks: oai.openrouter_allow_fallbacks ?? true,
+          allowFallbacks: oai.openrouter_allow_fallbacks ?? defaultProviderSpecific.openrouter.allowFallbacks,
           middleout: oai.openrouter_middleout ? OpenrouterMiddleoutType.ON : OpenrouterMiddleoutType.OFF,
-          useFallback: oai.openrouter_use_fallback ?? false,
-          providers: oai.openrouter_providers ?? [],
+          useFallback: oai.openrouter_use_fallback ?? defaultProviderSpecific.openrouter.useFallback,
+          providers: oai.openrouter_providers ?? defaultProviderSpecific.openrouter.providers,
         },
         custom: {
           url: oai.custom_url ?? '',
         },
         azure_openai: {
-          baseUrl: oai.azure_base_url ?? '',
-          deploymentName: oai.azure_deployment_name ?? '',
-          apiVersion: oai.azure_api_version ?? '',
+          baseUrl: oai.azure_base_url ?? defaultProviderSpecific.azure_openai.baseUrl,
+          deploymentName: oai.azure_deployment_name ?? defaultProviderSpecific.azure_openai.deploymentName,
+          apiVersion: oai.azure_api_version ?? defaultProviderSpecific.azure_openai.apiVersion,
+        },
+        vertexai: {
+          region: oai.vertexai_region ?? defaultProviderSpecific.vertexai.region,
+          auth_mode: oai.vertexai_auth_mode ?? defaultProviderSpecific.vertexai.auth_mode,
+          express_project_id: oai.vertexai_express_project_id ?? defaultProviderSpecific.vertexai.express_project_id,
+        },
+        zai: {
+          endpoint: oai.zai_endpoint ?? defaultProviderSpecific.zai.endpoint,
         },
       },
       samplers: {

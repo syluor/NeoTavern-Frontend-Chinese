@@ -2,219 +2,183 @@ import { ReasoningEffort } from '../constants';
 import type { ChatCompletionPayload, ChatCompletionSource, GenerationResponse, StreamedChunk } from '../types';
 import { chat_completion_sources } from '../types';
 import type { BuildChatCompletionPayloadOptions } from '../types/generation';
+import type { SamplerSettings } from '../types/settings';
 import { getRequestHeaders } from '../utils/client';
+import {
+  MODEL_INJECTIONS,
+  PARAMETER_DEFINITIONS,
+  PROVIDER_INJECTIONS,
+  type ParamHandling,
+} from './provider-definitions';
 
-export function buildChatCompletionPayload({
-  samplerSettings,
-  messages,
-  model,
-  source,
-  providerSpecific,
-  modelList,
-}: BuildChatCompletionPayloadOptions): ChatCompletionPayload {
+const REASONING_EFFORT_SOURCES: ChatCompletionSource[] = [
+  chat_completion_sources.OPENAI,
+  chat_completion_sources.AZURE_OPENAI,
+  chat_completion_sources.CUSTOM,
+  chat_completion_sources.XAI,
+  chat_completion_sources.AIMLAPI,
+  chat_completion_sources.OPENROUTER,
+  chat_completion_sources.POLLINATIONS,
+  chat_completion_sources.PERPLEXITY,
+  chat_completion_sources.COMETAPI,
+  chat_completion_sources.ELECTRONHUB,
+];
+
+export function buildChatCompletionPayload(options: BuildChatCompletionPayloadOptions): ChatCompletionPayload {
+  const { samplerSettings, messages, model, source } = options;
+
   const payload: ChatCompletionPayload = {
     messages,
     model,
     chat_completion_source: source,
-    stream: samplerSettings.stream ?? true,
-    max_tokens: samplerSettings.max_tokens,
-    temperature: samplerSettings.temperature,
-    frequency_penalty: samplerSettings.frequency_penalty,
-    presence_penalty: samplerSettings.presence_penalty,
-    repetition_penalty: samplerSettings.repetition_penalty,
-    top_p: samplerSettings.top_p,
-    top_k: samplerSettings.top_k,
-    min_p: samplerSettings.min_p,
-    top_a: samplerSettings.top_a,
     include_reasoning: !!samplerSettings.show_thoughts,
   };
 
-  if (samplerSettings.reasoning_effort) {
-    const reasoningEffortSources: ChatCompletionSource[] = [
-      chat_completion_sources.OPENAI,
-      chat_completion_sources.AZURE_OPENAI,
-      chat_completion_sources.CUSTOM,
-      chat_completion_sources.XAI,
-      chat_completion_sources.AIMLAPI,
-      chat_completion_sources.OPENROUTER,
-      chat_completion_sources.POLLINATIONS,
-      chat_completion_sources.PERPLEXITY,
-      chat_completion_sources.COMETAPI,
-      chat_completion_sources.ELECTRONHUB,
-    ];
+  // 1. Map Parameters (Per-Param Logic)
+  for (const key in samplerSettings) {
+    const samplerKey = key as keyof SamplerSettings;
 
-    let reasoningEffort: ReasoningEffort | string | undefined = samplerSettings.reasoning_effort;
+    // Explicitly skip internal/non-payload settings
+    if (
+      samplerKey === 'prompts' ||
+      samplerKey === 'prompt_order' ||
+      samplerKey === 'providers' ||
+      samplerKey === 'max_context_unlocked' ||
+      samplerKey === 'reasoning_effort' // Handled separately
+    ) {
+      continue;
+    }
 
-    if (reasoningEffortSources.includes(source)) {
-      switch (samplerSettings.reasoning_effort) {
-        case ReasoningEffort.AUTO:
-          reasoningEffort = undefined;
-          break;
-        case ReasoningEffort.MIN:
-          reasoningEffort =
-            // @ts-expect-error not assignable
-            [chat_completion_sources.OPENAI, chat_completion_sources.AZURE_OPENAI].includes(source) &&
-            /^gpt-5/.test(model)
-              ? ReasoningEffort.MIN
-              : ReasoningEffort.LOW;
-          break;
-        case ReasoningEffort.MAX:
-          reasoningEffort = ReasoningEffort.HIGH;
-          break;
-        default:
-          reasoningEffort = samplerSettings.reasoning_effort;
+    const config = PARAMETER_DEFINITIONS[samplerKey];
+
+    // If a parameter has no definition, we default to "pass-through"
+    // UNLESS it is one of the strictly gated parameters defined in provider-definitions.ts with defaults: null.
+    // However, if the key is not in PARAMETER_DEFINITIONS at all, config is undefined.
+    // We treat undefined config as "safe to pass" (backward compatibility),
+    // but the critical ones (min_p, etc) ARE defined in PARAMETER_DEFINITIONS now.
+
+    let rule: ParamHandling | null | undefined = config?.defaults;
+
+    // Apply provider specific overrides
+    if (config?.providers && source in config.providers) {
+      const providerRule = config.providers[source];
+      if (providerRule === null) {
+        rule = null;
+      } else if (providerRule) {
+        rule = { ...rule, ...providerRule };
       }
+    }
 
-      if (source === chat_completion_sources.ELECTRONHUB) {
-        if (Array.isArray(modelList) && reasoningEffort) {
-          const currentModel = modelList.find((m) => m.id === model);
-          const supportedEfforts = currentModel?.metadata?.supported_reasoning_efforts;
-          if (Array.isArray(supportedEfforts) && !supportedEfforts.includes(reasoningEffort as string)) {
-            reasoningEffort = undefined;
+    // Apply model specific overrides
+    if (config?.modelRules) {
+      for (const modelRule of config.modelRules) {
+        if (modelRule.pattern.test(model)) {
+          if (modelRule.rule === null) {
+            rule = null;
+          } else if (modelRule.rule) {
+            rule = { ...rule, ...modelRule.rule };
           }
         }
       }
     }
 
-    if (reasoningEffort) {
-      payload.reasoning_effort = reasoningEffort;
+    // If the rule is explicitly null (either via defaults or override), skip this parameter.
+    if (rule === null) continue;
+
+    let value = samplerSettings[samplerKey];
+
+    // Transform / Validation
+    if (rule?.transform) {
+      value = rule.transform(value, options);
+    }
+
+    // Clamping
+    if (typeof value === 'number' && rule) {
+      if (rule.min !== undefined) value = Math.max(value, rule.min);
+      if (rule.max !== undefined) value = Math.min(value, rule.max);
+    }
+
+    // Assignment (ignoring undefined)
+    if (value !== undefined) {
+      const payloadKey = (rule?.remoteKey || samplerKey) as keyof ChatCompletionPayload;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (payload as any)[payloadKey] = value;
     }
   }
 
-  // --- Seed ---
-  const seedSupportedSources: ChatCompletionSource[] = [
-    chat_completion_sources.OPENAI,
-    chat_completion_sources.AZURE_OPENAI,
-    chat_completion_sources.OPENROUTER,
-    chat_completion_sources.MISTRALAI,
-    chat_completion_sources.CUSTOM,
-    chat_completion_sources.COHERE,
-    chat_completion_sources.GROQ,
-    chat_completion_sources.ELECTRONHUB,
-    chat_completion_sources.NANOGPT,
-    chat_completion_sources.XAI,
-    chat_completion_sources.POLLINATIONS,
-    chat_completion_sources.AIMLAPI,
-    chat_completion_sources.VERTEXAI,
-    chat_completion_sources.MAKERSUITE,
-  ];
-  if (samplerSettings.seed && samplerSettings.seed >= 0 && seedSupportedSources.includes(source)) {
-    payload.seed = samplerSettings.seed;
+  // 2. Apply Provider Specific Injections (auth tokens, strict deletions, etc.)
+  const providerInject = PROVIDER_INJECTIONS[source];
+  if (providerInject) {
+    providerInject(payload, options);
   }
 
-  // --- Stop Sequences ---
-  if (samplerSettings.stop && samplerSettings.stop.length > 0) {
-    payload.stop = samplerSettings.stop;
-  }
-
-  // --- Vision Model Checks ---
-  const isVision = (m: string) => ['gpt', 'vision'].every((x) => m.includes(x));
-  if (isVision(model)) {
-    // delete payload.logit_bias; // TODO
-    delete payload.stop;
-    // delete payload.logprobs; // TODO
-  }
-
-  // --- Provider-Specific Logic ---
-  const providers = samplerSettings.providers;
-  switch (source) {
-    case chat_completion_sources.CLAUDE:
-      payload.claude_use_sysprompt = providers.claude?.use_sysprompt;
-      payload.assistant_prefill = providers.claude?.assistant_prefill;
-      break;
-    case chat_completion_sources.OPENROUTER:
-      payload.use_fallback = providerSpecific.openrouter.useFallback;
-      payload.provider = providerSpecific.openrouter?.providers;
-      payload.allow_fallbacks = providerSpecific.openrouter.allowFallbacks;
-      payload.middleout = providerSpecific.openrouter.middleout;
-      break;
-    case chat_completion_sources.MAKERSUITE:
-    case chat_completion_sources.VERTEXAI:
-      payload.use_makersuite_sysprompt = providers.google?.use_makersuite_sysprompt;
-      if (payload.stop) {
-        payload.stop = payload.stop.slice(0, 5).filter((x) => x.length >= 1 && x.length <= 16);
-      }
-      break;
-    case chat_completion_sources.MISTRALAI:
-      payload.safe_prompt = false;
-      break;
-    case chat_completion_sources.COHERE:
-      payload.top_p = Math.min(Math.max(payload.top_p ?? 0, 0.01), 0.99);
-      payload.frequency_penalty = Math.min(Math.max(payload.frequency_penalty ?? 0, 0), 1);
-      payload.presence_penalty = Math.min(Math.max(payload.presence_penalty ?? 0, 0), 1);
-      if (payload.stop) {
-        payload.stop = payload.stop.slice(0, 5);
-      }
-      break;
-    case chat_completion_sources.PERPLEXITY:
-      delete payload.stop;
-      break;
-    case chat_completion_sources.GROQ:
-      // delete payload.logprobs; // TODO
-      // delete payload.logit_bias; // TODO
-      delete payload.n;
-      break;
-    case chat_completion_sources.DEEPSEEK:
-      payload.top_p = payload.top_p || Number.EPSILON;
-      break;
-    case chat_completion_sources.XAI:
-      if (model.includes('grok-3-mini')) {
-        delete payload.presence_penalty;
-        delete payload.frequency_penalty;
-        delete payload.stop;
-      } else if (model.includes('grok-4') || model.includes('grok-code')) {
-        delete payload.presence_penalty;
-        delete payload.frequency_penalty;
-        if (!model.includes('grok-4-fast-non-reasoning')) {
-          delete payload.stop;
-        }
-      }
-      break;
-    case chat_completion_sources.POLLINATIONS:
-      delete payload.max_tokens;
-      break;
-    case chat_completion_sources.ZAI:
-      payload.top_p = payload.top_p || 0.01;
-      if (payload.stop) {
-        payload.stop = payload.stop.slice(0, 1);
-      }
-      delete payload.presence_penalty;
-      delete payload.frequency_penalty;
-      break;
-  }
-
-  // --- Model-Specific Logic ---
-  if (/^(o1|o3|o4)/.test(model)) {
-    payload.max_completion_tokens = payload.max_tokens;
-    delete payload.max_tokens;
-    // delete payload.logprobs; // TODO
-    delete payload.stop;
-    // delete payload.logit_bias; // TODO
-    delete payload.temperature;
-    delete payload.top_p;
-    delete payload.frequency_penalty;
-    delete payload.presence_penalty;
-    if (model.startsWith('o1')) {
-      payload.messages?.forEach((msg) => {
-        if (msg.role === 'system') msg.role = 'user';
-      });
-      delete payload.n;
-    }
-  } else if (/^gpt-5/.test(model)) {
-    payload.max_completion_tokens = payload.max_tokens;
-    delete payload.max_tokens;
-    // delete payload.logprobs; // TODO
-    if (!/chat-latest/.test(model)) {
-      delete payload.temperature;
-      delete payload.top_p;
-      delete payload.frequency_penalty;
-      delete payload.presence_penalty;
-      // delete payload.logit_bias; // TODO
-      delete payload.stop;
+  // 3. Apply Model Specific Injections (O1 role swaps, GPT-5 cleanups)
+  for (const rule of MODEL_INJECTIONS) {
+    if (rule.pattern.test(model)) {
+      rule.inject(payload, options);
     }
   }
+
+  // 4. Apply Reasoning Effort Logic (Shared logic)
+  applyReasoningEffort(payload, options);
+
+  // 5. TODO: ToolManager integration
+  // if (!canMultiSwipe && ToolManager.canPerformToolCalls(type)) { ... }
 
   return payload;
+}
+
+function applyReasoningEffort(payload: ChatCompletionPayload, options: BuildChatCompletionPayloadOptions) {
+  const { samplerSettings, source, model, modelList } = options;
+
+  if (!samplerSettings.reasoning_effort) return;
+  if (!REASONING_EFFORT_SOURCES.includes(source)) return;
+
+  // Azure Specific Constraint: Reasoning effort not supported on older GPT-3/4 models
+  if (source === chat_completion_sources.AZURE_OPENAI && /^gpt-[34]/.test(model)) {
+    return;
+  }
+  // XAI Constraint: only grok-3-mini supports reasoning effort currently
+  if (source === chat_completion_sources.XAI && !model.includes('grok-3-mini')) {
+    return;
+  }
+
+  let reasoningEffort: ReasoningEffort | string | undefined = samplerSettings.reasoning_effort;
+
+  switch (samplerSettings.reasoning_effort) {
+    case ReasoningEffort.AUTO:
+      reasoningEffort = undefined;
+      break;
+    case ReasoningEffort.MIN:
+      // Special case for GPT-5 on OpenAI/Azure
+      if (
+        (source === chat_completion_sources.OPENAI || source === chat_completion_sources.AZURE_OPENAI) &&
+        /^gpt-5/.test(model)
+      ) {
+        reasoningEffort = ReasoningEffort.MIN;
+      } else {
+        reasoningEffort = ReasoningEffort.LOW;
+      }
+      break;
+    case ReasoningEffort.MAX:
+      reasoningEffort = ReasoningEffort.HIGH;
+      break;
+    default:
+      reasoningEffort = samplerSettings.reasoning_effort;
+  }
+
+  // ElectronHub specific validation
+  if (source === chat_completion_sources.ELECTRONHUB && Array.isArray(modelList) && reasoningEffort) {
+    const currentModel = modelList.find((m) => m.id === model);
+    const supportedEfforts = currentModel?.metadata?.supported_reasoning_efforts;
+    if (Array.isArray(supportedEfforts) && !supportedEfforts.includes(reasoningEffort as string)) {
+      reasoningEffort = undefined;
+    }
+  }
+
+  if (reasoningEffort) {
+    payload.reasoning_effort = reasoningEffort;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

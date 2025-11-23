@@ -97,6 +97,10 @@ export interface LegacyOaiSettings {
   azure_base_url?: string;
   azure_deployment_name?: string;
   azure_api_version?: string;
+  vertexai_auth_mode?: string;
+  vertexai_express_project_id?: string;
+  vertexai_region?: string;
+  zai_endpoint?: string;
   preset_settings_openai?: string;
   temp_openai?: number;
   freq_pen_openai?: number;
@@ -235,11 +239,23 @@ export interface Settings {
       };
       custom: {
         url: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        include_body?: Record<string, any>;
+        exclude_body?: string[];
+        include_headers?: Record<string, string>;
       };
       azure_openai: {
         baseUrl: string;
         deploymentName: string;
         apiVersion: string;
+      };
+      vertexai: {
+        region?: string;
+        express_project_id?: string;
+        auth_mode?: string;
+      };
+      zai: {
+        endpoint?: string;
       };
     };
   };

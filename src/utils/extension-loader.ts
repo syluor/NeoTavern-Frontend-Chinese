@@ -30,12 +30,16 @@ export function unloadScript(name: string) {
   const id = sanitizeSelector(`${name}-js`);
   const script = document.getElementById(id);
   if (script) {
-    // Ideally, we keep the script to avoid re-evaluation issues on toggle.
-    // However, if we must support "hot reloading" (which is flaky with ESM),
-    // we would remove it. For stability, we leave it, or rely on the caller
-    // to not call loadScript again for the same URL without a cache buster.
-    // Since we track `loadedModules`, we effectively disable repeated loading here.
-    // script.remove();
+    // Remove the script tag to clean up DOM.
+    // Note: This does not remove the module from the browser's internal ES module cache,
+    // so re-loading the same URL will yield the cached module instance unless the URL changes.
+    script.remove();
+  }
+
+  for (const url of loadedModules) {
+    if (url.includes(`/extensions/${name}/`)) {
+      loadedModules.delete(url);
+    }
   }
 }
 

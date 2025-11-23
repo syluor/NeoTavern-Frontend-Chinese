@@ -72,6 +72,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
 
     deps.stopAutoModeTimer();
 
+    const currentChatContext = deps.activeChat.value;
+
     const userMessage: ChatMessage = {
       name: uiStore.activePlayerName || 'User',
       is_user: true,
@@ -98,6 +100,11 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       return;
     }
 
+    if (deps.activeChat.value !== currentChatContext) {
+      console.warn('Chat context changed during message creation. Message dropped.');
+      return;
+    }
+
     deps.activeChat.value.messages.push(userMessage);
     await nextTick();
     await eventEmitter.emit('message:created', userMessage);
@@ -115,6 +122,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       return;
     }
 
+    const currentChatContext = deps.activeChat.value;
+
     const startController = new AbortController();
     await eventEmitter.emit('generation:started', startController);
     if (startController.signal.aborted) {
@@ -125,6 +134,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       generationController.value.abort();
     }
     generationController.value = new AbortController();
+
+    if (deps.activeChat.value !== currentChatContext) return;
 
     let activeCharacter: Character | null = null;
 
@@ -140,7 +151,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         activeCharacter = determineNextSpeaker(
           characterStore.activeCharacters,
           deps.groupConfig.value,
-          deps.activeChat.value.messages,
+          currentChatContext.messages,
         );
       }
     }
@@ -154,7 +165,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
     let generatedMessage: ChatMessage | null = null;
     let generationError: Error | undefined;
 
-    const activeChatMessages = deps.activeChat.value.messages;
+    const activeChatMessages = currentChatContext.messages;
 
     try {
       isGenerating.value = true;
@@ -203,7 +214,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       const context: GenerationContext = {
         mode,
         characters: charactersForContext,
-        chatMetadata: deps.activeChat.value.metadata,
+        chatMetadata: currentChatContext.metadata,
         history: chatHistoryForPrompt,
         persona: activePersona,
         settings: {
@@ -216,6 +227,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         controller: new AbortController(),
         tokenizer: tokenizer,
       };
+
+      if (deps.activeChat.value !== currentChatContext) throw new Error('Context switched');
 
       await eventEmitter.emit('process:generation-context', context);
       if (context.controller.signal.aborted) return;
@@ -234,6 +247,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         ).filter((book): book is WorldInfoBook => book !== undefined),
         worldInfo: settingsStore.settings.worldInfo,
       });
+
+      if (deps.activeChat.value !== currentChatContext) throw new Error('Context switched');
 
       const messages = await promptBuilder.build();
       if (messages.length === 0) throw new Error(t('chat.generate.noPrompts'));
@@ -315,6 +330,11 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       if (payloadController.signal.aborted) return;
 
       const handleGenerationResult = async (content: string, reasoning?: string) => {
+        if (deps.activeChat.value !== currentChatContext) {
+          console.warn('Chat context changed during generation. Result ignored.');
+          return;
+        }
+
         const genFinished = new Date().toISOString();
         const token_count = await tokenizer.getTokenCount(content);
         const swipeInfo: SwipeInfo = {
@@ -382,6 +402,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
           generationController.value.signal,
         )) as GenerationResponse;
 
+        if (deps.activeChat.value !== currentChatContext) throw new Error('Context switched');
+
         const responseController = new AbortController();
         await eventEmitter.emit('process:response', response, payload, responseController);
         if (responseController.signal.aborted) return;
@@ -415,6 +437,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
           await eventEmitter.emit('generation:before-message-create', botMessage, createController);
           if (createController.signal.aborted) return;
 
+          if (deps.activeChat.value !== currentChatContext) throw new Error('Context switched');
+
           activeChatMessages.push(botMessage);
           generatedMessage = botMessage;
           targetMessageIndex = activeChatMessages.length - 1;
@@ -433,6 +457,11 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
 
         try {
           for await (const chunk of streamGenerator()) {
+            if (deps.activeChat.value !== currentChatContext) {
+              generationController.value?.abort();
+              break;
+            }
+
             const chunkController = new AbortController();
             await eventEmitter.emit('process:stream-chunk', chunk, payload, chunkController);
             if (chunkController.signal.aborted) {
@@ -463,24 +492,26 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
             if (chunk.reasoning) targetMessage.extra.reasoning = streamedReasoning;
           }
         } finally {
-          const finalMessage = activeChatMessages[targetMessageIndex];
-          if (finalMessage) {
-            finalMessage.gen_finished = new Date().toISOString();
-            if (!finalMessage.extra) finalMessage.extra = {};
-            finalMessage.extra.token_count = await tokenizer.getTokenCount(finalMessage.mes);
+          if (deps.activeChat.value === currentChatContext) {
+            const finalMessage = activeChatMessages[targetMessageIndex];
+            if (finalMessage) {
+              finalMessage.gen_finished = new Date().toISOString();
+              if (!finalMessage.extra) finalMessage.extra = {};
+              finalMessage.extra.token_count = await tokenizer.getTokenCount(finalMessage.mes);
 
-            const swipeInfo: SwipeInfo = {
-              send_date: finalMessage.send_date!,
-              gen_started: genStarted,
-              gen_finished: finalMessage.gen_finished,
-              extra: { ...finalMessage.extra },
-            };
-            if (!finalMessage.swipe_info) finalMessage.swipe_info = [];
+              const swipeInfo: SwipeInfo = {
+                send_date: finalMessage.send_date!,
+                gen_started: genStarted,
+                gen_finished: finalMessage.gen_finished,
+                extra: { ...finalMessage.extra },
+              };
+              if (!finalMessage.swipe_info) finalMessage.swipe_info = [];
 
-            if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
-              finalMessage.swipe_info = [swipeInfo];
-            } else if (mode === GenerationMode.ADD_SWIPE) {
-              finalMessage.swipe_info.push(swipeInfo);
+              if (mode === GenerationMode.NEW || mode === GenerationMode.REGENERATE) {
+                finalMessage.swipe_info = [swipeInfo];
+              } else if (mode === GenerationMode.ADD_SWIPE) {
+                finalMessage.swipe_info.push(swipeInfo);
+              }
             }
           }
         }
@@ -488,7 +519,9 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
     } catch (error) {
       generationError = error instanceof Error ? error : new Error(String(error));
 
-      if (generationError.name === 'AbortError') {
+      if (generationError.message === 'Context switched') {
+        console.warn('Generation aborted due to context switch');
+      } else if (generationError.name === 'AbortError') {
         toast.info('Generation aborted.');
       } else {
         console.error('Failed to generate response:', generationError);
@@ -498,7 +531,9 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
       isGenerating.value = false;
       generationController.value = null;
       await nextTick();
-      await eventEmitter.emit('generation:finished', generatedMessage, generationError);
+      if (deps.activeChat.value === currentChatContext) {
+        await eventEmitter.emit('generation:finished', generatedMessage, generationError);
+      }
     }
   }
 

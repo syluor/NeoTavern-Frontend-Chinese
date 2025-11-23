@@ -17,19 +17,36 @@ import { eventEmitter } from './event-emitter';
 import { joinCharacterField } from './group-chat';
 import Handlebars from 'handlebars';
 
+/**
+ * Escapes Handlebars control characters in data strings to prevent prompt injection.
+ * Specifically prevents {{ and }} from being interpreted as tags if they appear in names.
+ */
+function sanitizeHandlebarsData(str: string): string {
+  if (!str) return '';
+  return str.replace(/{{/g, '\\{\\{').replace(/}}/g, '\\}\\}');
+}
+
 // TODO: Add proper templating engine
 function substitute(text: string, chars: Character[], user: string): string {
   if (!text) return '';
-  const template = Handlebars.compile(text, { noEscape: true });
-  const result = template({
-    user,
-    char: chars.length > 0 ? chars[0].name : '',
-    chars: chars.map((c) => c.name),
-    description: chars.length > 0 ? chars[0].description : '',
-    personality: chars.length > 0 ? chars[0].personality : '',
-    scenario: chars.length > 0 ? chars[0].scenario : '',
-  });
-  return result;
+
+  if (!text.includes('{{')) return text;
+
+  try {
+    const template = Handlebars.compile(text, { noEscape: true });
+    const result = template({
+      user: sanitizeHandlebarsData(user),
+      char: chars.length > 0 ? sanitizeHandlebarsData(chars[0].name) : '',
+      chars: chars.map((c) => sanitizeHandlebarsData(c.name)),
+      description: chars.length > 0 ? chars[0].description : '',
+      personality: chars.length > 0 ? chars[0].personality : '',
+      scenario: chars.length > 0 ? chars[0].scenario : '',
+    });
+    return result;
+  } catch (e) {
+    console.warn('Failed to compile Handlebars template for prompt:', e);
+    return text;
+  }
 }
 
 export class PromptBuilder {

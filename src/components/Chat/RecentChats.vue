@@ -109,7 +109,6 @@ async function deleteSelected() {
       }
       selectedChats.value.clear();
       isSelectionMode.value = false;
-      toast.success(t('chatManagement.deleteSuccess', { count }));
     } catch (error) {
       console.error(error);
       toast.error(t('chatManagement.errors.delete'));

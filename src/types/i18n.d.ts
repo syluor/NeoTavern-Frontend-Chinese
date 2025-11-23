@@ -30,7 +30,6 @@ export interface MessageSchema {
     scenarioOverridePlaceholder: string;
     connectionProfile: string;
     deleteSelectedConfirmContent: string;
-    deleteSuccess: string;
     chatLorebooks: string;
     selectLorebooks: string;
     actions: {
@@ -90,15 +89,9 @@ export interface MessageSchema {
       default: string;
       character: string;
       chat: string;
-      characterRemoved: string;
-      characterAdded: string;
-      chatRemoved: string;
-      chatAdded: string;
       linkedCharacters: string;
     };
     default: {
-      removed: string;
-      set: string;
       tooltip: string;
     };
     globalSettings: {
@@ -119,16 +112,10 @@ export interface MessageSchema {
     delete: {
       confirmTitle: string;
       confirmMessage: string;
-      success: string;
       error: string;
     };
     duplicate: {
-      success: string;
       error: string;
-    };
-    syncName: {
-      success: string;
-      noChanges: string;
     };
     lorebooks: {
       label: string;
@@ -246,7 +233,6 @@ export interface MessageSchema {
       saveFailed: string;
       createFailed: string;
       deleteFailed: string;
-      duplicateFailed: string;
       renameFailed: string;
       bookNotFound: string;
       importFailed: string;
@@ -271,8 +257,6 @@ export interface MessageSchema {
     zoomOut: string;
     confirmDelete: string;
     renameTitle: string;
-    renameSuccess: string;
-    deleteSuccess: string;
     actions: {
       lock: string;
       unlock: string;
@@ -433,7 +417,6 @@ export interface MessageSchema {
     confirmDelete: string;
     by: string;
     reset: string;
-    copied: string;
     seconds: string;
     remove: string;
     dragToReorder: string;
@@ -466,7 +449,6 @@ export interface MessageSchema {
     send: string;
     loadError: string;
     createError: string;
-    renameError: string;
     emptyLog: string;
     generate: {
       noPrompts: string;
@@ -495,7 +477,6 @@ export interface MessageSchema {
       lastSwipeError: string;
     };
     copy: {
-      success: string;
       error: string;
     };
     optionsMenu: {
@@ -533,33 +514,26 @@ export interface MessageSchema {
   };
   character: {
     import: {
-      aborted: string;
       abortedMessage: string;
       unsupportedType: string;
-      success: string;
       error: string;
       errorMessage: string;
       tagsImported: string;
       tagsImportedMessage: string;
-      tagImportAskNotImplemented: string;
-      tagImportExistingNotImplemented: string;
     };
     save: {
       error: string;
-      noActive: string;
     };
     fetch: {
       overflowWarning: string;
     };
     create: {
-      success: string;
       error: string;
     };
     delete: {
       confirmTitle: string;
       confirmMessage: string;
       deleteChats: string;
-      success: string;
       error: string;
     };
     updateImage: {
@@ -567,9 +541,6 @@ export interface MessageSchema {
     };
     duplicate: {
       error: string;
-    };
-    rename: {
-      success: string;
     };
     tokenWarning: string;
   };
@@ -894,7 +865,6 @@ export interface MessageSchema {
   };
   persona: {
     createFromCharacter: {
-      success: string;
       error: string;
     };
   };

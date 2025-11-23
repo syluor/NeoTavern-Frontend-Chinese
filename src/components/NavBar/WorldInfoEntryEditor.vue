@@ -3,6 +3,9 @@ import { type PropType, computed } from 'vue';
 import { type WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useWorldInfoStore } from '../../stores/world-info.store';
+import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
+import { usePopupStore } from '../../stores/popup.store';
+import { POPUP_RESULT, POPUP_TYPE } from '../../types';
 import {
   Input,
   Textarea,
@@ -27,6 +30,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
+const worldInfoUiStore = useWorldInfoUiStore();
+const popupStore = usePopupStore();
 
 const isAtDepth = computed(() => props.modelValue?.position === WorldInfoPosition.AT_DEPTH);
 
@@ -60,6 +65,28 @@ const entryState = computed({
     }
   },
 });
+
+async function handleDeleteEntry() {
+  const { result } = await popupStore.show({
+    title: t('worldInfo.popup.deleteEntryTitle'),
+    content: t('worldInfo.popup.deleteEntryContent', { name: props.modelValue?.comment }),
+    type: POPUP_TYPE.CONFIRM,
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE && worldInfoUiStore.selectedFilename && props.modelValue) {
+    await worldInfoStore.deleteEntry(worldInfoUiStore.selectedFilename, props.modelValue.uid);
+    worldInfoUiStore.selectItem('global-settings');
+  }
+}
+
+async function handleDuplicateEntry() {
+  if (worldInfoUiStore.selectedFilename && props.modelValue) {
+    const newUid = await worldInfoStore.duplicateEntry(worldInfoUiStore.selectedFilename, props.modelValue);
+    if (newUid) {
+      worldInfoUiStore.selectItem(`${worldInfoUiStore.selectedFilename}/${newUid}`);
+    }
+  }
+}
 
 const stateOptions = [
   { label: t('worldInfo.entry.entryStates.constant'), value: 'constant' },
@@ -113,18 +140,8 @@ const logicOptions = [
 
       <div class="editor-header-actions">
         <Button variant="ghost" icon="fa-right-left" :title="t('worldInfo.entry.move')" />
-        <Button
-          variant="ghost"
-          icon="fa-paste"
-          :title="t('worldInfo.entry.duplicate')"
-          @click="worldInfoStore.duplicateSelectedEntry"
-        />
-        <Button
-          icon="fa-trash-can"
-          variant="danger"
-          :title="t('worldInfo.entry.delete')"
-          @click="worldInfoStore.deleteSelectedEntry"
-        />
+        <Button variant="ghost" icon="fa-paste" :title="t('worldInfo.entry.duplicate')" @click="handleDuplicateEntry" />
+        <Button icon="fa-trash-can" variant="danger" :title="t('worldInfo.entry.delete')" @click="handleDeleteEntry" />
       </div>
     </div>
 

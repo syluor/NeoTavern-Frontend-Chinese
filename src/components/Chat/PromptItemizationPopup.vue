@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 import type { ItemizedPrompt, PromptTokenBreakdown, WorldInfoEntry } from '../../types';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { toast } from '../../composables/useToast';
 import { Button } from '../UI';
 
 const props = defineProps<{
@@ -43,9 +42,7 @@ const percentages = computed(() => {
 });
 
 function copyPrompt() {
-  navigator.clipboard.writeText(rawMessages.value).then(() => {
-    toast.success(t('common.copied'));
-  });
+  navigator.clipboard.writeText(rawMessages.value).then(() => {});
 }
 
 function toggleRaw() {

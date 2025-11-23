@@ -137,7 +137,6 @@ function toggleReasoningEdit() {
 async function copyMessage() {
   try {
     await navigator.clipboard.writeText(props.message.mes);
-    toast.success(t('chat.copy.success'));
   } catch (err) {
     toast.error(t('chat.copy.error'));
     console.error('Failed to copy text: ', err);
@@ -149,16 +148,23 @@ async function handleDeleteClick() {
   const swipesArray = Array.isArray(message.swipes) ? message.swipes : [];
   const canDeleteSwipe = !message.is_user && swipesArray.length > 1 && isLastMessage.value;
 
-  const performDelete = (isSwipeDelete: boolean) => {
-    if (isSwipeDelete) {
-      chatStore.deleteSwipe(props.index, message.swipe_id ?? 0);
-    } else {
-      chatStore.deleteMessage(props.index);
+  const performDelete = async (isSwipeDelete: boolean) => {
+    try {
+      if (isSwipeDelete) {
+        await chatStore.deleteSwipe(props.index, message.swipe_id ?? 0);
+      } else {
+        await chatStore.deleteMessage(props.index);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      if (e.message === 'cannot_delete_last_swipe') {
+        toast.error(t('chat.delete.lastSwipeError'));
+      }
     }
   };
 
   if (!settingsStore.settings.chat.confirmMessageDelete) {
-    performDelete(canDeleteSwipe);
+    await performDelete(canDeleteSwipe);
     return;
   }
 
@@ -189,9 +195,9 @@ async function handleDeleteClick() {
   const { result } = await popupStore.show(popupConfig);
 
   if (result === POPUP_RESULT.AFFIRMATIVE) {
-    performDelete(canDeleteSwipe); // Delete swipe or message (if not swipe-deletable)
+    await performDelete(canDeleteSwipe); // Delete swipe or message (if not swipe-deletable)
   } else if (result === DELETE_MESSAGE_RESULT) {
-    performDelete(false); // Explicitly delete message
+    await performDelete(false); // Explicitly delete message
   }
 }
 

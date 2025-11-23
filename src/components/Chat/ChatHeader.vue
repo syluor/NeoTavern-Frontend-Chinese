@@ -8,9 +8,11 @@ import { useChatStore } from '../../stores/chat.store';
 import { formatTimeStamp } from '../../utils/date';
 import { Button } from '../UI';
 import { SmartAvatar } from '../Common';
+import { useCharacterUiStore } from '../../stores/character-ui.store';
 
 const uiStore = useUiStore();
 const characterStore = useCharacterStore();
+const characterUiStore = useCharacterUiStore();
 const settingsStore = useSettingsStore();
 const chatStore = useChatStore();
 
@@ -43,7 +45,7 @@ function handleCharacterClick() {
   if (isGroup.value) {
     uiStore.toggleRightSidebar('chat-management');
   } else if (firstCharacter.value) {
-    uiStore.selectedCharacterAvatarForEditing = firstCharacter.value.avatar;
+    characterUiStore.selectedCharacterAvatarForEditing = firstCharacter.value.avatar;
     uiStore.activeDrawer = 'character';
   }
 }

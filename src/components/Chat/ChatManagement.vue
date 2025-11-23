@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useCharacterStore } from '../../stores/character.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -16,10 +16,12 @@ import { useUiStore } from '../../stores/ui.store';
 import { Button, Input, Select, Textarea, Checkbox, Tabs, Search, ListItem, FormItem, CollapsibleSection } from '../UI';
 import { EmptyState, Pagination, DraggableList, ConnectionProfileSelector } from '../Common';
 import { debounce } from 'lodash-es';
+import { useCharacterUiStore } from '../../stores/character-ui.store';
 
 const { t } = useStrictI18n();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
+const characterUiStore = useCharacterUiStore();
 const popupStore = usePopupStore();
 const settingsStore = useSettingsStore();
 const uiStore = useUiStore();
@@ -58,7 +60,11 @@ const chats = computed<ChatInfo[]>(() => {
 });
 
 async function selectChat(chatFile: string) {
-  await chatStore.setActiveChatFile(chatFile);
+  try {
+    await chatStore.setActiveChatFile(chatFile);
+  } catch {
+    toast.error(t('chat.loadError'));
+  }
 }
 
 async function createNewChat(askConfirmation = true) {
@@ -181,11 +187,16 @@ const availableLorebooks = computed(() => {
   return worldInfoStore.bookInfos.map((info) => ({ label: info.name, value: info.file_id }));
 });
 
+const saveDebounced = debounce(() => {
+  chatStore.saveChatDebounced();
+}, DebounceTimeout.RELAXED);
+
 const activeChatLorebooks = computed({
   get: () => chatStore.activeChat?.metadata.chat_lorebooks || [],
   set: (val) => {
     if (chatStore.activeChat) {
       chatStore.activeChat.metadata.chat_lorebooks = val;
+      saveDebounced();
     }
   },
 });
@@ -219,7 +230,7 @@ function updateMembersOrder(newMembers: Character[]) {
 }
 
 function peekCharacter(avatar: string) {
-  characterStore.selectCharacterByAvatar(avatar);
+  characterUiStore.selectCharacterByAvatar(avatar);
   uiStore.activeDrawer = 'character';
 }
 
@@ -230,31 +241,6 @@ async function addMember(avatar: string) {
 async function removeMember(avatar: string) {
   await chatStore.removeMember(avatar);
 }
-const saveDebounced = debounce(() => {
-  chatStore.saveChatDebounced();
-}, DebounceTimeout.RELAXED);
-
-// Watch Group Config changes
-watch(
-  () => chatStore.groupConfig,
-  () => {
-    if (chatStore.activeChat) saveDebounced();
-  },
-  { deep: true },
-);
-
-// Watch Prompt Overrides
-watch(
-  () => chatStore.activeChat?.metadata.promptOverrides,
-  () => {
-    if (chatStore.activeChat) saveDebounced();
-  },
-  { deep: true },
-);
-
-watch(activeChatLorebooks, () => {
-  saveDebounced();
-});
 </script>
 
 <template>
@@ -432,17 +418,35 @@ watch(activeChatLorebooks, () => {
           <div class="group-config-section">
             <hr />
             <FormItem :label="t('group.replyStrategy')">
-              <Select v-model="groupConfig.config.replyStrategy" :options="replyStrategyOptions" />
+              <Select
+                v-model="groupConfig.config.replyStrategy"
+                :options="replyStrategyOptions"
+                @update:model-value="saveDebounced"
+              />
             </FormItem>
 
             <FormItem :label="t('group.handlingMode')">
-              <Select v-model="groupConfig.config.handlingMode" :options="handlingModeOptions" />
+              <Select
+                v-model="groupConfig.config.handlingMode"
+                :options="handlingModeOptions"
+                @update:model-value="saveDebounced"
+              />
             </FormItem>
 
-            <Checkbox v-model="groupConfig.config.allowSelfResponses" :label="t('group.allowSelfResponses')" />
+            <Checkbox
+              v-model="groupConfig.config.allowSelfResponses"
+              :label="t('group.allowSelfResponses')"
+              @update:model-value="saveDebounced"
+            />
 
             <FormItem :label="t('group.autoMode')" :description="t('group.autoModeHint')">
-              <Input v-model="groupConfig.config.autoMode" type="number" :min="0" :placeholder="t('common.seconds')" />
+              <Input
+                v-model="groupConfig.config.autoMode"
+                type="number"
+                :min="0"
+                :placeholder="t('common.seconds')"
+                @update:model-value="saveDebounced"
+              />
             </FormItem>
           </div>
         </CollapsibleSection>
@@ -456,12 +460,14 @@ watch(activeChatLorebooks, () => {
               v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
               :rows="6"
               :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
+              @update:model-value="saveDebounced"
             />
           </FormItem>
 
           <hr />
 
           <FormItem :label="t('chatManagement.connectionProfile')">
+            <!-- ConnectionProfileSelector updates via the computed property which handles the save -->
             <ConnectionProfileSelector v-model="activeChatConnectionProfile" />
           </FormItem>
 
@@ -469,6 +475,7 @@ watch(activeChatLorebooks, () => {
 
           <!-- TODO: Rename tab name or move to another place -->
           <FormItem :label="t('chatManagement.chatLorebooks')">
+            <!-- activeChatLorebooks setter handles the save -->
             <Select
               v-model="activeChatLorebooks"
               :options="availableLorebooks"

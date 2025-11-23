@@ -24,10 +24,9 @@
     "noRecentChats": "No recent chats found.",
     "noChatsFound": "No chats found.",
     "scenarioOverride": "Scenario Override",
-    "scenarioOverridePlaceholder": "Override the scenario for this group chat...",
+    "scenarioOverridePlaceholder": "Override the scenario for this chat...",
     "connectionProfile": "Connection Profile",
     "deleteSelectedConfirmContent": "Are you sure you want to delete {count} selected chats?",
-    "deleteSuccess": "Successfully deleted {count} chats.",
     "chatLorebooks": "Assigned Lorebooks",
     "selectLorebooks": "Select lorebooks...",
     "actions": {
@@ -87,15 +86,9 @@
       "default": "Default",
       "character": "Character",
       "chat": "Chat",
-      "characterRemoved": "Character connection removed.",
-      "characterAdded": "Character connection added.",
-      "chatRemoved": "Chat connection removed.",
-      "chatAdded": "Chat connection added.",
       "linkedCharacters": "Linked Characters"
     },
     "default": {
-      "removed": "Default persona removed.",
-      "set": "Default persona set.",
       "tooltip": "Default Persona"
     },
     "globalSettings": {
@@ -116,16 +109,10 @@
     "delete": {
       "confirmTitle": "Delete Persona",
       "confirmMessage": "Are you sure you want to delete the persona \"{name}\"? All associated information will be lost.",
-      "success": "Persona deleted.",
       "error": "Failed to delete persona."
     },
     "duplicate": {
-      "success": "Persona '{name}' duplicated.",
       "error": "Failed to duplicate persona."
-    },
-    "syncName": {
-      "success": "Synced name to {count} messages.",
-      "noChanges": "No messages needed name synchronization."
     },
     "lorebooks": {
       "label": "Lorebooks"
@@ -243,7 +230,6 @@
       "saveFailed": "Failed to save lorebook.",
       "createFailed": "Failed to create lorebook.",
       "deleteFailed": "Failed to delete lorebook.",
-      "duplicateFailed": "Failed to duplicate lorebook.",
       "renameFailed": "Failed to rename lorebook.",
       "bookNotFound": "Book not found: {name}.",
       "importFailed": "Failed to import lorebook.",
@@ -268,8 +254,6 @@
     "zoomOut": "Make thumbnails larger",
     "confirmDelete": "Are you sure you want to delete {fileName}?",
     "renameTitle": "Enter new background name:",
-    "renameSuccess": "Renamed {oldName} to {newName}",
-    "deleteSuccess": "Deleted {fileName}",
     "actions": {
       "lock": "Lock background for this chat",
       "unlock": "Unlock background",
@@ -430,7 +414,6 @@
     "confirmDelete": "Confirm Deletion",
     "by": "by",
     "reset": "Reset",
-    "copied": "Copied!",
     "seconds": "seconds",
     "remove": "Remove",
     "dragToReorder": "Drag to reorder",
@@ -463,7 +446,6 @@
     "send": "Send a message",
     "loadError": "Failed to load chat.",
     "createError": "Failed to create chat message.",
-    "renameError": "Failed to rename chat.",
     "emptyLog": "Empty chat log",
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
@@ -492,7 +474,6 @@
       "lastSwipeError": "Can't delete the last swipe."
     },
     "copy": {
-      "success": "Message copied to clipboard.",
       "error": "Failed to copy message."
     },
     "optionsMenu": {
@@ -530,33 +511,26 @@
   },
   "character": {
     "import": {
-      "aborted": "Import aborted",
       "abortedMessage": "Cannot import characters while generating. Stop the request and try again.",
       "unsupportedType": "Unsupported file type: .{ext}",
-      "success": "Character Imported: {fileName}",
       "error": "Could not import character",
       "errorMessage": "The file is likely invalid or corrupted.",
       "tagsImported": "Tags Imported",
-      "tagsImportedMessage": "Imported tags for {characterName}:\n{tags}",
-      "tagImportAskNotImplemented": "Tag import for \"{characterName}\" requires user input (not implemented yet).",
-      "tagImportExistingNotImplemented": "\"Import only existing tags\" is not fully implemented yet."
+      "tagsImportedMessage": "Imported tags for {characterName}:\n{tags}"
     },
     "save": {
-      "error": "Failed to save character.",
-      "noActive": "Cannot save character: No active character or avatar found."
+      "error": "Failed to save character."
     },
     "fetch": {
       "overflowWarning": "Character data length limit reached. To resolve this, set \"performance.lazyLoadCharacters\" to \"true\" in config.yaml and restart the server."
     },
     "create": {
-      "success": "New character created: {name}",
       "error": "Failed to create character."
     },
     "delete": {
       "confirmTitle": "Delete Character",
       "confirmMessage": "Are you sure you want to delete \"{name}\"?",
       "deleteChats": "Delete associated chats",
-      "success": "Character deleted.",
       "error": "Failed to delete character."
     },
     "updateImage": {
@@ -564,9 +538,6 @@
     },
     "duplicate": {
       "error": "Failed to duplicate character."
-    },
-    "rename": {
-      "success": "Character renamed to {name}."
     },
     "tokenWarning": "Character definition is large ({tokens} tokens), using over {percentage}% of your context window. This may impact performance and context limits."
   },
@@ -891,7 +862,6 @@
   },
   "persona": {
     "createFromCharacter": {
-      "success": "Successfully created persona: {name}",
       "error": "Failed to create persona from character."
     }
   }

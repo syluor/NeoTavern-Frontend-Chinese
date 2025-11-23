@@ -2,14 +2,23 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useChatStore } from '../../stores/chat.store';
 import { useSettingsStore } from '../../stores/settings.store';
+import { useCharacterStore } from '../../stores/character.store';
+import { useWorldInfoStore } from '../../stores/world-info.store';
+import { usePopupStore } from '../../stores/popup.store';
 import ChatMessage from './ChatMessage.vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { GenerationMode } from '../../constants';
 import { listChats, listRecentChats } from '../../api/chat';
 import { Button } from '../UI';
+import { convertCharacterBookToWorldInfoBook } from '../../utils/world-info-conversion';
+import { POPUP_TYPE, POPUP_RESULT } from '../../types';
+import { toast } from '../../composables/useToast';
 
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
+const characterStore = useCharacterStore();
+const worldInfoStore = useWorldInfoStore();
+const popupStore = usePopupStore();
 const { t } = useStrictI18n();
 const userInput = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
@@ -48,6 +57,30 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+async function checkAndImportCharacterBooks() {
+  const members = chatStore.activeChat?.metadata.members || [];
+  for (const member of members) {
+    const character = characterStore.characters.find((c) => c.avatar === member);
+    if (character?.data?.character_book?.name) {
+      const bookName = character.data.character_book.name;
+      const exists = worldInfoStore.bookInfos.find((b) => b.name === bookName);
+      if (!exists) {
+        const { result } = await popupStore.show({
+          title: t('worldInfo.popup.importEmbeddedTitle'),
+          content: t('worldInfo.popup.importEmbeddedContent', { name: bookName }),
+          type: POPUP_TYPE.CONFIRM,
+        });
+
+        if (result === POPUP_RESULT.AFFIRMATIVE) {
+          const book = convertCharacterBookToWorldInfoBook(character.data.character_book);
+          await worldInfoStore.createBook(book.name, book);
+          toast.success(t('worldInfo.importSuccess', { name: bookName }));
+        }
+      }
+    }
+  }
+}
+
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
 
@@ -59,6 +92,15 @@ onMounted(async () => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
+
+watch(
+  () => chatStore.activeChatFile,
+  (newFile) => {
+    if (newFile) {
+      checkAndImportCharacterBooks();
+    }
+  },
+);
 
 // Watch for changes in the chat history to handle auto-scrolling.
 watch(

@@ -111,7 +111,6 @@ export const useBackgroundStore = defineStore('background', () => {
         // TODO: Implement custom background deletion from chat metadata
       } else {
         await deleteBackground(fileName);
-        toast.success(t('backgrounds.deleteSuccess', { fileName }));
       }
       await initialize();
     } catch (error) {
@@ -123,7 +122,6 @@ export const useBackgroundStore = defineStore('background', () => {
   async function handleRename(oldName: string, newName: string) {
     try {
       await renameBackground(oldName, newName);
-      toast.success(t('backgrounds.renameSuccess', { oldName, newName }));
       await initialize();
     } catch (error) {
       console.error(`Failed to rename background ${oldName}:`, error);

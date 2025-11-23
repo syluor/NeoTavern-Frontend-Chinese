@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted, watch } from 'vue';
 import { useCharacterStore } from '../../stores/character.store';
+import { useCharacterUiStore } from '../../stores/character-ui.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useChatStore } from '../../stores/chat.store';
 import { usePersonaStore } from '../../stores/persona.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
+import { useUiStore } from '../../stores/ui.store';
 import type { Character } from '../../types';
 import Popup from '../Popup/Popup.vue';
 import { POPUP_TYPE, type PopupOptions, POPUP_RESULT } from '../../types';
 import { getThumbnailUrl } from '../../utils/image';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { default_avatar } from '../../constants';
+import { default_avatar, DEFAULT_CHARACTER } from '../../constants';
 import { toast } from '../../composables/useToast';
 import { usePopupStore } from '../../stores/popup.store';
 import { cloneDeep, set } from 'lodash-es';
@@ -20,14 +22,16 @@ import { convertWorldInfoBookToCharacterBook } from '../../utils/world-info-conv
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
+const characterUiStore = useCharacterUiStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const chatStore = useChatStore();
 const personaStore = usePersonaStore();
 const worldInfoStore = useWorldInfoStore();
-const tokenCounts = computed(() => characterStore.tokenCounts.fields);
+const uiStore = useUiStore();
 
-const isCreating = computed(() => characterStore.isCreating);
+const tokenCounts = computed(() => characterStore.tokenCounts.fields);
+const isCreating = computed(() => characterUiStore.isCreating);
 
 const isPeeking = ref(false);
 const isSpoilerModeActive = computed(() => settingsStore.settings.character.spoilerFreeMode);
@@ -60,7 +64,7 @@ const isSubmitting = ref(false);
 const localCharacter = ref<Character | null>(null);
 
 watch(
-  () => characterStore.editFormCharacter,
+  () => characterUiStore.editFormCharacter,
   (newVal) => {
     if (newVal && (!localCharacter.value || localCharacter.value.avatar !== newVal.avatar)) {
       localCharacter.value = cloneDeep(newVal);
@@ -74,10 +78,23 @@ watch(
 
 watch(
   localCharacter,
-  (newVal) => {
-    if (newVal) {
-      characterStore.saveCharacterDebounced(newVal);
+  async (newVal) => {
+    if (!newVal) return;
+
+    if (isCreating.value) {
+      // Update draft state in UI store
+      characterUiStore.draftCharacter = newVal;
       characterStore.calculateAllTokens(newVal);
+    } else {
+      const original = characterStore.characters.find((c) => c.avatar === newVal.avatar);
+      if (original) {
+        try {
+          await characterStore.saveCharacterDebounced(newVal, original);
+          characterStore.calculateAllTokens(newVal);
+        } catch {
+          toast.error(t('character.save.error'));
+        }
+      }
     }
   },
   { deep: true },
@@ -88,8 +105,9 @@ onUnmounted(() => {
 });
 
 function toggleFavorite() {
-  if (characterStore.editFormCharacter) {
-    characterStore.editFormCharacter.fav = !characterStore.editFormCharacter.fav;
+  if (characterUiStore.editFormCharacter) {
+    const newVal = !characterUiStore.editFormCharacter.fav;
+    if (localCharacter.value) localCharacter.value.fav = newVal;
   }
 }
 
@@ -100,15 +118,17 @@ function peekSpoilerMode() {
 function openMaximizeEditor(fieldName: EditableField, title: string) {
   editingFieldName.value = fieldName;
   editorPopupTitle.value = t('characterEditor.advanced.editingTitle', { title });
-  // @ts-expect-error Element implicitly has an 'any'
-  editorPopupValue.value = characterStore.editFormCharacter ? (characterStore.editFormCharacter[fieldName] ?? '') : '';
+  editorPopupValue.value = characterUiStore.editFormCharacter
+    ? // @ts-expect-error Element implicitly has an 'any'
+      (characterUiStore.editFormCharacter[fieldName] ?? '')
+    : '';
   editorPopupOptions.value = { wide: true, large: true, okButton: 'common.ok', cancelButton: false };
   isEditorPopupVisible.value = true;
 }
 
 function handleEditorSubmit({ value }: { value: string }) {
-  if (editingFieldName.value && characterStore.editFormCharacter) {
-    set(characterStore.editFormCharacter, editingFieldName.value, value);
+  if (editingFieldName.value && localCharacter.value) {
+    set(localCharacter.value, editingFieldName.value, value);
   }
 }
 
@@ -120,7 +140,7 @@ function revokePreviewUrl() {
 }
 
 async function handleAvatarFileChange(event: Event) {
-  if (!characterStore.editFormCharacter) return;
+  if (!localCharacter.value) return;
 
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0]) {
@@ -130,21 +150,30 @@ async function handleAvatarFileChange(event: Event) {
       revokePreviewUrl();
       avatarPreviewUrl.value = URL.createObjectURL(file);
       selectedAvatarFile.value = file;
-      if (!characterStore.editFormCharacter?.name) {
+      if (!localCharacter.value.name) {
         const name = file.name.replace(/\.[^/.]+$/, '');
-        characterStore.editFormCharacter.name = name;
+        localCharacter.value.name = name;
       }
     } else {
-      await characterStore.updateCharacterImage(characterStore.editFormCharacter.avatar, file);
+      try {
+        await characterStore.updateCharacterImage(localCharacter.value.avatar, file);
+      } catch {
+        toast.error(t('character.updateImage.error'));
+      }
     }
   }
 }
 
 async function handleCreate() {
-  if (!characterStore.editFormCharacter?.name) {
+  if (!characterUiStore.editFormCharacter?.name) {
     toast.error(t('characterEditor.validation.nameRequired'));
     return;
   }
+  if (uiStore.isSendPress) {
+    toast.error(t('character.import.abortedMessage'));
+    return;
+  }
+
   if (!selectedAvatarFile.value) {
     try {
       const res = await fetch(default_avatar);
@@ -158,16 +187,27 @@ async function handleCreate() {
 
   isSubmitting.value = true;
   try {
-    await characterStore.createNewCharacter(characterStore.editFormCharacter as Character, selectedAvatarFile.value);
+    const newAvatar = await characterStore.createNewCharacter(
+      characterUiStore.editFormCharacter as Character,
+      selectedAvatarFile.value,
+    );
+    if (newAvatar) {
+      characterUiStore.cancelCreating();
+      characterUiStore.draftCharacter = DEFAULT_CHARACTER;
+      characterUiStore.selectCharacterByAvatar(newAvatar);
+      characterUiStore.highlightCharacter(newAvatar);
+    }
+  } catch {
+    toast.error(t('character.create.error'));
   } finally {
     isSubmitting.value = false;
   }
 }
 
 async function handleDelete() {
-  if (!characterStore.editFormCharacter) return;
-  const charName = characterStore.editFormCharacter.name;
-  const avatar = characterStore.editFormCharacter.avatar;
+  if (!characterUiStore.editFormCharacter) return;
+  const charName = characterUiStore.editFormCharacter.name;
+  const avatar = characterUiStore.editFormCharacter.avatar;
 
   const RESULT_CANCEL = -1;
   const RESULT_DELETE_ONLY = 1;
@@ -180,27 +220,22 @@ async function handleDelete() {
     okButton: false,
     cancelButton: false,
     customButtons: [
-      {
-        text: t('common.cancel'),
-        result: RESULT_CANCEL,
-      },
-      {
-        text: t('common.delete'),
-        result: RESULT_DELETE_ONLY,
-        classes: 'menu-button--danger',
-      },
-      {
-        text: t('character.delete.deleteChats'),
-        result: RESULT_DELETE_WITH_CHATS,
-        classes: 'menu-button--danger',
-      },
+      { text: t('common.cancel'), result: RESULT_CANCEL },
+      { text: t('common.delete'), result: RESULT_DELETE_ONLY, classes: 'menu-button--danger' },
+      { text: t('character.delete.deleteChats'), result: RESULT_DELETE_WITH_CHATS, classes: 'menu-button--danger' },
     ],
   });
 
-  if (result.result === RESULT_DELETE_ONLY) {
-    await characterStore.deleteCharacter(avatar, false);
-  } else if (result.result === RESULT_DELETE_WITH_CHATS) {
-    await characterStore.deleteCharacter(avatar, true);
+  try {
+    if (result.result === RESULT_DELETE_ONLY) {
+      await characterStore.deleteCharacter(avatar, false);
+      characterUiStore.selectedCharacterAvatarForEditing = null;
+    } else if (result.result === RESULT_DELETE_WITH_CHATS) {
+      await characterStore.deleteCharacter(avatar, true);
+      characterUiStore.selectedCharacterAvatarForEditing = null;
+    }
+  } catch {
+    toast.error(t('character.delete.error'));
   }
 }
 
@@ -208,7 +243,11 @@ async function openLastChat() {
   if (!localCharacter.value) return;
   const chatExist = chatStore.chatInfos.find((chat) => chat.file_id === localCharacter.value?.chat);
   if (localCharacter.value.chat && chatExist) {
-    await chatStore.setActiveChatFile(localCharacter.value.chat);
+    try {
+      await chatStore.setActiveChatFile(localCharacter.value.chat);
+    } catch {
+      toast.error(t('chat.loadError'));
+    }
   } else {
     await createNewChat();
   }
@@ -217,12 +256,20 @@ async function openLastChat() {
 async function createNewChat() {
   if (!localCharacter.value) return;
   const chatName = `${localCharacter.value.name.replace(/\s+/g, '_')}_${humanizedDateTime()}`;
-  await chatStore.createNewChatForCharacter(localCharacter.value.avatar, chatName);
+  try {
+    await chatStore.createNewChatForCharacter(localCharacter.value.avatar, chatName);
+  } catch {
+    toast.error(t('chat.createError'));
+  }
 }
 
 async function handleDuplicate() {
   if (!localCharacter.value) return;
-  await characterStore.duplicateCharacter(localCharacter.value.avatar);
+  try {
+    await characterStore.duplicateCharacter(localCharacter.value.avatar);
+  } catch {
+    toast.error(t('character.duplicate.error'));
+  }
 }
 
 async function handleRename() {
@@ -240,12 +287,12 @@ async function handleRename() {
 }
 
 const displayAvatarUrl = computed(() => {
-  if (!characterStore.editFormCharacter) return '';
+  if (!characterUiStore.editFormCharacter) return '';
 
   if (isCreating.value && avatarPreviewUrl.value) {
     return avatarPreviewUrl.value;
   }
-  return getThumbnailUrl('avatar', characterStore.editFormCharacter.avatar);
+  return getThumbnailUrl('avatar', characterUiStore.editFormCharacter.avatar);
 });
 
 const roleOptions = computed(() => [
@@ -302,8 +349,6 @@ const embeddedLorebookName = computed({
         localCharacter.value.data.character_book = charBook;
       }
     }
-    // Trigger save
-    characterStore.saveCharacterDebounced(localCharacter.value);
   },
 });
 </script>
@@ -371,7 +416,7 @@ const embeddedLorebookName = computed({
             <Button variant="confirm" :loading="isSubmitting" @click="handleCreate">
               {{ t('common.save') }}
             </Button>
-            <Button :disabled="isSubmitting" @click="characterStore.cancelCreating">
+            <Button :disabled="isSubmitting" @click="characterUiStore.cancelCreating">
               {{ t('common.cancel') }}
             </Button>
           </div>

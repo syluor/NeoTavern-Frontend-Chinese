@@ -201,7 +201,6 @@ export const useApiStore = defineStore('api', () => {
       await saveExperimentalPreset(name, presetData);
       await loadPresetsForApi();
       settingsStore.settings.api.selectedSampler = name;
-      toast.success(`Preset "${name}" saved.`);
     } catch (error: unknown) {
       toast.error(`Failed to save preset "${name}".`);
       console.error('Failed to save preset:', error);
@@ -236,7 +235,6 @@ export const useApiStore = defineStore('api', () => {
         await apiDeletePreset(oldName);
         await saveExperimentalPreset(newName, presetToRename.preset);
 
-        toast.success(`Preset renamed to "${newName}".`);
         await loadPresetsForApi();
         settingsStore.settings.api.selectedSampler = newName;
       } catch (error) {
@@ -260,7 +258,6 @@ export const useApiStore = defineStore('api', () => {
     if (result === POPUP_RESULT.AFFIRMATIVE) {
       try {
         await apiDeletePreset(name);
-        toast.success(`Preset "${name}" deleted.`);
         if (settingsStore.settings.api.selectedSampler === name) {
           settingsStore.settings.api.selectedSampler = 'Default';
         }
@@ -286,7 +283,6 @@ export const useApiStore = defineStore('api', () => {
         const name = file.name.replace(/\.json$/, '');
         // TODO: Add confirmation for overwriting existing preset, like original ST
         await saveExperimentalPreset(name, presetData);
-        toast.success(`Preset "${name}" imported.`);
         await loadPresetsForApi();
         settingsStore.settings.api.selectedSampler = name;
       } catch (error) {
@@ -325,7 +321,6 @@ export const useApiStore = defineStore('api', () => {
     };
     connectionProfiles.value = [...connectionProfiles.value, newProfile];
     selectedConnectionProfileName.value = newProfile.name;
-    toast.success(`Profile "${newProfile.name}" created.`);
   }
 
   async function renameConnectionProfile() {
@@ -347,7 +342,6 @@ export const useApiStore = defineStore('api', () => {
         profile.name = newName;
         connectionProfiles.value = [...connectionProfiles.value]; // Trigger reactivity
         selectedConnectionProfileName.value = newName;
-        toast.success(`Profile renamed to "${newName}".`);
       }
     }
   }
@@ -368,7 +362,6 @@ export const useApiStore = defineStore('api', () => {
     if (result === POPUP_RESULT.AFFIRMATIVE) {
       connectionProfiles.value = connectionProfiles.value.filter((p) => p.name !== name);
       selectedConnectionProfileName.value = undefined;
-      toast.success(`Profile "${name}" deleted.`);
     }
   }
 

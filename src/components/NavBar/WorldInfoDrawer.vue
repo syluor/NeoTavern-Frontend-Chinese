@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useWorldInfoStore } from '../../stores/world-info.store';
+import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
+import { usePopupStore } from '../../stores/popup.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import WorldInfoEntryEditor from './WorldInfoEntryEditor.vue';
 import WorldInfoGlobalSettings from './WorldInfoGlobalSettings.vue';
 import type { WorldInfoEntry as WorldInfoEntryType } from '../../types';
 import { Button, Select, Search, ListItem, FileInput } from '../UI';
 import { SplitPane } from '../Common';
+import { POPUP_RESULT, POPUP_TYPE } from '../../types';
 
 const { t } = useStrictI18n();
 const worldInfoStore = useWorldInfoStore();
+const worldInfoUiStore = useWorldInfoUiStore();
+const popupStore = usePopupStore();
 
 const isBrowserCollapsed = ref(false);
 
@@ -20,29 +25,108 @@ onMounted(() => {
 });
 
 async function updateEntry(newEntry: WorldInfoEntryType) {
-  await worldInfoStore.updateSelectedEntry(newEntry);
+  const book = worldInfoUiStore.selectedBookForEntry;
+  if (book) {
+    await worldInfoStore.updateEntry(book, newEntry);
+  }
 }
 
 async function handleFileImport(files: File[]) {
   if (files[0]) {
-    await worldInfoStore.importBook(files[0]);
+    const filename = await worldInfoStore.importBook(files[0]);
+    if (filename) {
+      await worldInfoStore.fetchBook(filename);
+      worldInfoUiStore.toggleBookExpansion(filename);
+    }
+  }
+}
+
+async function handleCreateBook() {
+  const { result, value } = await popupStore.show<string>({
+    title: t('worldInfo.popup.newBookTitle'),
+    content: t('worldInfo.popup.newBookContent'),
+    type: POPUP_TYPE.INPUT,
+    inputValue: t('worldInfo.popup.newBookInput'),
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE && value) {
+    const filename = await worldInfoStore.createBook(value);
+    if (filename) {
+      worldInfoUiStore.toggleBookExpansion(filename);
+    }
+  }
+}
+
+async function handleDeleteBook(fileId: string, bookName: string) {
+  const { result } = await popupStore.show({
+    title: t('common.confirmDelete'),
+    content: t('worldInfo.popup.deleteBookContent', { name: bookName }),
+    type: POPUP_TYPE.CONFIRM,
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE) {
+    await worldInfoStore.deleteBook(fileId);
+    if (worldInfoUiStore.selectedItemId?.startsWith(`${fileId}/`)) {
+      worldInfoUiStore.selectItem('global-settings');
+    }
+    worldInfoUiStore.expandedBooks.delete(fileId);
+  }
+}
+
+async function handleRenameBook(fileId: string) {
+  const book = await worldInfoStore.getBookFromCache(fileId, true);
+  if (!book) return;
+
+  const { result, value: newName } = await popupStore.show<string>({
+    title: t('worldInfo.popup.renameBookTitle'),
+    type: POPUP_TYPE.INPUT,
+    inputValue: book.name,
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE && newName && newName.trim() && newName !== book.name) {
+    await worldInfoStore.renameBook(fileId, newName);
+  }
+}
+
+async function handleDuplicateBook(fileId: string) {
+  const book = await worldInfoStore.getBookFromCache(fileId, true);
+  if (!book) return;
+
+  const { result, value: newName } = await popupStore.show<string>({
+    title: t('worldInfo.popup.duplicateBookTitle'),
+    type: POPUP_TYPE.INPUT,
+    inputValue: `${book.name}${t('worldInfo.popup.duplicateBookInputSuffix')}`,
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE && newName) {
+    const filename = await worldInfoStore.createBook(newName, { ...book, name: newName });
+    if (filename) {
+      worldInfoUiStore.toggleBookExpansion(filename);
+    }
+  }
+}
+
+async function handleCreateEntry(fileId: string) {
+  const newEntry = await worldInfoStore.createEntry(fileId);
+  if (newEntry) {
+    worldInfoUiStore.selectItem(`${fileId}/${newEntry.uid}`);
   }
 }
 
 const filteredBookNames = computed(() => {
-  if (!worldInfoStore.browserSearchTerm) {
+  if (!worldInfoUiStore.browserSearchTerm) {
     return worldInfoStore.bookInfos;
   }
-  const lowerSearch = worldInfoStore.browserSearchTerm.toLowerCase();
-  const books = worldInfoStore.bookInfos.filter((bookInfo) => {
+  const lowerSearch = worldInfoUiStore.browserSearchTerm.toLowerCase();
+
+  return worldInfoStore.bookInfos.filter((bookInfo) => {
     // Show book if its name matches
     if (bookInfo.name.toLowerCase().includes(lowerSearch)) {
       return true;
     }
     // Or if it has any entries that match
-    return worldInfoStore.filteredAndSortedEntries(bookInfo.file_id).length > 0;
+    return worldInfoUiStore.filteredAndSortedEntries(bookInfo.file_id).length > 0;
   });
-  return books;
 });
 
 const sortOptions = computed(() => [
@@ -64,19 +148,18 @@ const sortOptions = computed(() => [
     <template #side>
       <div class="character-panel-browser-header world-info-controls">
         <div class="world-info-controls-row" style="margin-bottom: 5px">
-          <Button
-            variant="ghost"
-            icon="fa-plus"
-            :title="t('worldInfo.newWorld')"
-            @click="worldInfoStore.createNewBook"
-          />
+          <Button variant="ghost" icon="fa-plus" :title="t('worldInfo.newWorld')" @click="handleCreateBook" />
           <FileInput accept=".json" icon="fa-file-import" :label="t('worldInfo.import')" @change="handleFileImport" />
           <Button variant="ghost" icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.initialize" />
         </div>
         <div class="world-info-controls-row">
-          <Search v-model="worldInfoStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
+          <Search v-model="worldInfoUiStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
             <template #actions>
-              <Select v-model="worldInfoStore.sortOrder" :title="t('worldInfo.sorting.title')" :options="sortOptions" />
+              <Select
+                v-model="worldInfoUiStore.sortOrder"
+                :title="t('worldInfo.sorting.title')"
+                :options="sortOptions"
+              />
             </template>
           </Search>
         </div>
@@ -84,8 +167,8 @@ const sortOptions = computed(() => [
 
       <div class="character-panel-character-list">
         <ListItem
-          :active="worldInfoStore.selectedItemId === 'global-settings'"
-          @click="worldInfoStore.selectItem('global-settings')"
+          :active="worldInfoUiStore.selectedItemId === 'global-settings'"
+          @click="worldInfoUiStore.selectItem('global-settings')"
         >
           <template #start><i class="fa-solid fa-cogs" style="opacity: 0.7"></i></template>
           <template #default>{{ t('worldInfo.globalSettings') }}</template>
@@ -94,11 +177,11 @@ const sortOptions = computed(() => [
         <hr class="panel-divider" />
 
         <div v-for="bookInfo in filteredBookNames" :key="bookInfo.file_id" class="lorebook-group">
-          <ListItem class="is-book" @click="worldInfoStore.toggleBookExpansion(bookInfo.file_id)">
+          <ListItem class="is-book" @click="worldInfoUiStore.toggleBookExpansion(bookInfo.file_id)">
             <template #start>
               <i
                 class="fa-solid fa-chevron-right browser-item-chevron"
-                :class="{ 'is-open': worldInfoStore.expandedBooks.has(bookInfo.file_id) }"
+                :class="{ 'is-open': worldInfoUiStore.expandedBooks.has(bookInfo.file_id) }"
                 style="font-size: 0.8em; width: 15px; text-align: center"
               ></i>
             </template>
@@ -111,7 +194,7 @@ const sortOptions = computed(() => [
                   variant="ghost"
                   icon="fa-plus"
                   :title="t('worldInfo.newEntryInBook', { bookName: bookInfo.name })"
-                  @click.stop="worldInfoStore.createNewEntry(bookInfo.file_id)"
+                  @click.stop="handleCreateEntry(bookInfo.file_id)"
                 />
                 <Button
                   variant="ghost"
@@ -123,19 +206,19 @@ const sortOptions = computed(() => [
                   variant="ghost"
                   icon="fa-clone"
                   :title="t('worldInfo.duplicate')"
-                  @click.stop="worldInfoStore.duplicateBook(bookInfo.file_id)"
+                  @click.stop="handleDuplicateBook(bookInfo.file_id)"
                 />
                 <Button
                   variant="ghost"
                   icon="fa-pencil"
                   :title="t('worldInfo.rename')"
-                  @click.stop="worldInfoStore.renameBook(bookInfo.file_id)"
+                  @click.stop="handleRenameBook(bookInfo.file_id)"
                 />
                 <Button
                   variant="danger"
                   icon="fa-trash-can"
                   :title="t('worldInfo.deleteBook', { bookName: bookInfo.name })"
-                  @click.stop="worldInfoStore.deleteBook(bookInfo.file_id)"
+                  @click.stop="handleDeleteBook(bookInfo.file_id, bookInfo.name)"
                 />
               </div>
             </template>
@@ -146,16 +229,16 @@ const sortOptions = computed(() => [
             TODO: What about pagination for large books?
           -->
           <Transition name="grid-slide">
-            <div v-if="worldInfoStore.expandedBooks.has(bookInfo.file_id)" class="lorebook-group-entries">
+            <div v-if="worldInfoUiStore.expandedBooks.has(bookInfo.file_id)" class="lorebook-group-entries">
               <div>
                 <div v-if="worldInfoStore.loadingBooks.has(bookInfo.file_id)" class="lorebook-group-loading">
                   <i class="fa-solid fa-spinner fa-spin"></i>
                 </div>
                 <div v-else>
-                  <div v-for="entry in worldInfoStore.filteredAndSortedEntries(bookInfo.file_id)" :key="entry.uid">
+                  <div v-for="entry in worldInfoUiStore.filteredAndSortedEntries(bookInfo.file_id)" :key="entry.uid">
                     <ListItem
-                      :active="worldInfoStore.selectedItemId === `${bookInfo.file_id}/${entry.uid}`"
-                      @click="worldInfoStore.selectItem(`${bookInfo.file_id}/${entry.uid}`)"
+                      :active="worldInfoUiStore.selectedItemId === `${bookInfo.file_id}/${entry.uid}`"
+                      @click="worldInfoUiStore.selectItem(`${bookInfo.file_id}/${entry.uid}`)"
                     >
                       <template #default>
                         <span style="font-size: 0.95em">{{ entry.comment || '[Untitled Entry]' }}</span>
@@ -172,10 +255,10 @@ const sortOptions = computed(() => [
 
     <template #main>
       <div class="character-panel-editor">
-        <WorldInfoGlobalSettings v-show="worldInfoStore.selectedItemId === 'global-settings'" />
+        <WorldInfoGlobalSettings v-show="worldInfoUiStore.selectedItemId === 'global-settings'" />
         <WorldInfoEntryEditor
-          v-show="worldInfoStore.selectedEntry"
-          :model-value="worldInfoStore.selectedEntry ?? undefined"
+          v-if="worldInfoUiStore.selectedEntry"
+          :model-value="worldInfoUiStore.selectedEntry"
           @update:model-value="updateEntry"
         />
       </div>

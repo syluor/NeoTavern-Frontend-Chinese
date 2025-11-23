@@ -7,8 +7,6 @@ import {
   type FullChat,
   type ChatHeader,
   type ChatInfo,
-  POPUP_TYPE,
-  POPUP_RESULT,
   type Character,
 } from '../types';
 import { usePromptStore } from './prompt.store';
@@ -17,8 +15,6 @@ import { useUiStore } from './ui.store';
 import { fetchChat, saveChat as apiSaveChat, saveChat } from '../api/chat';
 import { uuidv4 } from '../utils/common';
 import { getFirstMessage } from '../utils/chat';
-import { toast } from '../composables/useToast';
-import { useStrictI18n } from '../composables/useStrictI18n';
 import {
   DEFAULT_SAVE_EDIT_TIMEOUT,
   GenerationMode,
@@ -29,10 +25,8 @@ import {
 import { useSettingsStore } from './settings.store';
 import { usePersonaStore } from './persona.store';
 import { eventEmitter } from '../utils/event-emitter';
-import { useWorldInfoStore } from './world-info.store';
-import { usePopupStore } from './popup.store';
-import { convertCharacterBookToWorldInfoBook } from '../utils/world-info-conversion';
 import { useChatGeneration } from '../composables/useChatGeneration';
+import { getCharacterDifferences } from '../utils/character-manipulation';
 
 export type ChatStoreState = {
   messages: ChatMessage[];
@@ -45,8 +39,6 @@ export type ChatMessageEditState = {
 };
 
 export const useChatStore = defineStore('chat', () => {
-  const { t } = useStrictI18n();
-
   const activeChat = ref<ChatStoreState | null>(null);
   const activeChatFile = ref<string | null>(null);
   const activeMessageEditState = ref<ChatMessageEditState | null>(null);
@@ -60,8 +52,6 @@ export const useChatStore = defineStore('chat', () => {
   const characterStore = useCharacterStore();
   const promptStore = usePromptStore();
   const settingsStore = useSettingsStore();
-  const worldInfoStore = useWorldInfoStore();
-  const popupStore = usePopupStore();
 
   const chatsMetadataByCharacterAvatars = computed(() => {
     const mapping: Record<string, ChatInfo[]> = {};
@@ -173,7 +163,6 @@ export const useChatStore = defineStore('chat', () => {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       console.error('Failed to save chat:', err);
-      toast.error(err.message || 'An unknown error occurred while saving the chat.');
     } finally {
       uiStore.isChatSaving = false;
     }
@@ -325,38 +314,9 @@ export const useChatStore = defineStore('chat', () => {
 
       if (activeChatFile.value) {
         for (const character of characterStore.activeCharacters) {
-          const changes = characterStore.getDifferences(character, { ...character, chat: activeChatFile.value });
+          const changes = getCharacterDifferences(character, { ...character, chat: activeChatFile.value });
           if (changes) {
             await characterStore.updateAndSaveCharacter(character.avatar, changes);
-          }
-        }
-
-        // Check for embedded lorebooks in characters
-        if (activeChat.value) {
-          const nextMembers = activeChat.value.metadata.members || [];
-          for (const member of nextMembers) {
-            const character = characterStore.characters.find((c) => c.avatar === member);
-            if (character?.data?.character_book?.name) {
-              const bookName = character.data.character_book.name;
-              // Check if book exists globally
-              const exists = worldInfoStore.bookInfos.find((b) => b.name === bookName);
-              if (!exists) {
-                // Ask to import
-                const { result } = await popupStore.show({
-                  title: t('worldInfo.popup.importEmbeddedTitle'),
-                  content: t('worldInfo.popup.importEmbeddedContent', { name: bookName }),
-                  type: POPUP_TYPE.CONFIRM,
-                });
-
-                if (result === POPUP_RESULT.AFFIRMATIVE) {
-                  await worldInfoStore.createNewBook({
-                    filename: uuidv4(),
-                    book: convertCharacterBookToWorldInfoBook(character.data.character_book),
-                  });
-                  toast.success(t('worldInfo.importSuccess', { name: bookName }));
-                }
-              }
-            }
           }
         }
 
@@ -383,7 +343,7 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (error) {
       console.error('Failed to refresh chat:', error);
-      toast.error(t('chat.loadError'));
+      throw error;
     } finally {
       isChatLoading.value = false;
     }
@@ -435,7 +395,7 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (error) {
       console.error('Failed to create new chat:', error);
-      toast.error(t('chat.createError'));
+      throw error;
     } finally {
       isChatLoading.value = false;
     }
@@ -450,36 +410,33 @@ export const useChatStore = defineStore('chat', () => {
       chatInfo.chat_metadata.name = newName;
       saveChatDebounced();
     } else {
-      try {
-        const response = await fetchChat(fileId);
-        if (response.length > 0) {
-          const metadataItem = response[0] as ChatHeader;
-          metadataItem.chat_metadata.name = newName;
-          await saveChat(fileId, response as FullChat);
-          chatInfo.chat_metadata.name = newName;
-        }
-      } catch (error) {
-        console.error('Failed to update chat name', error);
-        toast.error(t('chat.renameError'));
+      const response = await fetchChat(fileId);
+      if (response.length > 0) {
+        const metadataItem = response[0] as ChatHeader;
+        metadataItem.chat_metadata.name = newName;
+        await saveChat(fileId, response as FullChat);
+        chatInfo.chat_metadata.name = newName;
       }
     }
   }
 
-  async function toggleChatPersona(personaId: string) {
+  async function toggleChatPersona(personaId: string): Promise<'added' | 'removed' | undefined> {
     if (!activeChat.value) return;
 
+    let result: 'added' | 'removed';
     if (activeChat.value.metadata.active_persona === personaId) {
       delete activeChat.value.metadata.active_persona;
-      toast.info(t('personaManagement.connections.chatRemoved'));
+      result = 'removed';
     } else {
       activeChat.value.metadata.active_persona = personaId;
-      toast.success(t('personaManagement.connections.chatAdded'));
+      result = 'added';
     }
     saveChatDebounced();
+    return result;
   }
 
-  async function syncPersonaName(personaId: string, newName: string) {
-    if (!activeChat.value) return;
+  async function syncPersonaName(personaId: string, newName: string): Promise<number> {
+    if (!activeChat.value) return 0;
 
     let updatedCount = 0;
     const messages = activeChat.value.messages;
@@ -494,10 +451,8 @@ export const useChatStore = defineStore('chat', () => {
 
     if (updatedCount > 0) {
       saveChatDebounced();
-      toast.success(t('personaManagement.syncName.success', { count: updatedCount }));
-    } else {
-      toast.info(t('personaManagement.syncName.noChanges'));
     }
+    return updatedCount;
   }
 
   function toggleMemberMute(avatar: string) {
@@ -657,8 +612,7 @@ export const useChatStore = defineStore('chat', () => {
       swipeIndex < 0 ||
       swipeIndex >= message.swipes.length
     ) {
-      toast.error(t('chat.delete.lastSwipeError'));
-      return;
+      throw new Error('cannot_delete_last_swipe');
     }
 
     message.swipes.splice(swipeIndex, 1);

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue';
 import { usePersonaStore } from '../../stores/persona.store';
+import { usePersonaUiStore } from '../../stores/persona-ui.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { getThumbnailUrl } from '../../utils/image';
+import { getBase64Async } from '../../utils/file';
 import { usePopupStore } from '../../stores/popup.store';
 import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
 import { Pagination, SplitPane, EmptyState } from '../Common';
@@ -17,19 +19,16 @@ import { DebounceTimeout } from '../../constants';
 
 const { t } = useStrictI18n();
 const personaStore = usePersonaStore();
+const personaUiStore = usePersonaUiStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
 const worldInfoStore = useWorldInfoStore();
 
-const searchTerm = ref('');
-const sortOrder = ref('asc');
+// --- Local UI State ---
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
-const isGridView = ref(false);
-
-const viewMode = ref<'editor' | 'settings'>('editor');
 const descriptionTokenCount = ref(0);
 
 const sortOptions = [
@@ -37,25 +36,10 @@ const sortOptions = [
   { label: 'Z-A', value: 'desc' },
 ];
 
-const filteredPersonas = computed(() => {
-  let personas = [...personaStore.personas];
-  if (searchTerm.value) {
-    const lowerSearch = searchTerm.value.toLowerCase();
-    personas = personas.filter(
-      (p) => p.name.toLowerCase().includes(lowerSearch) || p.description.toLowerCase().includes(lowerSearch),
-    );
-  }
-  personas.sort((a, b) => {
-    if (sortOrder.value === 'asc') return a.name.localeCompare(b.name);
-    return b.name.localeCompare(a.name);
-  });
-  return personas;
-});
-
 const paginatedPersonas = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
-  return filteredPersonas.value.slice(start, end);
+  return personaUiStore.filteredPersonas.slice(start, end);
 });
 
 const connectedCharacters = computed(() => {
@@ -97,12 +81,12 @@ watch(
 );
 
 function selectPersona(id: string) {
-  viewMode.value = 'editor';
+  personaUiStore.viewMode = 'editor';
   personaStore.setActivePersona(id);
 }
 
 function selectGlobalSettings() {
-  viewMode.value = 'settings';
+  personaUiStore.viewMode = 'settings';
 }
 
 function handleFileImport(files: File[]) {
@@ -122,10 +106,39 @@ async function handleDelete() {
   }
 }
 
-async function handleAvatarChange(files: File[]) {
-  if (files[0]) {
-    await personaStore.uploadPersonaAvatar(personaStore.activePersonaId, files[0]);
+async function handleRename() {
+  if (!personaStore.activePersona || !personaStore.activePersonaId) return;
+
+  const { result, value: newName } = await popupStore.show<string>({
+    title: t('personaManagement.rename.title'),
+    content: t('personaManagement.rename.prompt'),
+    type: POPUP_TYPE.INPUT,
+    inputValue: personaStore.activePersona.name,
+  });
+
+  if (result === POPUP_RESULT.AFFIRMATIVE && newName) {
+    await personaStore.renamePersona(personaStore.activePersonaId, newName);
   }
+}
+
+async function handleAvatarChange(files: File[]) {
+  if (!files[0] || !personaStore.activePersonaId) return;
+  const file = files[0];
+
+  let cropData;
+  if (!settingsStore.settings.ui.avatars.neverResize) {
+    const dataUrl = await getBase64Async(file);
+    const { result, value } = await popupStore.show({
+      title: t('popup.cropAvatar.title'),
+      type: POPUP_TYPE.CROP,
+      cropImage: dataUrl,
+      wide: true,
+    });
+    if (result !== POPUP_RESULT.AFFIRMATIVE) return;
+    cropData = value;
+  }
+
+  await personaStore.uploadPersonaAvatar(personaStore.activePersonaId, file, cropData);
 }
 
 function toggleDefault() {
@@ -197,28 +210,31 @@ onMounted(() => {
     </div>
 
     <SplitPane
-      :collapsed="!settingsStore.settings.account.personaBrowserExpanded"
+      v-model:collapsed="personaUiStore.isBrowserExpanded"
       storage-key="personaBrowserWidth"
       :initial-width="350"
       class="persona-drawer-split"
-      @update:collapsed="(v) => (settingsStore.settings.account.personaBrowserExpanded = !v)"
     >
       <!-- Left Column: List -->
       <template #side>
         <div class="persona-drawer-sidebar">
           <div class="persona-drawer-list-controls">
-            <Search v-model="searchTerm" :placeholder="t('common.search')">
+            <Search v-model="personaUiStore.searchTerm" :placeholder="t('common.search')">
               <template #actions>
                 <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
                   {{ t('personaManagement.create') }}
                 </Button>
-                <Select v-model="sortOrder" :options="sortOptions" />
-                <Button variant="ghost" icon="fa-table-cells-large" @click="isGridView = !isGridView" />
+                <Select v-model="personaUiStore.sortOrder" :options="sortOptions" />
+                <Button
+                  variant="ghost"
+                  icon="fa-table-cells-large"
+                  @click="personaUiStore.isGridView = !personaUiStore.isGridView"
+                />
               </template>
             </Search>
           </div>
 
-          <ListItem :active="viewMode === 'settings'" @click="selectGlobalSettings">
+          <ListItem :active="personaUiStore.viewMode === 'settings'" @click="selectGlobalSettings">
             <template #start><i class="fa-solid fa-cogs" style="opacity: 0.7"></i></template>
             <template #default>{{ t('personaManagement.globalSettings.title') }}</template>
           </ListItem>
@@ -226,17 +242,17 @@ onMounted(() => {
           <hr class="panel-divider" />
 
           <Pagination
-            v-if="filteredPersonas.length > 0"
+            v-if="personaUiStore.filteredPersonas.length > 0"
             v-model:current-page="currentPage"
             v-model:items-per-page="itemsPerPage"
-            :total-items="filteredPersonas.length"
+            :total-items="personaUiStore.filteredPersonas.length"
             :items-per-page-options="[5, 10, 25, 50, 100]"
           />
 
-          <div class="persona-list" :class="{ 'grid-view': isGridView }">
+          <div class="persona-list" :class="{ 'grid-view': personaUiStore.isGridView }">
             <div v-for="persona in paginatedPersonas" :key="`${persona.avatarId}-${personaStore.lastAvatarUpdate}`">
               <ListItem
-                :active="viewMode === 'editor' && persona.avatarId === personaStore.activePersonaId"
+                :active="personaUiStore.viewMode === 'editor' && persona.avatarId === personaStore.activePersonaId"
                 @click="selectPersona(persona.avatarId)"
               >
                 <template #start>
@@ -269,7 +285,7 @@ onMounted(() => {
       <template #main>
         <div class="persona-drawer-main">
           <!-- Global Settings View -->
-          <div v-if="viewMode === 'settings'" class="persona-editor">
+          <div v-if="personaUiStore.viewMode === 'settings'" class="persona-editor">
             <h4 class="standoutHeader">{{ t('personaManagement.globalSettings.title') }}</h4>
             <div class="persona-editor-global-settings">
               <Checkbox
@@ -289,7 +305,7 @@ onMounted(() => {
                   variant="ghost"
                   icon="fa-pencil"
                   :title="t('personaManagement.actions.rename')"
-                  @click="personaStore.updateActivePersonaName"
+                  @click="handleRename"
                 />
                 <Button
                   variant="ghost"
@@ -455,5 +471,36 @@ onMounted(() => {
 .chip-remove:hover {
   opacity: 1;
   color: var(--color-warning);
+}
+
+.persona-editor-name {
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.persona-editor-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.buttons_block {
+  display: flex;
+  gap: 4px;
+}
+
+.persona-editor-connections {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.standoutHeader {
+  margin-top: 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--theme-border-color);
+  padding-bottom: 5px;
 }
 </style>

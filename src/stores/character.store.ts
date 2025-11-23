@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, nextTick } from 'vue';
-import { type Character, POPUP_RESULT, POPUP_TYPE } from '../types';
+import { type Character } from '../types';
 import {
   fetchAllCharacters,
   saveCharacter as apiSaveCharacter,
@@ -10,92 +10,30 @@ import {
   updateCharacterImage as apiUpdateCharacterImage,
 } from '../api/characters';
 import DOMPurify from 'dompurify';
-import { toast } from '../composables/useToast';
-import { useUiStore } from './ui.store';
-import { usePopupStore } from './popup.store';
-import { useWorldInfoStore } from './world-info.store';
 import { useCharacterTokens } from '../composables/useCharacterTokens';
-import { DEFAULT_CHARACTER, DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
+import { DEFAULT_PRINT_TIMEOUT, DEFAULT_SAVE_EDIT_TIMEOUT } from '../constants';
 import { useSettingsStore } from './settings.store';
 import { onlyUnique } from '../utils/array';
-import { useStrictI18n } from '../composables/useStrictI18n';
 import { debounce } from 'lodash-es';
 import { eventEmitter } from '../utils/event-emitter';
 import { getThumbnailUrl } from '../utils/image';
-import { convertCharacterBookToWorldInfoBook } from '../utils/world-info-conversion';
 import { uuidv4 } from '../utils/common';
-import {
-  getCharacterDifferences,
-  createCharacterFormData,
-  filterAndSortCharacters,
-} from '../utils/character-manipulation';
+import { getCharacterDifferences, createCharacterFormData } from '../utils/character-manipulation';
 
 const ANTI_TROLL_MAX_TAGS = 50;
 const IMPORT_EXLCUDED_TAGS: string[] = [];
 
 export const useCharacterStore = defineStore('character', () => {
-  const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
-  const uiStore = useUiStore();
-  const popupStore = usePopupStore();
-  const worldInfoStore = useWorldInfoStore();
 
   const { tokenCounts, totalTokens, permanentTokens, calculateAllTokens } = useCharacterTokens();
 
   const characters = ref<Array<Character>>([]);
-  const favoriteCharacterChecked = ref<boolean>(false);
-  const currentPage = ref(1);
-  const itemsPerPage = ref(25);
-  const highlightedAvatar = ref<string | null>(null);
-  const searchTerm = ref('');
-  const isCreating = ref(false);
-  const draftCharacter = ref<Character>(DEFAULT_CHARACTER);
-
-  const characterImageTimestamps = ref<Record<string, number>>({});
-
-  const sortOrder = computed({
-    get: () => settingsStore.settings.account.characterSortOrder ?? 'name:asc',
-    set: (value) => (settingsStore.settings.account.characterSortOrder = value),
-  });
-
   const activeCharacterAvatars = ref<Set<string>>(new Set());
+  const characterImageTimestamps = ref<Record<string, number>>({});
 
   const activeCharacters = computed<Character[]>(() => {
     return characters.value.filter((char) => activeCharacterAvatars.value.has(char.avatar));
-  });
-
-  const editFormCharacter = computed<Character | null>(() => {
-    if (isCreating.value) {
-      return draftCharacter.value;
-    }
-
-    if (uiStore.selectedCharacterAvatarForEditing) {
-      const editingCharacter = characters.value.find(
-        (char) => char.avatar === uiStore.selectedCharacterAvatarForEditing,
-      );
-      if (editingCharacter) {
-        return editingCharacter;
-      }
-    }
-
-    return null;
-  });
-
-  const displayableCharacters = computed<Character[]>(() => {
-    return filterAndSortCharacters(characters.value, searchTerm.value, sortOrder.value);
-  });
-
-  const paginatedCharacters = computed<Character[]>(() => {
-    const totalItems = displayableCharacters.value.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage.value);
-
-    if (currentPage.value > totalPages && totalPages > 0) {
-      currentPage.value = totalPages;
-    }
-
-    const start = (currentPage.value - 1) * itemsPerPage.value;
-    const end = start + itemsPerPage.value;
-    return displayableCharacters.value.slice(start, end);
   });
 
   const refreshCharactersDebounced = debounce(() => {
@@ -125,48 +63,30 @@ export const useCharacterStore = defineStore('character', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to fetch characters:', error);
+      // Overflow warning handling should be done by the UI observing the error or a store state
       if (error.message === 'overflow') {
-        toast.warning(t('character.fetch.overflowWarning'));
+        throw new Error('overflow');
       }
     }
-  }
-
-  async function selectCharacterByAvatar(avatar: string) {
-    const character = characters.value.find((c) => c.avatar === avatar);
-    if (!character) {
-      return;
-    }
-
-    // If we were creating, cancel it
-    if (isCreating.value) {
-      cancelCreating();
-    }
-
-    uiStore.selectedCharacterAvatarForEditing = avatar;
   }
 
   async function updateAndSaveCharacter(avatar: string, changes: Partial<Character>) {
     if (Object.keys(changes).length === 0) return;
 
     const dataToSave = { ...changes, avatar };
-    try {
-      await apiSaveCharacter(dataToSave);
+    await apiSaveCharacter(dataToSave);
 
-      const index = characters.value.findIndex((c) => c.avatar === avatar);
-      if (index !== -1) {
-        const updatedCharacter = { ...characters.value[index], ...changes };
-        updatedCharacter.name = DOMPurify.sanitize(updatedCharacter.name);
-        characters.value[index] = updatedCharacter;
+    const index = characters.value.findIndex((c) => c.avatar === avatar);
+    if (index !== -1) {
+      const updatedCharacter = { ...characters.value[index], ...changes };
+      updatedCharacter.name = DOMPurify.sanitize(updatedCharacter.name);
+      characters.value[index] = updatedCharacter;
 
-        await nextTick();
-        await eventEmitter.emit('character:updated', updatedCharacter, changes);
-      } else {
-        console.warn(`Saved character with avatar ${avatar} not found in local list. Refreshing list.`);
-        await refreshCharacters();
-      }
-    } catch (error) {
-      console.error('Failed to save character:', error);
-      toast.error(t('character.save.error'));
+      await nextTick();
+      await eventEmitter.emit('character:updated', updatedCharacter, changes);
+    } else {
+      console.warn(`Saved character with avatar ${avatar} not found in local list. Refreshing list.`);
+      await refreshCharacters();
     }
   }
 
@@ -176,56 +96,29 @@ export const useCharacterStore = defineStore('character', () => {
     const changes = getCharacterDifferences(character, { ...character, name: newName });
     if (!changes) return;
     await updateAndSaveCharacter(avatar, changes);
-    toast.success(t('character.rename.success', { name: newName }));
   }
 
-  async function saveCharacterOnEditForm(characterData: Character) {
-    // Cannot auto-save if we are in creation mode
-    if (isCreating.value) {
-      // We update the draft state here
-      if (draftCharacter.value) {
-        Object.assign(draftCharacter.value, characterData);
-        // Re-calculate tokens for the draft
-        calculateAllTokens(draftCharacter.value);
-      }
-      return;
-    }
+  async function saveCharacter(characterData: Character, originalCharacter?: Character) {
+    if (!originalCharacter) return;
 
-    const avatar = uiStore.selectedCharacterAvatarForEditing;
-    const character = characters.value.find((c) => c.avatar === avatar);
-    if (!avatar || !character) {
-      toast.error(t('character.save.noActive'));
-      return;
-    }
-
-    const changes = getCharacterDifferences(character, characterData);
-
+    const changes = getCharacterDifferences(originalCharacter, characterData);
     if (changes) {
-      await updateAndSaveCharacter(avatar, changes);
+      await updateAndSaveCharacter(originalCharacter.avatar, changes);
       if ('first_mes' in changes && changes.first_mes !== undefined) {
-        await eventEmitter.emit('character:first-message-updated', character.avatar, characterData);
+        await eventEmitter.emit('character:first-message-updated', originalCharacter.avatar, characterData);
       }
     }
   }
 
-  const saveCharacterDebounced = debounce((characterData: Character) => {
-    saveCharacterOnEditForm(characterData);
-  }, DEFAULT_SAVE_EDIT_TIMEOUT);
+  const saveCharacterDebounced = debounce(saveCharacter, DEFAULT_SAVE_EDIT_TIMEOUT);
 
   async function importCharacter(file: File): Promise<string | undefined> {
-    if (uiStore.isSendPress) {
-      toast.error(t('character.import.abortedMessage'), t('character.import.aborted'));
-      throw new Error('Cannot import character while generating');
-    }
-
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (!ext || !['json', 'png'].includes(ext)) {
-      toast.warning(t('character.import.unsupportedType', { ext }));
-      return;
+      throw new Error(`unsupported_type:${ext}`);
     }
 
     try {
-      // Generate UUID for filename
       const uuid = uuidv4();
       const newFileName = `${uuid}.${ext}`;
       const renamedFile = new File([file], newFileName, { type: file.type });
@@ -233,57 +126,48 @@ export const useCharacterStore = defineStore('character', () => {
       const data = await apiImportCharacter(renamedFile);
       if (data.file_name) {
         const avatarFileName = `${data.file_name}.png`;
-        toast.success(t('character.import.success', { fileName: data.file_name }));
 
         await refreshCharacters();
         const importedChar = characters.value.find((c) => c.avatar === avatarFileName);
         if (importedChar) {
           await nextTick();
           await eventEmitter.emit('character:imported', importedChar);
-
-          // Check for embedded lorebook
-          if (importedChar.data?.character_book) {
-            const bookName = importedChar.data.character_book.name || importedChar.name;
-            const { result } = await popupStore.show({
-              title: t('worldInfo.popup.importEmbeddedTitle'),
-              content: t('worldInfo.popup.importEmbeddedContent', { name: bookName }),
-              type: POPUP_TYPE.CONFIRM,
-            });
-
-            if (result === POPUP_RESULT.AFFIRMATIVE) {
-              await worldInfoStore.createNewBook({
-                filename: uuidv4(),
-                book: convertCharacterBookToWorldInfoBook(importedChar.data.character_book),
-              });
-              toast.success(t('worldInfo.importSuccess', { name: bookName }));
-            }
-          }
         }
 
         return avatarFileName;
       }
     } catch (error) {
       console.error('Error importing character', error);
-      toast.error(t('character.import.errorMessage'), t('character.import.error'));
       throw error;
     }
   }
 
-  async function importTagsForCharacters(avatarFileNames: string[]) {
+  /**
+   * Imports tags for multiple characters based on settings.
+   * Returns a map of Avatar -> ImportedTags[]
+   */
+  async function importTagsForCharacters(avatarFileNames: string[]): Promise<Record<string, string[]>> {
+    const results: Record<string, string[]> = {};
     if (settingsStore.settings.character.tagImportSetting === 'none') {
-      return;
+      return results;
     }
-    // TODO: Implement 'ask' setting for tag import.
-    // TODO: Implement 'only_existing' setting for tag import.
+
     for (const avatar of avatarFileNames) {
       const character = characters.value.find((c) => c.avatar === avatar);
       if (character) {
-        await handleTagImport(character);
+        const imported = await handleTagImport(character);
+        if (imported.length > 0) {
+          results[avatar] = imported;
+        }
       }
     }
+    return results;
   }
 
-  async function handleTagImport(character: Character) {
+  /**
+   * Internal logic to import tags. Returns the list of tags that were added.
+   */
+  async function handleTagImport(character: Character): Promise<string[]> {
     const setting = settingsStore.settings.character.tagImportSetting;
 
     const alreadyAssignedTags = character.tags ?? [];
@@ -294,7 +178,7 @@ export const useCharacterStore = defineStore('character', () => {
       .filter((t) => !alreadyAssignedTags.includes(t))
       .slice(0, ANTI_TROLL_MAX_TAGS);
 
-    if (!tagsFromCard.length) return;
+    if (!tagsFromCard.length) return [];
 
     let tagsToImport: string[] = [];
 
@@ -303,135 +187,70 @@ export const useCharacterStore = defineStore('character', () => {
         tagsToImport = tagsFromCard;
         break;
       case 'ask':
-        // TODO: Implement Tag Import Popup
-        toast.info(t('character.import.tagImportAskNotImplemented', { characterName: character.name }));
-        break;
+        // TODO: UI should handle 'ask'. For now, we return empty or implement a callback system.
+        // Returning empty to avoid side effects in store.
+        console.warn('Tag import "ask" setting not fully implemented in store refactor.');
+        return [];
       case 'only_existing':
         // TODO: Requires global tag list.
-        toast.info(t('character.import.tagImportExistingNotImplemented'));
-        break;
+        console.warn('Tag import "only_existing" setting not implemented.');
+        return [];
       case 'none':
       default:
-        return;
+        return [];
     }
 
     if (tagsToImport.length > 0) {
       const newTags = [...alreadyAssignedTags, ...tagsToImport].filter(onlyUnique);
       const changes = getCharacterDifferences(character, { ...character, tags: newTags });
-      if (!changes) return;
+      if (!changes) return [];
       await updateAndSaveCharacter(character.avatar, changes);
-      toast.success(
-        t('character.import.tagsImportedMessage', { characterName: character.name, tags: tagsToImport.join(', ') }),
-        t('character.import.tagsImported'),
-        { timeout: 6000 },
-      );
-    }
-  }
-
-  async function highlightCharacter(avatar: string) {
-    const charIndex = characters.value.findIndex((c) => c.avatar === avatar);
-    if (charIndex === -1) {
-      console.warn(`Could not find imported character ${avatar} in the list.`);
-      return;
+      return tagsToImport;
     }
 
-    await selectCharacterByAvatar(avatar);
-    highlightedAvatar.value = avatar;
-
-    setTimeout(() => {
-      highlightedAvatar.value = null;
-    }, 5000);
+    return [];
   }
 
-  function startCreating() {
-    // Clear active selection
-    uiStore.selectedCharacterAvatarForEditing = null;
-
-    // Set creation mode
-    isCreating.value = true;
-
-    // Calculate tokens for empty draft
-    calculateAllTokens(draftCharacter.value);
-  }
-
-  function cancelCreating() {
-    isCreating.value = false;
-  }
-
-  async function createNewCharacter(character: Character, file?: File) {
-    if (uiStore.isSendPress) {
-      toast.error(t('character.import.abortedMessage'));
-      return;
-    }
-
+  async function createNewCharacter(character: Character, file?: File): Promise<string | undefined> {
     const uuid = uuidv4();
     const fileName = `${uuid}.png`;
     const fileToSend = file ? new File([file], fileName, { type: file.type }) : null;
 
     const formData = createCharacterFormData(character, fileToSend, uuid);
 
-    try {
-      const result = await apiCreateCharacter(formData);
+    const result = await apiCreateCharacter(formData);
 
-      if (result && result.file_name) {
-        toast.success(t('character.create.success', { name: character.name }));
+    if (result && result.file_name) {
+      await refreshCharacters();
 
-        await refreshCharacters();
-
-        const newCharIndex = characters.value.findIndex((c) => c.avatar === result.file_name);
-        if (newCharIndex !== -1) {
-          isCreating.value = false;
-          draftCharacter.value = DEFAULT_CHARACTER;
-          await selectCharacterByAvatar(result.file_name);
-          const createdChar = characters.value[newCharIndex];
-          await nextTick();
-          await eventEmitter.emit('character:created', createdChar);
-          await highlightCharacter(createdChar.avatar);
-        }
+      const newCharIndex = characters.value.findIndex((c) => c.avatar === result.file_name);
+      if (newCharIndex !== -1) {
+        const createdChar = characters.value[newCharIndex];
+        await nextTick();
+        await eventEmitter.emit('character:created', createdChar);
+        return createdChar.avatar;
       }
-    } catch (error) {
-      console.error('Failed to create new character:', error);
-      toast.error(t('character.create.error'));
     }
   }
 
   async function deleteCharacter(avatar: string, deleteChats: boolean) {
-    try {
-      const charName = characters.value.find((c) => c.avatar === avatar)?.name || avatar;
+    await apiDeleteCharacter(avatar, deleteChats);
+    await eventEmitter.emit('character:deleted', avatar);
 
-      await apiDeleteCharacter(avatar, deleteChats);
-
-      await eventEmitter.emit('character:deleted', avatar);
-
-      const index = characters.value.findIndex((c) => c.avatar === avatar);
-      if (index !== -1) {
-        characters.value.splice(index, 1);
-      }
-      delete characterImageTimestamps.value[avatar];
-
-      uiStore.selectedCharacterAvatarForEditing = null;
-
-      toast.success(t('character.delete.success', { name: charName }));
-    } catch (error) {
-      console.error('Failed to delete character:', error);
-      toast.error(t('character.delete.error'));
+    const index = characters.value.findIndex((c) => c.avatar === avatar);
+    if (index !== -1) {
+      characters.value.splice(index, 1);
     }
+    delete characterImageTimestamps.value[avatar];
   }
 
   async function updateCharacterImage(avatar: string, imageFile: File) {
-    try {
-      await apiUpdateCharacterImage(avatar, imageFile);
-      const character = characters.value.find((c) => c.avatar === avatar);
-      if (character) {
-        // Force refresh and update timestamp
-        character.avatar = character.avatar;
-        characterImageTimestamps.value[avatar] = Date.now();
-      }
-      await refreshCharacters();
-    } catch (error) {
-      console.error('Failed to update character image:', error);
-      toast.error(t('character.updateImage.error'));
+    await apiUpdateCharacterImage(avatar, imageFile);
+    const character = characters.value.find((c) => c.avatar === avatar);
+    if (character) {
+      characterImageTimestamps.value[avatar] = Date.now();
     }
+    await refreshCharacters();
   }
 
   async function duplicateCharacter(avatar: string) {
@@ -439,49 +258,30 @@ export const useCharacterStore = defineStore('character', () => {
     if (!character) return;
 
     const charCopy = { ...character, name: character.name };
-
     const uuid = uuidv4();
     charCopy.chat = uuid;
     delete charCopy.create_date;
 
-    try {
-      const url = getThumbnailUrl('avatar', avatar);
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const file = new File([blob], 'avatar.png', { type: blob.type });
+    const url = getThumbnailUrl('avatar', avatar);
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const file = new File([blob], 'avatar.png', { type: blob.type });
 
-      await createNewCharacter(charCopy, file);
-    } catch (error) {
-      console.error('Failed to duplicate character', error);
-      toast.error(t('character.duplicate.error'));
-    }
+    await createNewCharacter(charCopy, file);
   }
 
   function setActiveCharacterAvatars(avatars: string[]) {
     activeCharacterAvatars.value = new Set(avatars);
   }
 
-  const getDifferences = getCharacterDifferences;
-
   return {
     characters,
     activeCharacters,
     activeCharacterAvatars,
     characterImageTimestamps,
-    favoriteCharacterChecked,
-    displayableCharacters,
-    paginatedCharacters,
-    currentPage,
-    itemsPerPage,
-    searchTerm,
-    sortOrder,
-    isCreating,
-    draftCharacter,
-    editFormCharacter,
     refreshCharacters,
-    selectCharacterByAvatar,
-    saveCharacterOnEditForm,
     refreshCharactersDebounced,
+    saveCharacter,
     saveCharacterDebounced,
     tokenCounts,
     totalTokens,
@@ -489,13 +289,8 @@ export const useCharacterStore = defineStore('character', () => {
     calculateAllTokens,
     importCharacter,
     importTagsForCharacters,
-    highlightedAvatar,
-    highlightCharacter,
-    startCreating,
-    cancelCreating,
     createNewCharacter,
     renameCharacter,
-    getDifferences,
     deleteCharacter,
     updateCharacterImage,
     updateAndSaveCharacter,

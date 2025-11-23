@@ -7,11 +7,9 @@ import {
   deletePersonaAvatar,
   uploadPersonaAvatar as apiUploadPersonaAvatar,
 } from '../api/personas';
-import { type Persona, type PersonaDescription, POPUP_TYPE, POPUP_RESULT, type Character } from '../types';
+import { type Persona, type PersonaDescription, type Character } from '../types';
 import { toast } from '../composables/useToast';
 import { useStrictI18n } from '../composables/useStrictI18n';
-import { usePopupStore } from './popup.store';
-import { getBase64Async } from '../utils/file';
 import { eventEmitter } from '../utils/event-emitter';
 import { default_user_avatar } from '../constants';
 import { getThumbnailUrl } from '../utils/image';
@@ -21,7 +19,6 @@ export const usePersonaStore = defineStore('persona', () => {
   const { t } = useStrictI18n();
   const settingsStore = useSettingsStore();
   const uiStore = useUiStore();
-  const popupStore = usePopupStore();
 
   const allPersonaAvatars = ref<string[]>([]);
   const activePersonaId = ref<string | null>(null);
@@ -115,50 +112,29 @@ export const usePersonaStore = defineStore('persona', () => {
     if (index > -1) {
       const updatedPersona = { ...personas.value[index], [field]: value };
       personas.value.splice(index, 1, updatedPersona);
-      // The change will be saved by the settings store watcher
       await nextTick();
       await eventEmitter.emit('persona:updated', updatedPersona);
     }
   }
 
-  async function updateActivePersonaName() {
-    if (!activePersona.value) return;
+  async function renamePersona(avatarId: string, newName: string) {
+    const index = personas.value.findIndex((p) => p.avatarId === avatarId);
+    if (index > -1) {
+      const updatedPersona = { ...personas.value[index], name: newName };
+      personas.value.splice(index, 1, updatedPersona);
 
-    const { result, value: newName } = await popupStore.show<string>({
-      title: t('personaManagement.rename.title'),
-      content: t('personaManagement.rename.prompt'),
-      type: POPUP_TYPE.INPUT,
-      inputValue: activePersona.value.name,
-    });
-
-    if (result === POPUP_RESULT.AFFIRMATIVE && newName && activePersonaId.value) {
-      const index = personas.value.findIndex((p) => p.avatarId === activePersonaId.value);
-      if (index > -1) {
-        const updatedPersona = { ...personas.value[index], name: newName };
-        personas.value.splice(index, 1, updatedPersona);
-        // also update the main username if this is the active persona
+      if (activePersonaId.value === avatarId) {
         uiStore.activePlayerName = newName;
-        await nextTick();
-        await eventEmitter.emit('persona:updated', updatedPersona);
       }
+
+      await nextTick();
+      await eventEmitter.emit('persona:updated', updatedPersona);
     }
   }
 
-  async function uploadPersonaAvatar(avatar: string | null, file: File, skipCrop = false) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function uploadPersonaAvatar(avatar: string | null, file: File, cropData?: any) {
     if (!avatar) return;
-
-    let cropData;
-    if (!settingsStore.settings.ui.avatars.neverResize && !skipCrop) {
-      const dataUrl = await getBase64Async(file);
-      const { result, value } = await popupStore.show({
-        title: t('popup.cropAvatar.title'),
-        type: POPUP_TYPE.CROP,
-        cropImage: dataUrl,
-        wide: true,
-      });
-      if (result !== POPUP_RESULT.AFFIRMATIVE) return;
-      cropData = value;
-    }
 
     const formData = new FormData();
     formData.append('avatar', file);
@@ -167,10 +143,10 @@ export const usePersonaStore = defineStore('persona', () => {
     try {
       await apiUploadPersonaAvatar(formData, cropData);
       lastAvatarUpdate.value = Date.now();
-      toast.success('Avatar updated successfully.');
     } catch (error) {
       console.error('Failed to upload avatar:', error);
       toast.error('Failed to update avatar.');
+      throw error;
     }
   }
 
@@ -183,9 +159,6 @@ export const usePersonaStore = defineStore('persona', () => {
       if (settingsStore.settings.persona.defaultPersonaId === avatarId) {
         settingsStore.settings.persona.defaultPersonaId = null;
       }
-      // TODO: Handle chat and character locks
-
-      toast.success(t('personaManagement.delete.success'));
 
       if (activePersonaId.value === avatarId) {
         const nextPersona = personas.value.length > 0 ? personas.value[0].avatarId : null;
@@ -196,6 +169,7 @@ export const usePersonaStore = defineStore('persona', () => {
     } catch (error) {
       console.error('Failed to delete persona:', error);
       toast.error(t('personaManagement.delete.error'));
+      throw error;
     }
   }
 
@@ -211,7 +185,8 @@ export const usePersonaStore = defineStore('persona', () => {
       const file = new File([blob], 'avatar.png', { type: blob.type });
 
       const newAvatarId = `${uuidv4()}.png`;
-      await uploadPersonaAvatar(newAvatarId, file, true);
+      // Pass file directly, no crop needed for duplicate
+      await uploadPersonaAvatar(newAvatarId, file);
 
       const newPersona: Persona = {
         ...JSON.parse(JSON.stringify(persona)),
@@ -220,7 +195,6 @@ export const usePersonaStore = defineStore('persona', () => {
       };
 
       personas.value.push(newPersona);
-      toast.success(t('personaManagement.duplicate.success', { name: persona.name }));
       await nextTick();
       await eventEmitter.emit('persona:created', newPersona);
       await setActivePersona(newAvatarId);
@@ -235,7 +209,9 @@ export const usePersonaStore = defineStore('persona', () => {
     const res = await fetch(default_user_avatar);
     const blob = await res.blob();
     const defaultPersonaAvatar = new File([blob], 'avatar.png', { type: 'image/png' });
-    await uploadPersonaAvatar(newAvatarId, defaultPersonaAvatar, true);
+
+    await uploadPersonaAvatar(newAvatarId, defaultPersonaAvatar);
+
     const newPersona: Persona = {
       ...createDefaultDescription(),
       avatarId: newAvatarId,
@@ -256,7 +232,7 @@ export const usePersonaStore = defineStore('persona', () => {
 
       const newAvatarId = `${uuidv4()}.png`;
 
-      await uploadPersonaAvatar(newAvatarId, file, true);
+      await uploadPersonaAvatar(newAvatarId, file);
 
       const newPersona: Persona = {
         ...createDefaultDescription(),
@@ -266,7 +242,6 @@ export const usePersonaStore = defineStore('persona', () => {
       };
 
       personas.value.push(newPersona);
-      toast.success(t('persona.createFromCharacter.success', { name: character.name }));
       await nextTick();
       await eventEmitter.emit('persona:created', newPersona);
     } catch (error) {
@@ -282,10 +257,8 @@ export const usePersonaStore = defineStore('persona', () => {
   async function toggleDefault(avatarId: string) {
     if (settingsStore.settings.persona.defaultPersonaId === avatarId) {
       settingsStore.settings.persona.defaultPersonaId = null;
-      toast.info(t('personaManagement.default.removed'));
     } else {
       settingsStore.settings.persona.defaultPersonaId = avatarId;
-      toast.success(t('personaManagement.default.set'));
     }
   }
 
@@ -298,13 +271,9 @@ export const usePersonaStore = defineStore('persona', () => {
     const index = persona.connections.findIndex((c) => c.id === characterAvatar);
     if (index !== -1) {
       persona.connections.splice(index, 1);
-      toast.info(t('personaManagement.connections.characterRemoved'));
     } else {
       persona.connections.push({ id: characterAvatar });
-      toast.success(t('personaManagement.connections.characterAdded'));
     }
-    // Force update to trigger watchers if necessary, although reactive array methods should work.
-    // We rely on the settings store deep watcher.
   }
 
   function getLinkedPersona(characterAvatar: string): Persona | undefined {
@@ -325,7 +294,7 @@ export const usePersonaStore = defineStore('persona', () => {
     refreshPersonas,
     setActivePersona,
     updateActivePersonaField,
-    updateActivePersonaName,
+    renamePersona,
     uploadPersonaAvatar,
     deletePersona,
     duplicatePersona,

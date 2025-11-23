@@ -29,5 +29,5 @@ const options = computed(() => {
 
 <template>
   <!-- @vue-ignore -->
-  <Select v-model="selectedProfile!" :options="options" />
+  <Select v-model="selectedProfile!" :options="options" searchable />
 </template>

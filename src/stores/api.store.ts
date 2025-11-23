@@ -11,7 +11,7 @@ import { useStrictI18n } from '../composables/useStrictI18n';
 import { toast } from '../composables/useToast';
 import { defaultPromptOrder, defaultPrompts } from '../constants';
 import type { ApiModel, ConnectionProfile, PromptOrderConfig, SamplerSettings } from '../types';
-import { POPUP_RESULT, POPUP_TYPE, chat_completion_sources } from '../types';
+import { POPUP_RESULT, POPUP_TYPE, api_providers } from '../types';
 import { downloadFile, readFileAsText, uuidv4 } from '../utils/commons';
 import { usePopupStore } from './popup.store';
 import { useSettingsStore } from './settings.store';
@@ -39,14 +39,11 @@ export const useApiStore = defineStore('api', () => {
 
   const activeModel = computed(() => {
     const apiSettings = settingsStore.settings.api;
-    return apiSettings.selectedProviderModels[apiSettings.chatCompletionSource];
+    return apiSettings.selectedProviderModels[apiSettings.provider];
   });
 
   const groupedOpenRouterModels = computed<Record<string, ApiModel[]> | null>(() => {
-    if (
-      settingsStore.settings.api.chatCompletionSource !== chat_completion_sources.OPENROUTER ||
-      modelList.value.length === 0
-    ) {
+    if (settingsStore.settings.api.provider !== api_providers.OPENROUTER || modelList.value.length === 0) {
       return null;
     }
     // TODO: implement sorting from settings
@@ -82,26 +79,24 @@ export const useApiStore = defineStore('api', () => {
     const profile = connectionProfiles.value.find((p) => p.name === profileName);
     if (profile) {
       // Apply profile settings to the main settings state, only overriding defined fields.
-      if (profile.api) settingsStore.settings.api.main = profile.api;
-      if (profile.chat_completion_source)
-        settingsStore.settings.api.chatCompletionSource = profile.chat_completion_source;
+      if (profile.provider) settingsStore.settings.api.provider = profile.provider;
       if (profile.sampler) settingsStore.settings.api.selectedSampler = profile.sampler;
       if (profile.model) {
-        const source = profile.chat_completion_source ?? settingsStore.settings.api.chatCompletionSource;
-        settingsStore.settings.api.selectedProviderModels[source] = profile.model;
+        const provider = profile.provider ?? settingsStore.settings.api.provider;
+        settingsStore.settings.api.selectedProviderModels[provider] = profile.model;
       }
       // After applying, reconnect to validate the new settings.
       connect();
     }
   });
 
-  // When the main API or source changes manually, try to reconnect
+  // When the main API or provider changes manually, try to reconnect
   watch(
-    () => [settingsStore.settings.api.main, settingsStore.settings.api.chatCompletionSource],
-    ([newMainApi, newSource], [oldMainApi, oldSource]) => {
+    () => [settingsStore.settings.api.provider],
+    ([newProvider], [oldProvider]) => {
       if (settingsStore.settingsInitializing) return;
       // Only connect if the actual values have changed
-      if (newMainApi !== oldMainApi || newSource !== oldSource) {
+      if (newProvider !== oldProvider) {
         connect();
       }
     },
@@ -126,11 +121,6 @@ export const useApiStore = defineStore('api', () => {
     modelList.value = [];
     const apiSettings = settingsStore.settings.api;
 
-    if (apiSettings.main !== 'openai') {
-      onlineStatus.value = `${t('api.status.notConnected')} ${t('api.status.notImplemented')}`;
-      return;
-    }
-
     isConnecting.value = true;
     onlineStatus.value = t('api.status.connecting');
 
@@ -138,7 +128,7 @@ export const useApiStore = defineStore('api', () => {
       // TODO: Implement secret management. For now, we pass the key directly.
       // TODO: Implement reverse proxy confirmation popup.
       const response = await fetchChatCompletionStatus({
-        chat_completion_source: apiSettings.chatCompletionSource,
+        chat_completion_source: apiSettings.provider,
         reverse_proxy: apiSettings.reverseProxy,
         proxy_password: apiSettings.proxyPassword,
       });
@@ -151,16 +141,16 @@ export const useApiStore = defineStore('api', () => {
         modelList.value = response.data;
 
         // Check if current model selection is still valid
-        const source = apiSettings.chatCompletionSource;
+        const provider = apiSettings.provider;
         const availableModels = modelList.value.map((m) => m.id);
 
         // TODO: Add dynamic models for other providers
-        if (source === chat_completion_sources.OPENAI) {
+        if (provider === api_providers.OPENAI) {
           const openaiModel = apiSettings.selectedProviderModels.openai;
           if (!availableModels.includes(openaiModel ?? '')) {
             apiSettings.selectedProviderModels.openai = availableModels.length > 0 ? availableModels[0] : 'gpt-4o';
           }
-        } else if (source === chat_completion_sources.OPENROUTER) {
+        } else if (provider === api_providers.OPENROUTER) {
           if (
             apiSettings.selectedProviderModels.openrouter !== 'OR_Website' &&
             !availableModels.includes(apiSettings.selectedProviderModels.openrouter ?? '')

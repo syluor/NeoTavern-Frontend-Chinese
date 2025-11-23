@@ -1,6 +1,6 @@
 import {
+  type ApiProvider,
   type Character,
-  type ChatCompletionSource,
   type Prompt,
   type PromptOrderConfig,
   type SamplerSettings,
@@ -175,7 +175,7 @@ export const defaultSamplerSettings: SamplerSettings = {
   reasoning_effort: ReasoningEffort.AUTO,
 };
 
-export const defaultProviderModels: Record<ChatCompletionSource, string> = {
+export const defaultProviderModels: Record<ApiProvider, string> = {
   openai: 'gpt-4o',
   claude: 'claude-3-5-sonnet-20240620',
   openrouter: 'OR_Website',

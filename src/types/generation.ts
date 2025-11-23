@@ -1,5 +1,5 @@
 import type { GenerationMode, OpenrouterMiddleoutType, ReasoningEffort } from '../constants';
-import type { ApiModel, ChatCompletionSource } from './api';
+import type { ApiModel, ApiProvider } from './api';
 import type { Character } from './character';
 import type { ChatMessage, ChatMetadata } from './chat';
 import type { MessageRole } from './common';
@@ -68,7 +68,7 @@ export type BuildChatCompletionPayloadOptions = {
   samplerSettings: SamplerSettings;
   messages: ApiChatMessage[];
   model: string;
-  source: ChatCompletionSource;
+  provider: ApiProvider;
   providerSpecific: Settings['api']['providerSpecific'];
   playerName?: string;
   modelList?: ApiModel[];
@@ -84,7 +84,7 @@ export type GenerationContext = {
   tokenizer: Tokenizer;
   settings: {
     sampler: SamplerSettings;
-    source: ChatCompletionSource;
+    provider: ApiProvider;
     model: string;
     providerSpecific: Settings['api']['providerSpecific'];
   };

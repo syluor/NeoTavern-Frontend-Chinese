@@ -7,7 +7,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
       {
         widget: 'preset-manager',
         id: 'api.selectedSampler',
-        label: 'aiConfig.presets.chatCompletion.label',
+        label: 'aiConfig.presets.sampler.label',
       },
     ],
   },
@@ -23,7 +23,6 @@ export const aiConfigDefinition: AiConfigSection[] = [
   },
   {
     id: 'common-settings',
-    conditions: { api: 'openai' },
     items: [
       {
         id: 'api.samplers.max_context',
@@ -57,7 +56,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         label: 'aiConfig.showThoughts.label',
         description: 'aiConfig.showThoughts.description',
         conditions: {
-          source: [
+          provider: [
             'claude',
             'deepseek',
             'aimlapi',
@@ -85,7 +84,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         infoTooltip: 'aiConfig.reasoningEffort.tooltip',
         infoLink: 'https://docs.sillytavern.app/usage/prompts/reasoning/#reasoning-effort',
         conditions: {
-          source: [
+          provider: [
             'openai',
             'custom',
             'claude',
@@ -114,28 +113,27 @@ export const aiConfigDefinition: AiConfigSection[] = [
         widget: 'info-display',
         description: 'aiConfig.reasoningEffort.descriptionOpenAI',
         conditions: {
-          source: ['openai', 'custom', 'xai', 'aimlapi', 'openrouter', 'perplexity', 'electronhub', 'azure_openai'],
+          provider: ['openai', 'custom', 'xai', 'aimlapi', 'openrouter', 'perplexity', 'electronhub', 'azure_openai'],
         },
       },
       {
         widget: 'info-display',
         description: 'aiConfig.reasoningEffort.descriptionClaude',
         conditions: {
-          source: ['claude'],
+          provider: ['claude'],
         },
       },
       {
         widget: 'info-display',
         description: 'aiConfig.reasoningEffort.descriptionGoogle',
         conditions: {
-          source: ['makersuite', 'vertexai'],
+          provider: ['makersuite', 'vertexai'],
         },
       },
     ],
   },
   {
     id: 'sampling-sliders-1',
-    conditions: { api: 'openai' },
     items: [
       {
         id: 'api.samplers.temperature',
@@ -153,7 +151,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         max: 2,
         step: 0.01,
         conditions: {
-          source: [
+          provider: [
             'openai',
             'aimlapi',
             'openrouter',
@@ -182,7 +180,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
         max: 2,
         step: 0.01,
         conditions: {
-          source: [
+          provider: [
             'openai',
             'aimlapi',
             'openrouter',
@@ -211,7 +209,16 @@ export const aiConfigDefinition: AiConfigSection[] = [
         max: 500,
         step: 1,
         conditions: {
-          source: ['claude', 'aimlapi', 'openrouter', 'makersuite', 'vertexai', 'cohere', 'perplexity', 'electronhub'],
+          provider: [
+            'claude',
+            'aimlapi',
+            'openrouter',
+            'makersuite',
+            'vertexai',
+            'cohere',
+            'perplexity',
+            'electronhub',
+          ],
         },
       },
       {
@@ -226,7 +233,7 @@ export const aiConfigDefinition: AiConfigSection[] = [
   },
   {
     id: 'openrouter-sliders',
-    conditions: { source: 'openrouter' },
+    conditions: { provider: 'openrouter' },
     items: [
       {
         id: 'api.samplers.repetition_penalty',
@@ -262,21 +269,21 @@ export const aiConfigDefinition: AiConfigSection[] = [
         widget: 'checkbox',
         label: 'aiConfig.claude.useSysPrompt.label',
         description: 'aiConfig.claude.useSysPrompt.description',
-        conditions: { source: 'claude' },
+        conditions: { provider: 'claude' },
       },
       {
         id: 'api.samplers.providers.claude.assistant_prefill',
         widget: 'textarea',
         label: 'aiConfig.claude.assistantPrefill.label',
         description: 'aiConfig.claude.assistantPrefill.description',
-        conditions: { source: 'claude' },
+        conditions: { provider: 'claude' },
       },
       {
         id: 'api.samplers.providers.google.use_makersuite_sysprompt',
         widget: 'checkbox',
         label: 'aiConfig.google.useSysPrompt.label',
         description: 'aiConfig.google.useSysPrompt.description',
-        conditions: { source: ['makersuite', 'vertexai'] },
+        conditions: { provider: ['makersuite', 'vertexai'] },
       },
     ],
   },

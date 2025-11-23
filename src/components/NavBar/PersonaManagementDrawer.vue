@@ -355,6 +355,7 @@ onMounted(() => {
                 :model-value="personaStore.activePersona?.lorebooks ?? []"
                 :options="lorebookOptions"
                 multiple
+                searchable
                 @update:model-value="personaStore.updateActivePersonaField('lorebooks', $event)"
               />
             </FormItem>

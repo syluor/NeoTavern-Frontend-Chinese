@@ -20,14 +20,7 @@ import {
   TokenizerType,
 } from '../constants';
 import { settingsDefinition } from '../settings-definition';
-import {
-  type ConnectionProfile,
-  type LegacySettings,
-  type Persona,
-  type SettingDefinition,
-  type Settings,
-  type SettingsPath,
-} from '../types';
+import { type LegacySettings, type Persona, type SettingDefinition, type Settings, type SettingsPath } from '../types';
 import type { ValueForPath } from '../types/utils';
 import { isMobile } from '../utils/client';
 import { eventEmitter } from '../utils/extensions';
@@ -45,8 +38,7 @@ function createDefaultSettings(): Settings {
 
   // Manually set complex default objects that aren't in settingsDefinition
   defaultSettings.api = {
-    main: 'openai',
-    chatCompletionSource: 'openai',
+    provider: 'openai',
     reverseProxy: '',
     proxyPassword: '',
     selectedSampler: 'Default',
@@ -108,21 +100,6 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
     });
   }
 
-  // Migrate connection profiles
-  const migratedConnectionProfiles: ConnectionProfile[] = [];
-  const legacyProfiles = legacy.extension_settings?.connectionManager?.profiles ?? {};
-  for (const name in legacyProfiles) {
-    if (Object.prototype.hasOwnProperty.call(legacyProfiles, name)) {
-      migratedConnectionProfiles.push({
-        name,
-        api: legacyProfiles[name].mode === 'cc' ? 'openai' : undefined,
-        model: legacyProfiles[name].model,
-        id: legacyProfiles[name].id,
-        chat_completion_source: legacyProfiles[name].mode === 'cc' ? legacyProfiles[name].api : undefined,
-      });
-    }
-  }
-
   const migrated: Settings = {
     ui: {
       background: {
@@ -151,8 +128,7 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
       personas: migratedPersonas,
     },
     api: {
-      main: legacy.main_api || 'openai',
-      chatCompletionSource: oai.chat_completion_source,
+      provider: oai.chat_completion_source,
       reverseProxy: oai.reverse_proxy,
       proxyPassword: oai.proxy_password,
       selectedSampler: oai.preset_settings_openai,
@@ -234,7 +210,7 @@ function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSettingsRes
         },
         reasoning_effort: oai.reasoning_effort ?? defaultSamplerSettings.reasoning_effort,
       },
-      connectionProfiles: migratedConnectionProfiles,
+      connectionProfiles: [],
       selectedConnectionProfile: legacy.extension_settings?.connectionManager?.selected,
       tokenizer: TokenizerType.AUTO,
     },

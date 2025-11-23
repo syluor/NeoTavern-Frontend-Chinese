@@ -277,7 +277,7 @@ export interface MessageSchema {
     manualInputNote: string;
     docsLinkTooltip: string;
     presets: {
-      chatCompletion: {
+      sampler: {
         label: string;
       };
       import: string;
@@ -394,7 +394,6 @@ export interface MessageSchema {
       noConnection: string;
       notConnected: string;
       connecting: string;
-      notImplemented: string;
     };
   };
   errors: {
@@ -598,19 +597,12 @@ export interface MessageSchema {
       title: string;
     };
     moreOptions: {
-      linkWorldInfo: string;
       importCardLore: string;
-      characterSettingsOverrides: string;
       convertToPersona: string;
       rename: string;
-      linkToSource: string;
-      replaceUpdate: string;
-      importTags: string;
-      setAsWelcomeAssistant: string;
     };
     advanced: {
       promptOverrides: string;
-      promptOverridesHint: string;
       promptHint: string;
       mainPrompt: string;
       mainPromptPlaceholder: string;
@@ -686,13 +678,7 @@ export interface MessageSchema {
         nameExists: string;
       };
     };
-    api: string;
-    chatCompletion: string;
-    textCompletion: string;
-    novel: string;
-    horde: string;
-    kobold: string;
-    source: string;
+    provider: string;
     openaiKey: string;
     claudeKey: string;
     openrouterKey: string;
@@ -746,7 +732,7 @@ export interface MessageSchema {
     deepseekModel: string;
     connect: string;
     connecting: string;
-    sources: {
+    providers: {
       openai: string;
       claude: string;
       openrouter: string;

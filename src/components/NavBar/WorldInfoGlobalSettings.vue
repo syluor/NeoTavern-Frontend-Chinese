@@ -44,6 +44,7 @@ const bookOptions = computed(() => {
           v-model="worldInfoStore.globalBookNames"
           :options="bookOptions"
           multiple
+          searchable
           :label="t('worldInfo.activeWorlds')"
           :placeholder="t('common.none')"
         />

@@ -480,6 +480,7 @@ async function removeMember(avatar: string) {
               v-model="activeChatLorebooks"
               :options="availableLorebooks"
               multiple
+              searchable
               :placeholder="t('chatManagement.selectLorebooks')"
             />
           </FormItem>

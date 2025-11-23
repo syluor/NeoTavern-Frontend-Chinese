@@ -256,7 +256,7 @@ const baseExtensionAPI: ExtensionAPI = {
         samplerSettings: { ...settingsStore.settings.api.samplers, ...samplerOverrides },
         messages,
         model: apiStore.activeModel,
-        source: settingsStore.settings.api.chatCompletionSource,
+        provider: settingsStore.settings.api.provider,
         providerSpecific: settingsStore.settings.api.providerSpecific,
         playerName: uiStore.activePlayerName || 'User',
         modelList: apiStore.modelList,
@@ -399,14 +399,14 @@ const baseExtensionAPI: ExtensionAPI = {
     generate: async (messages, options = {}) => {
       const settingsStore = useSettingsStore();
       const apiStore = useApiStore();
-      let source = settingsStore.settings.api.chatCompletionSource;
+      let provider = settingsStore.settings.api.provider;
       let model = apiStore.activeModel;
       let samplerSettings = { ...settingsStore.settings.api.samplers, ...(options.samplerOverrides ?? {}) };
 
       if (options.connectionProfileName) {
         const profile = apiStore.connectionProfiles.find((p) => p.name === options.connectionProfileName);
         if (!profile) throw new Error(`Profile "${options.connectionProfileName}" not found.`);
-        source = profile.chat_completion_source ?? source;
+        provider = profile.provider ?? provider;
         model = profile.model ?? model;
         if (profile.sampler) {
           const sampler = apiStore.presets.find((p) => p.name === profile.sampler);
@@ -419,7 +419,7 @@ const baseExtensionAPI: ExtensionAPI = {
         samplerSettings,
         messages,
         model,
-        source,
+        provider: provider,
         providerSpecific: settingsStore.settings.api.providerSpecific,
         modelList: apiStore.modelList,
       });
@@ -533,7 +533,6 @@ export function createScopedApiProxy(extensionId: string): ExtensionAPI {
     },
     registerNavBarItem: async (
       id: string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       options: {
         icon: string;
         title: string;

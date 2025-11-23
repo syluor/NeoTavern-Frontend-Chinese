@@ -1,5 +1,5 @@
 import type { ChatCompletionPayload } from '../types';
-import { chat_completion_sources } from '../types';
+import { api_providers } from '../types';
 import type { BuildChatCompletionPayloadOptions } from '../types/generation';
 import type { SamplerSettings } from '../types/settings';
 
@@ -85,7 +85,7 @@ const zaiStopTransform = (v: string[]) => v?.slice(0, 1);
 export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamConfiguration>> = {
   max_tokens: {
     providers: {
-      [chat_completion_sources.POLLINATIONS]: null,
+      [api_providers.POLLINATIONS]: null,
     },
     modelRules: [
       { pattern: /^(o1|o3|o4)/, rule: { remoteKey: 'max_completion_tokens' } },
@@ -99,8 +99,8 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
 
   frequency_penalty: {
     providers: {
-      [chat_completion_sources.COHERE]: { min: 0, max: 1 },
-      [chat_completion_sources.ZAI]: null,
+      [api_providers.COHERE]: { min: 0, max: 1 },
+      [api_providers.ZAI]: null,
     },
     modelRules: [
       { pattern: /^(o1|o3|o4)/, rule: null },
@@ -112,8 +112,8 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
 
   presence_penalty: {
     providers: {
-      [chat_completion_sources.COHERE]: { min: 0, max: 1 },
-      [chat_completion_sources.ZAI]: null,
+      [api_providers.COHERE]: { min: 0, max: 1 },
+      [api_providers.ZAI]: null,
     },
     modelRules: [
       { pattern: /^(o1|o3|o4)/, rule: null },
@@ -125,9 +125,9 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
 
   top_p: {
     providers: {
-      [chat_completion_sources.COHERE]: { min: 0.01, max: 0.99 },
-      [chat_completion_sources.ZAI]: { transform: (v) => v || 0.01 },
-      [chat_completion_sources.DEEPSEEK]: { transform: (v) => v || Number.EPSILON },
+      [api_providers.COHERE]: { min: 0.01, max: 0.99 },
+      [api_providers.ZAI]: { transform: (v) => v || 0.01 },
+      [api_providers.DEEPSEEK]: { transform: (v) => v || Number.EPSILON },
     },
     modelRules: [{ pattern: /^(o1|o3|o4)/, rule: null }],
   },
@@ -136,13 +136,13 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
     // Disabled by default (OpenAI doesn't support it)
     defaults: null,
     providers: {
-      [chat_completion_sources.CLAUDE]: {},
-      [chat_completion_sources.OPENROUTER]: {},
-      [chat_completion_sources.MAKERSUITE]: {},
-      [chat_completion_sources.VERTEXAI]: {},
-      [chat_completion_sources.COHERE]: {},
-      [chat_completion_sources.PERPLEXITY]: {},
-      [chat_completion_sources.ELECTRONHUB]: {},
+      [api_providers.CLAUDE]: {},
+      [api_providers.OPENROUTER]: {},
+      [api_providers.MAKERSUITE]: {},
+      [api_providers.VERTEXAI]: {},
+      [api_providers.COHERE]: {},
+      [api_providers.PERPLEXITY]: {},
+      [api_providers.ELECTRONHUB]: {},
     },
   },
 
@@ -150,7 +150,7 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
     // Disabled by default (OpenAI doesn't support it)
     defaults: null,
     providers: {
-      [chat_completion_sources.OPENROUTER]: {},
+      [api_providers.OPENROUTER]: {},
     },
   },
 
@@ -158,7 +158,7 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
     // Disabled by default (OpenAI doesn't support it)
     defaults: null,
     providers: {
-      [chat_completion_sources.OPENROUTER]: {},
+      [api_providers.OPENROUTER]: {},
     },
   },
 
@@ -166,7 +166,7 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
     // Disabled by default (OpenAI doesn't support it)
     defaults: null,
     providers: {
-      [chat_completion_sources.OPENROUTER]: {},
+      [api_providers.OPENROUTER]: {},
     },
   },
 
@@ -181,11 +181,11 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
       transform: (v: string[]) => (v && v.length > 0 ? v : undefined),
     },
     providers: {
-      [chat_completion_sources.COHERE]: { transform: cohereStopTransform },
-      [chat_completion_sources.MAKERSUITE]: { transform: googleStopTransform },
-      [chat_completion_sources.VERTEXAI]: { transform: googleStopTransform },
-      [chat_completion_sources.PERPLEXITY]: null,
-      [chat_completion_sources.ZAI]: { transform: zaiStopTransform },
+      [api_providers.COHERE]: { transform: cohereStopTransform },
+      [api_providers.MAKERSUITE]: { transform: googleStopTransform },
+      [api_providers.VERTEXAI]: { transform: googleStopTransform },
+      [api_providers.PERPLEXITY]: null,
+      [api_providers.ZAI]: { transform: zaiStopTransform },
     },
     modelRules: [
       { pattern: /^(o1|o3|o4)/, rule: null },
@@ -198,8 +198,8 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
 
   n: {
     providers: {
-      [chat_completion_sources.GROQ]: null,
-      [chat_completion_sources.XAI]: null,
+      [api_providers.GROQ]: null,
+      [api_providers.XAI]: null,
     },
     modelRules: [{ pattern: /^(o1|o3|o4)/, rule: null }],
   },
@@ -208,21 +208,21 @@ export const PARAMETER_DEFINITIONS: Partial<Record<keyof SamplerSettings, ParamC
 // --- Provider Injections ---
 
 export const PROVIDER_INJECTIONS: Partial<Record<string, InjectionFunction>> = {
-  [chat_completion_sources.CLAUDE]: (payload, { samplerSettings }) => {
+  [api_providers.CLAUDE]: (payload, { samplerSettings }) => {
     payload.claude_use_sysprompt = samplerSettings.providers.claude?.use_sysprompt;
     payload.assistant_prefill = samplerSettings.providers.claude?.assistant_prefill;
     payload.top_k = samplerSettings.top_k;
   },
 
-  [chat_completion_sources.MISTRALAI]: (payload) => {
+  [api_providers.MISTRALAI]: (payload) => {
     payload.safe_prompt = false;
   },
 
-  [chat_completion_sources.MAKERSUITE]: (payload, { samplerSettings }) => {
+  [api_providers.MAKERSUITE]: (payload, { samplerSettings }) => {
     payload.use_makersuite_sysprompt = samplerSettings.providers.google?.use_makersuite_sysprompt;
   },
 
-  [chat_completion_sources.VERTEXAI]: (payload, { samplerSettings, providerSpecific }) => {
+  [api_providers.VERTEXAI]: (payload, { samplerSettings, providerSpecific }) => {
     payload.use_makersuite_sysprompt = samplerSettings.providers.google?.use_makersuite_sysprompt;
     if (providerSpecific?.vertexai) {
       payload.vertexai_auth_mode = providerSpecific.vertexai.auth_mode;
@@ -231,21 +231,21 @@ export const PROVIDER_INJECTIONS: Partial<Record<string, InjectionFunction>> = {
     }
   },
 
-  [chat_completion_sources.OPENROUTER]: (payload, { providerSpecific }) => {
+  [api_providers.OPENROUTER]: (payload, { providerSpecific }) => {
     payload.use_fallback = providerSpecific.openrouter.useFallback;
     payload.provider = providerSpecific.openrouter?.providers;
     payload.allow_fallbacks = providerSpecific.openrouter.allowFallbacks;
     payload.middleout = providerSpecific.openrouter.middleout;
   },
 
-  [chat_completion_sources.CUSTOM]: (payload, { providerSpecific }) => {
+  [api_providers.CUSTOM]: (payload, { providerSpecific }) => {
     payload.custom_url = providerSpecific.custom?.url;
     payload.custom_include_body = providerSpecific.custom?.include_body;
     payload.custom_exclude_body = providerSpecific.custom?.exclude_body;
     payload.custom_include_headers = providerSpecific.custom?.include_headers;
   },
 
-  [chat_completion_sources.AZURE_OPENAI]: (payload, { providerSpecific }) => {
+  [api_providers.AZURE_OPENAI]: (payload, { providerSpecific }) => {
     if (providerSpecific.azure_openai) {
       payload.azure_base_url = providerSpecific.azure_openai.baseUrl;
       payload.azure_deployment_name = providerSpecific.azure_openai.deploymentName;
@@ -253,13 +253,13 @@ export const PROVIDER_INJECTIONS: Partial<Record<string, InjectionFunction>> = {
     }
   },
 
-  [chat_completion_sources.ZAI]: (payload, { providerSpecific }) => {
+  [api_providers.ZAI]: (payload, { providerSpecific }) => {
     if (providerSpecific?.zai?.endpoint) {
       payload.zai_endpoint = providerSpecific.zai.endpoint;
     }
   },
 
-  [chat_completion_sources.GROQ]: (payload) => {
+  [api_providers.GROQ]: (payload) => {
     delete payload.logprobs;
     delete payload.logit_bias;
     delete payload.top_logprobs;

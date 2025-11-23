@@ -129,7 +129,7 @@
     "budgetCap": "Budget Cap",
     "budgetCapHint": "(0 = disabled)",
     "insertionStrategy": "Insertion Strategy",
-    "insertionStrategyHint": "Determines the order in which lore from different sources is inserted into the context.",
+    "insertionStrategyHint": "Determines the order in which lore from different providers is inserted into the context.",
     "insertionStrategies": {
       "sortedEvenly": "Sorted Evenly",
       "characterLoreFirst": "Character Lore First",
@@ -274,8 +274,8 @@
     "manualInputNote": "Click slider numbers to input manually.",
     "docsLinkTooltip": "Documentation on sampling parameters.",
     "presets": {
-      "chatCompletion": {
-        "label": "Chat Completion Presets"
+      "sampler": {
+        "label": "Sampler Presets"
       },
       "import": "Import preset",
       "export": "Export preset",
@@ -390,8 +390,7 @@
       "valid": "Valid",
       "noConnection": "No connection...",
       "notConnected": "Not connected...",
-      "connecting": "Connecting...",
-      "notImplemented": "(Not implemented)"
+      "connecting": "Connecting..."
     }
   },
   "errors": {
@@ -595,19 +594,12 @@
       "title": "Click for stats!"
     },
     "moreOptions": {
-      "linkWorldInfo": "Link to World Info",
       "importCardLore": "Import Card Lore",
-      "characterSettingsOverrides": "Character Settings Overrides",
       "convertToPersona": "Convert to Persona",
-      "rename": "Rename",
-      "linkToSource": "Link to Source",
-      "replaceUpdate": "Replace / Update",
-      "importTags": "Import Tags",
-      "setAsWelcomeAssistant": "Set / Unset as Welcome Page Assistant"
+      "rename": "Rename"
     },
     "advanced": {
       "promptOverrides": "Prompt Overrides",
-      "promptOverridesHint": "(For Chat Completion and Instruct Mode)",
       "promptHint": "Insert {'{{original}}'} into either box to include the respective default prompt.",
       "mainPrompt": "Main Prompt",
       "mainPromptPlaceholder": "Any contents here will replace the default Main Prompt.",
@@ -683,13 +675,7 @@
         "nameExists": "A profile with this name already exists."
       }
     },
-    "api": "API",
-    "chatCompletion": "Chat Completion",
-    "textCompletion": "Text Completion (TODO)",
-    "novel": "NovelAI (TODO)",
-    "horde": "AI Horde (TODO)",
-    "kobold": "KoboldAI Classic (TODO)",
-    "source": "Chat Completion Source",
+    "provider": "Provider",
     "openaiKey": "OpenAI API key",
     "claudeKey": "Claude API Key",
     "openrouterKey": "OpenRouter API Key",
@@ -743,7 +729,7 @@
     "deepseekModel": "DeepSeek Model",
     "connect": "Connect",
     "connecting": "Connecting",
-    "sources": {
+    "providers": {
       "openai": "OpenAI",
       "claude": "Claude",
       "openrouter": "OpenRouter",

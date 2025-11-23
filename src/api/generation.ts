@@ -1,6 +1,6 @@
 import { ReasoningEffort } from '../constants';
-import type { ChatCompletionPayload, ChatCompletionSource, GenerationResponse, StreamedChunk } from '../types';
-import { chat_completion_sources } from '../types';
+import type { ApiProvider, ChatCompletionPayload, GenerationResponse, StreamedChunk } from '../types';
+import { api_providers } from '../types';
 import type { BuildChatCompletionPayloadOptions } from '../types/generation';
 import type { SamplerSettings } from '../types/settings';
 import { getRequestHeaders } from '../utils/client';
@@ -11,26 +11,26 @@ import {
   type ParamHandling,
 } from './provider-definitions';
 
-const REASONING_EFFORT_SOURCES: ChatCompletionSource[] = [
-  chat_completion_sources.OPENAI,
-  chat_completion_sources.AZURE_OPENAI,
-  chat_completion_sources.CUSTOM,
-  chat_completion_sources.XAI,
-  chat_completion_sources.AIMLAPI,
-  chat_completion_sources.OPENROUTER,
-  chat_completion_sources.POLLINATIONS,
-  chat_completion_sources.PERPLEXITY,
-  chat_completion_sources.COMETAPI,
-  chat_completion_sources.ELECTRONHUB,
+const REASONING_EFFORT_PROVIDERS: ApiProvider[] = [
+  api_providers.OPENAI,
+  api_providers.AZURE_OPENAI,
+  api_providers.CUSTOM,
+  api_providers.XAI,
+  api_providers.AIMLAPI,
+  api_providers.OPENROUTER,
+  api_providers.POLLINATIONS,
+  api_providers.PERPLEXITY,
+  api_providers.COMETAPI,
+  api_providers.ELECTRONHUB,
 ];
 
 export function buildChatCompletionPayload(options: BuildChatCompletionPayloadOptions): ChatCompletionPayload {
-  const { samplerSettings, messages, model, source } = options;
+  const { samplerSettings, messages, model, provider } = options;
 
   const payload: ChatCompletionPayload = {
     messages,
     model,
-    chat_completion_source: source,
+    chat_completion_source: provider,
     include_reasoning: !!samplerSettings.show_thoughts,
   };
 
@@ -60,8 +60,8 @@ export function buildChatCompletionPayload(options: BuildChatCompletionPayloadOp
     let rule: ParamHandling | null | undefined = config?.defaults;
 
     // Apply provider specific overrides
-    if (config?.providers && source in config.providers) {
-      const providerRule = config.providers[source];
+    if (config?.providers && provider in config.providers) {
+      const providerRule = config.providers[provider];
       if (providerRule === null) {
         rule = null;
       } else if (providerRule) {
@@ -107,7 +107,7 @@ export function buildChatCompletionPayload(options: BuildChatCompletionPayloadOp
   }
 
   // 2. Apply Provider Specific Injections (auth tokens, strict deletions, etc.)
-  const providerInject = PROVIDER_INJECTIONS[source];
+  const providerInject = PROVIDER_INJECTIONS[provider];
   if (providerInject) {
     providerInject(payload, options);
   }
@@ -129,17 +129,17 @@ export function buildChatCompletionPayload(options: BuildChatCompletionPayloadOp
 }
 
 function applyReasoningEffort(payload: ChatCompletionPayload, options: BuildChatCompletionPayloadOptions) {
-  const { samplerSettings, source, model, modelList } = options;
+  const { samplerSettings, provider, model, modelList } = options;
 
   if (!samplerSettings.reasoning_effort) return;
-  if (!REASONING_EFFORT_SOURCES.includes(source)) return;
+  if (!REASONING_EFFORT_PROVIDERS.includes(provider)) return;
 
   // Azure Specific Constraint: Reasoning effort not supported on older GPT-3/4 models
-  if (source === chat_completion_sources.AZURE_OPENAI && /^gpt-[34]/.test(model)) {
+  if (provider === api_providers.AZURE_OPENAI && /^gpt-[34]/.test(model)) {
     return;
   }
   // XAI Constraint: only grok-3-mini supports reasoning effort currently
-  if (source === chat_completion_sources.XAI && !model.includes('grok-3-mini')) {
+  if (provider === api_providers.XAI && !model.includes('grok-3-mini')) {
     return;
   }
 
@@ -151,10 +151,7 @@ function applyReasoningEffort(payload: ChatCompletionPayload, options: BuildChat
       break;
     case ReasoningEffort.MIN:
       // Special case for GPT-5 on OpenAI/Azure
-      if (
-        (source === chat_completion_sources.OPENAI || source === chat_completion_sources.AZURE_OPENAI) &&
-        /^gpt-5/.test(model)
-      ) {
+      if ((provider === api_providers.OPENAI || provider === api_providers.AZURE_OPENAI) && /^gpt-5/.test(model)) {
         reasoningEffort = ReasoningEffort.MIN;
       } else {
         reasoningEffort = ReasoningEffort.LOW;
@@ -168,7 +165,7 @@ function applyReasoningEffort(payload: ChatCompletionPayload, options: BuildChat
   }
 
   // ElectronHub specific validation
-  if (source === chat_completion_sources.ELECTRONHUB && Array.isArray(modelList) && reasoningEffort) {
+  if (provider === api_providers.ELECTRONHUB && Array.isArray(modelList) && reasoningEffort) {
     const currentModel = modelList.find((m) => m.id === model);
     const supportedEfforts = currentModel?.metadata?.supported_reasoning_efforts;
     if (Array.isArray(supportedEfforts) && !supportedEfforts.includes(reasoningEffort as string)) {
@@ -193,17 +190,17 @@ function handleApiError(data: any): void {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractMessage(data: any, source: ChatCompletionSource): string {
+function extractMessage(data: any, provider: ApiProvider): string {
   if (typeof data === 'string') {
     return data;
   }
 
-  switch (source) {
-    case chat_completion_sources.CLAUDE:
+  switch (provider) {
+    case api_providers.CLAUDE:
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data?.content?.find((p: any) => p.type === 'text')?.text ?? '';
-    case chat_completion_sources.OPENAI:
-    case chat_completion_sources.OPENROUTER:
+    case api_providers.OPENAI:
+    case api_providers.OPENROUTER:
     // Fallback for most OpenAI-compatible APIs
     default:
       return (
@@ -217,13 +214,13 @@ function extractMessage(data: any, source: ChatCompletionSource): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractReasoning(data: any, source: ChatCompletionSource): string | undefined {
-  switch (source) {
-    case chat_completion_sources.CLAUDE:
+function extractReasoning(data: any, provider: ApiProvider): string | undefined {
+  switch (provider) {
+    case api_providers.CLAUDE:
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data?.content?.find((p: any) => p.type === 'thinking')?.thinking;
-    case chat_completion_sources.MAKERSUITE:
-    case chat_completion_sources.VERTEXAI:
+    case api_providers.MAKERSUITE:
+    case api_providers.VERTEXAI:
       return (
         data?.responseContent?.parts
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +229,7 @@ function extractReasoning(data: any, source: ChatCompletionSource): string | und
           ?.map((p: any) => p.text)
           ?.join('\n\n') ?? ''
       );
-    case chat_completion_sources.MISTRALAI:
+    case api_providers.MISTRALAI:
       return (
         data?.choices?.[0]?.message?.content?.[0]?.thinking
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -241,17 +238,17 @@ function extractReasoning(data: any, source: ChatCompletionSource): string | und
           ?.filter((x: any) => x)
           ?.join('\n\n') ?? ''
       );
-    case chat_completion_sources.OPENROUTER:
-    case chat_completion_sources.DEEPSEEK:
-    case chat_completion_sources.XAI:
-    case chat_completion_sources.AIMLAPI:
-    case chat_completion_sources.POLLINATIONS:
-    case chat_completion_sources.MOONSHOT:
-    case chat_completion_sources.COMETAPI:
-    case chat_completion_sources.ELECTRONHUB:
-    case chat_completion_sources.NANOGPT:
-    case chat_completion_sources.ZAI:
-    case chat_completion_sources.CUSTOM:
+    case api_providers.OPENROUTER:
+    case api_providers.DEEPSEEK:
+    case api_providers.XAI:
+    case api_providers.AIMLAPI:
+    case api_providers.POLLINATIONS:
+    case api_providers.MOONSHOT:
+    case api_providers.COMETAPI:
+    case api_providers.ELECTRONHUB:
+    case api_providers.NANOGPT:
+    case api_providers.ZAI:
+    case api_providers.CUSTOM:
       return data?.choices?.[0]?.message?.reasoning_content ?? data?.choices?.[0]?.message?.reasoning;
     default:
       return undefined;
@@ -259,15 +256,15 @@ function extractReasoning(data: any, source: ChatCompletionSource): string | und
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getStreamingReply(data: any, source: ChatCompletionSource): { delta: string; reasoning?: string } {
-  switch (source) {
-    case chat_completion_sources.CLAUDE:
+function getStreamingReply(data: any, provider: ApiProvider): { delta: string; reasoning?: string } {
+  switch (provider) {
+    case api_providers.CLAUDE:
       return {
         delta: data?.delta?.text || '',
         reasoning: data?.delta?.thinking || '',
       };
-    case chat_completion_sources.MAKERSUITE:
-    case chat_completion_sources.VERTEXAI:
+    case api_providers.MAKERSUITE:
+    case api_providers.VERTEXAI:
       return {
         delta:
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -276,7 +273,7 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data?.candidates?.[0]?.content?.parts?.filter((x: any) => x.thought)?.map((x: any) => x.text)?.[0] || '',
       };
-    case chat_completion_sources.MISTRALAI:
+    case api_providers.MISTRALAI:
       return {
         delta:
           data.choices?.[0]?.delta?.content
@@ -290,23 +287,23 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
           data.choices?.filter((x: any) => x?.delta?.content?.[0]?.thinking)?.[0]?.delta?.content?.[0]?.thinking?.[0]
             ?.text || '',
       };
-    case chat_completion_sources.OPENROUTER:
+    case api_providers.OPENROUTER:
       return {
         delta:
           data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reasoning: data.choices?.filter((x: any) => x?.delta?.reasoning)?.[0]?.delta?.reasoning || '',
       };
-    case chat_completion_sources.DEEPSEEK:
-    case chat_completion_sources.XAI:
-    case chat_completion_sources.CUSTOM:
-    case chat_completion_sources.POLLINATIONS:
-    case chat_completion_sources.AIMLAPI:
-    case chat_completion_sources.MOONSHOT:
-    case chat_completion_sources.COMETAPI:
-    case chat_completion_sources.ELECTRONHUB:
-    case chat_completion_sources.NANOGPT:
-    case chat_completion_sources.ZAI:
+    case api_providers.DEEPSEEK:
+    case api_providers.XAI:
+    case api_providers.CUSTOM:
+    case api_providers.POLLINATIONS:
+    case api_providers.AIMLAPI:
+    case api_providers.MOONSHOT:
+    case api_providers.COMETAPI:
+    case api_providers.ELECTRONHUB:
+    case api_providers.NANOGPT:
+    case api_providers.ZAI:
       return {
         delta:
           data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content ?? data.choices?.[0]?.text ?? '',
@@ -318,7 +315,7 @@ function getStreamingReply(data: any, source: ChatCompletionSource): { delta: st
           '',
       };
     // Fallback for OpenAI and compatible APIs
-    case chat_completion_sources.OPENAI:
+    case api_providers.OPENAI:
     default:
       return {
         delta:
@@ -350,9 +347,9 @@ export class ChatCompletionService {
       }
       handleApiError(responseData);
 
-      const source = payload.chat_completion_source as ChatCompletionSource;
-      const messageContent = extractMessage(responseData, source);
-      const reasoning = extractReasoning(responseData, source);
+      const provider = payload.chat_completion_source as ApiProvider;
+      const messageContent = extractMessage(responseData, provider);
+      const reasoning = extractReasoning(responseData, provider);
 
       return {
         content: messageContent,
@@ -404,8 +401,8 @@ export class ChatCompletionService {
                   throw new Error(parsed.error.message || 'Unknown stream error');
                 }
 
-                const source = payload.chat_completion_source as ChatCompletionSource;
-                const chunk = getStreamingReply(parsed, source);
+                const provider = payload.chat_completion_source as ApiProvider;
+                const chunk = getStreamingReply(parsed, provider);
 
                 const hasNewReasoning = chunk.reasoning && chunk.reasoning.length > 0;
                 const hasNewDelta = chunk.delta && chunk.delta.length > 0;

@@ -303,15 +303,9 @@ const roleOptions = computed(() => [
 
 const moreOptions = computed(() => [
   { value: 'default', label: t('characterEditor.more'), disabled: true },
-  { value: 'linkWorldInfo', label: t('characterEditor.moreOptions.linkWorldInfo') },
   { value: 'importCardLore', label: t('characterEditor.moreOptions.importCardLore') },
-  { value: 'characterSettingsOverrides', label: t('characterEditor.moreOptions.characterSettingsOverrides') },
   { value: 'convertToPersona', label: t('characterEditor.moreOptions.convertToPersona') },
   { value: 'rename', label: t('characterEditor.moreOptions.rename') },
-  { value: 'linkToSource', label: t('characterEditor.moreOptions.linkToSource') },
-  { value: 'replaceUpdate', label: t('characterEditor.moreOptions.replaceUpdate') },
-  { value: 'importTags', label: t('characterEditor.moreOptions.importTags') },
-  { value: 'setAsWelcomeAssistant', label: t('characterEditor.moreOptions.setAsWelcomeAssistant') },
 ]);
 
 async function handleMoreAction(action: string) {
@@ -615,7 +609,6 @@ const embeddedLorebookName = computed({
         <CollapsibleSection
           v-model:is-open="isPromptOverridesOpen"
           :title="t('characterEditor.advanced.promptOverrides')"
-          :subtitle="t('characterEditor.advanced.promptOverridesHint')"
         >
           <div class="inline-drawer-content--column">
             <small>{{ t('characterEditor.advanced.promptHint') }}</small>
@@ -670,7 +663,7 @@ const embeddedLorebookName = computed({
           <div class="inline-drawer-content--column">
             <!-- TODO: Move to another place -->
             <FormItem :label="t('characterEditor.embeddedLorebook')">
-              <Select v-model="embeddedLorebookName" :options="lorebookOptions" />
+              <Select v-model="embeddedLorebookName" :options="lorebookOptions" searchable />
             </FormItem>
 
             <small>{{ t('characterEditor.advanced.metadataOptional') }}</small>

@@ -21,17 +21,9 @@ const isPanelPinned = ref(false);
 function checkConditions(conditions?: AiConfigCondition): boolean {
   if (!conditions) return true;
 
-  if (conditions.api) {
-    const apis = Array.isArray(conditions.api) ? conditions.api : [conditions.api];
-    if (!apis.includes(settingsStore.settings.api.main)) return false;
-  }
-  if (conditions.source) {
-    const sources = Array.isArray(conditions.source) ? conditions.source : [conditions.source];
-    if (
-      !settingsStore.settings.api.chatCompletionSource ||
-      !sources.includes(settingsStore.settings.api.chatCompletionSource)
-    )
-      return false;
+  if (conditions.provider) {
+    const providers = Array.isArray(conditions.provider) ? conditions.provider : [conditions.provider];
+    if (!settingsStore.settings.api.provider || !providers.includes(settingsStore.settings.api.provider)) return false;
   }
   return true;
 }

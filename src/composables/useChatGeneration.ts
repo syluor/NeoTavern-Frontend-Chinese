@@ -209,13 +209,13 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         }
       }
 
-      // Determine Source
-      const effectiveSource = profileSettings?.chat_completion_source || settings.api.chatCompletionSource;
+      // Determine Provider
+      const effectiveProvider = profileSettings?.provider || settings.api.provider;
 
       // Determine Model
       let effectiveModel = profileSettings?.model;
       if (!effectiveModel) {
-        effectiveModel = settings.api.selectedProviderModels[effectiveSource] || apiStore.activeModel || '';
+        effectiveModel = settings.api.selectedProviderModels[effectiveProvider] || apiStore.activeModel || '';
       }
 
       if (!effectiveModel) throw new Error(t('chat.generate.noModelError'));
@@ -259,7 +259,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         persona: activePersona,
         settings: {
           sampler: effectiveSamplerSettings,
-          source: effectiveSource,
+          provider: effectiveProvider,
           model: effectiveModel,
           providerSpecific: settings.api.providerSpecific,
         },
@@ -347,7 +347,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         generationId: finalGenerationId,
         messageIndex: mode === GenerationMode.CONTINUE ? activeChatMessages.length - 1 : activeChatMessages.length,
         model: context.settings.model,
-        api: context.settings.source,
+        api: context.settings.provider,
         tokenizer: settings.api.tokenizer,
         presetName: profileSettings?.sampler || settings.api.selectedSampler || 'Default',
         messages: messages,
@@ -361,7 +361,7 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         messages,
         model: context.settings.model,
         samplerSettings: context.settings.sampler,
-        source: context.settings.source,
+        provider: context.settings.provider,
         providerSpecific: context.settings.providerSpecific,
         playerName: context.playerName,
         modelList: apiStore.modelList,

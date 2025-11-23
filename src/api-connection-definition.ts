@@ -1,11 +1,11 @@
 import { OpenrouterMiddleoutType } from './constants';
-import { chat_completion_sources, type AiConfigSection } from './types';
+import { api_providers, type AiConfigSection } from './types';
 
 export const apiConnectionDefinition: AiConfigSection[] = [
   // OpenAI
   {
     id: 'openai',
-    conditions: { source: chat_completion_sources.OPENAI },
+    conditions: { provider: api_providers.OPENAI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.openaiKey' },
       {
@@ -18,7 +18,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Claude
   {
     id: 'claude',
-    conditions: { source: chat_completion_sources.CLAUDE },
+    conditions: { provider: api_providers.CLAUDE },
     items: [
       { widget: 'key-manager', label: 'apiConnections.claudeKey' },
       {
@@ -36,7 +36,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // OpenRouter
   {
     id: 'openrouter',
-    conditions: { source: chat_completion_sources.OPENROUTER },
+    conditions: { provider: api_providers.OPENROUTER },
     items: [
       { widget: 'key-manager', label: 'apiConnections.openrouterKey' },
       {
@@ -77,7 +77,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Mistral
   {
     id: 'mistral',
-    conditions: { source: chat_completion_sources.MISTRALAI },
+    conditions: { provider: api_providers.MISTRALAI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.mistralaiKey' },
       {
@@ -94,7 +94,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Groq
   {
     id: 'groq',
-    conditions: { source: chat_completion_sources.GROQ },
+    conditions: { provider: api_providers.GROQ },
     items: [
       { widget: 'key-manager', label: 'apiConnections.groqKey' },
       {
@@ -113,7 +113,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Custom
   {
     id: 'custom',
-    conditions: { source: chat_completion_sources.CUSTOM },
+    conditions: { provider: api_providers.CUSTOM },
     items: [
       {
         id: 'api.providerSpecific.custom.url',
@@ -131,7 +131,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Azure OpenAI
   {
     id: 'azure',
-    conditions: { source: chat_completion_sources.AZURE_OPENAI },
+    conditions: { provider: api_providers.AZURE_OPENAI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.azureKey' },
       {
@@ -160,7 +160,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Deepseek
   {
     id: 'deepseek',
-    conditions: { source: chat_completion_sources.DEEPSEEK },
+    conditions: { provider: api_providers.DEEPSEEK },
     items: [
       { widget: 'key-manager', label: 'apiConnections.deepseekKey' },
       {
@@ -177,7 +177,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // AI21
   {
     id: 'ai21',
-    conditions: { source: chat_completion_sources.AI21 },
+    conditions: { provider: api_providers.AI21 },
     items: [
       { widget: 'key-manager', label: 'apiConnections.ai21Key' },
       {
@@ -191,7 +191,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Google (MakerSuite)
   {
     id: 'makersuite',
-    conditions: { source: chat_completion_sources.MAKERSUITE },
+    conditions: { provider: api_providers.MAKERSUITE },
     items: [
       // TODO: Key manager might need to handle specific auth types for Google? Usually it's an API Key for MakerSuite.
       { widget: 'key-manager', label: 'apiConnections.googleKey' },
@@ -206,7 +206,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // VertexAI
   {
     id: 'vertexai',
-    conditions: { source: chat_completion_sources.VERTEXAI },
+    conditions: { provider: api_providers.VERTEXAI },
     items: [
       // Vertex AI typically uses ADC or JSON key file content. Using key-manager for now as placeholder for token/key.
       { widget: 'key-manager', label: 'apiConnections.vertexaiKey' },
@@ -232,7 +232,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Cohere
   {
     id: 'cohere',
-    conditions: { source: chat_completion_sources.COHERE },
+    conditions: { provider: api_providers.COHERE },
     items: [
       { widget: 'key-manager', label: 'apiConnections.cohereKey' },
       {
@@ -246,7 +246,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Perplexity
   {
     id: 'perplexity',
-    conditions: { source: chat_completion_sources.PERPLEXITY },
+    conditions: { provider: api_providers.PERPLEXITY },
     items: [
       { widget: 'key-manager', label: 'apiConnections.perplexityKey' },
       {
@@ -260,7 +260,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // ElectronHub
   {
     id: 'electronhub',
-    conditions: { source: chat_completion_sources.ELECTRONHUB },
+    conditions: { provider: api_providers.ELECTRONHUB },
     items: [
       { widget: 'key-manager', label: 'apiConnections.electronhubKey' },
       {
@@ -274,7 +274,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // NanoGPT
   {
     id: 'nanogpt',
-    conditions: { source: chat_completion_sources.NANOGPT },
+    conditions: { provider: api_providers.NANOGPT },
     items: [
       { widget: 'key-manager', label: 'apiConnections.nanogptKey' },
       {
@@ -288,7 +288,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // AIMLAPI
   {
     id: 'aimlapi',
-    conditions: { source: chat_completion_sources.AIMLAPI },
+    conditions: { provider: api_providers.AIMLAPI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.aimlapiKey' },
       {
@@ -302,7 +302,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // XAI
   {
     id: 'xai',
-    conditions: { source: chat_completion_sources.XAI },
+    conditions: { provider: api_providers.XAI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.xapiKey' },
       {
@@ -316,7 +316,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Pollinations
   {
     id: 'pollinations',
-    conditions: { source: chat_completion_sources.POLLINATIONS },
+    conditions: { provider: api_providers.POLLINATIONS },
     items: [
       // Pollinations might not need a key, but putting it just in case or leaving it out if usually free/no-auth?
       // Assuming it acts like others for now.
@@ -331,7 +331,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Moonshot
   {
     id: 'moonshot',
-    conditions: { source: chat_completion_sources.MOONSHOT },
+    conditions: { provider: api_providers.MOONSHOT },
     items: [
       { widget: 'key-manager', label: 'apiConnections.moonshotKey' },
       {
@@ -345,7 +345,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // Fireworks
   {
     id: 'fireworks',
-    conditions: { source: chat_completion_sources.FIREWORKS },
+    conditions: { provider: api_providers.FIREWORKS },
     items: [
       { widget: 'key-manager', label: 'apiConnections.fireworksKey' },
       {
@@ -359,7 +359,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // CometAPI
   {
     id: 'cometapi',
-    conditions: { source: chat_completion_sources.COMETAPI },
+    conditions: { provider: api_providers.COMETAPI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.cometapiKey' },
       {
@@ -373,7 +373,7 @@ export const apiConnectionDefinition: AiConfigSection[] = [
   // ZAI
   {
     id: 'zai',
-    conditions: { source: chat_completion_sources.ZAI },
+    conditions: { provider: api_providers.ZAI },
     items: [
       { widget: 'key-manager', label: 'apiConnections.zaiKey' },
       {

@@ -1,22 +1,30 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts" generic="T extends string | number">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from './Icon.vue';
 
-interface Option<T> {
+export interface Option<T> {
   label: string;
   value: T;
   disabled?: boolean;
 }
 
+export interface Group<T> {
+  label: string;
+  options: Option<T>[];
+}
+
+export type SelectItem<T> = Option<T> | Group<T>;
+
 interface Props {
   modelValue: T | T[];
-  options: Option<T>[];
+  options: SelectItem<T>[];
   label?: string;
   disabled?: boolean;
   title?: string;
   multiple?: boolean;
   placeholder?: string;
+  searchable?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
   label: undefined,
   title: undefined,
   placeholder: 'Select...',
+  searchable: false,
 });
 
 const emit = defineEmits<{
@@ -34,14 +43,30 @@ const emit = defineEmits<{
 
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const searchQuery = ref('');
 
 function toggleOpen() {
   if (props.disabled) return;
   isOpen.value = !isOpen.value;
+
+  if (isOpen.value && props.searchable) {
+    nextTick(() => {
+      searchInputRef.value?.focus();
+    });
+  } else {
+    // Reset search on close
+    searchQuery.value = '';
+  }
 }
 
 function close() {
   isOpen.value = false;
+  searchQuery.value = '';
+}
+
+function isGroup(item: SelectItem<T>): item is Group<T> {
+  return 'options' in item;
 }
 
 function isSelected(value: T): boolean {
@@ -74,19 +99,63 @@ function selectOption(option: Option<T>) {
   }
 }
 
+// Used for Display Value lookup (always looks at all props, ignores search)
+const flatOptions = computed(() => {
+  const flat: Option<T>[] = [];
+  for (const item of props.options) {
+    if (isGroup(item)) {
+      flat.push(...item.options);
+    } else {
+      flat.push(item);
+    }
+  }
+  return flat;
+});
+
+// Used for rendering the dropdown list (filters based on search)
+const filteredOptions = computed(() => {
+  if (!props.searchable || !searchQuery.value.trim()) {
+    return props.options;
+  }
+
+  const query = searchQuery.value.toLowerCase().trim();
+  const result: SelectItem<T>[] = [];
+
+  for (const item of props.options) {
+    if (isGroup(item)) {
+      // Filter options within the group
+      const matchingChildren = item.options.filter((opt) => opt.label.toLowerCase().includes(query));
+      if (matchingChildren.length > 0) {
+        // Return a new group object with only matching children
+        result.push({
+          ...item,
+          options: matchingChildren,
+        });
+      }
+    } else {
+      // Check individual option
+      if (item.label.toLowerCase().includes(query)) {
+        result.push(item);
+      }
+    }
+  }
+
+  return result;
+});
+
 const displayValue = computed(() => {
   if (props.multiple && Array.isArray(props.modelValue)) {
     if (props.modelValue.length === 0) return props.placeholder;
 
     const selectedLabels = props.modelValue
-      .map((val) => props.options.find((opt) => opt.value === val)?.label)
+      .map((val) => flatOptions.value.find((opt) => opt.value === val)?.label)
       .filter(Boolean);
 
     if (selectedLabels.length === 0) return props.placeholder;
     return selectedLabels.join(', ');
   }
 
-  const selectedOption = props.options.find((opt) => opt.value === props.modelValue);
+  const selectedOption = flatOptions.value.find((opt) => opt.value === props.modelValue);
   return selectedOption ? selectedOption.label : props.placeholder;
 });
 
@@ -129,23 +198,59 @@ watch(
 
     <Transition name="fade-fast">
       <div v-if="isOpen" class="select-dropdown">
-        <div
-          v-for="opt in options"
-          :key="String(opt.value)"
-          class="select-option"
-          :class="{
-            'is-selected': isSelected(opt.value),
-            'is-disabled': opt.disabled,
-          }"
-          @click.stop="selectOption(opt)"
-        >
-          <div v-if="multiple" class="option-checkbox">
-            <Icon v-if="isSelected(opt.value)" icon="fa-check" class="check-icon" />
-          </div>
-          <span class="option-label">{{ opt.label }}</span>
-          <Icon v-if="!multiple && isSelected(opt.value)" icon="fa-check" class="check-icon-single" />
+        <!-- Search Input -->
+        <div v-if="searchable" class="select-search-container" @click.stop>
+          <input
+            ref="searchInputRef"
+            v-model="searchQuery"
+            type="text"
+            class="select-search-input"
+            :placeholder="placeholder || 'Search...'"
+          />
+          <Icon icon="fa-magnifying-glass" class="select-search-icon" />
         </div>
-        <div v-if="options.length === 0" class="select-option is-disabled">No options</div>
+
+        <template v-for="(item, index) in filteredOptions" :key="index">
+          <!-- Group -->
+          <div v-if="isGroup(item)" class="select-group">
+            <div v-if="item.label" class="select-group-label">{{ item.label }}</div>
+            <div
+              v-for="opt in item.options"
+              :key="String(opt.value)"
+              class="select-option is-nested"
+              :class="{
+                'is-selected': isSelected(opt.value),
+                'is-disabled': opt.disabled,
+              }"
+              @click.stop="selectOption(opt)"
+            >
+              <div v-if="multiple" class="option-checkbox">
+                <Icon v-if="isSelected(opt.value)" icon="fa-check" class="check-icon" />
+              </div>
+              <span class="option-label">{{ opt.label }}</span>
+              <Icon v-if="!multiple && isSelected(opt.value)" icon="fa-check" class="check-icon-single" />
+            </div>
+          </div>
+
+          <!-- Single Option -->
+          <div
+            v-else
+            class="select-option"
+            :class="{
+              'is-selected': isSelected(item.value),
+              'is-disabled': item.disabled,
+            }"
+            @click.stop="selectOption(item)"
+          >
+            <div v-if="multiple" class="option-checkbox">
+              <Icon v-if="isSelected(item.value)" icon="fa-check" class="check-icon" />
+            </div>
+            <span class="option-label">{{ item.label }}</span>
+            <Icon v-if="!multiple && isSelected(item.value)" icon="fa-check" class="check-icon-single" />
+          </div>
+        </template>
+
+        <div v-if="filteredOptions.length === 0" class="select-option is-disabled">No options found</div>
       </div>
     </Transition>
   </div>

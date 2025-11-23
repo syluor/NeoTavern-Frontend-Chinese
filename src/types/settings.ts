@@ -7,7 +7,7 @@ import {
   type TagImportSetting,
   type TokenizerType,
 } from '../constants';
-import type { ChatCompletionSource, ConnectionProfile } from './api';
+import type { ApiProvider, ConnectionProfile } from './api';
 import type { BackgroundFitting, MessageRole } from './common';
 import type { I18nKey } from './i18n';
 import type { Persona, PersonaConnection } from './persona';
@@ -68,7 +68,7 @@ export interface SamplerSettings {
 }
 
 export interface LegacyOaiSettings {
-  chat_completion_source: ChatCompletionSource;
+  chat_completion_source: ApiProvider;
   openai_model?: string;
   claude_model?: string;
   openrouter_model?: string;
@@ -133,7 +133,7 @@ export interface LegacyOaiSettings {
 }
 
 export interface LegacyOaiPresetSettings {
-  chat_completion_source: ChatCompletionSource;
+  chat_completion_source: ApiProvider;
   openai_model?: string;
   claude_model?: string;
   openrouter_model?: string;
@@ -220,15 +220,14 @@ export interface Settings {
     personas: Persona[];
   };
   api: {
-    main: string;
-    chatCompletionSource: ChatCompletionSource;
+    provider: ApiProvider;
     reverseProxy: string;
     proxyPassword: string;
     selectedSampler?: string;
     samplers: SamplerSettings;
     connectionProfiles: ConnectionProfile[];
     selectedConnectionProfile?: string;
-    selectedProviderModels: Record<ChatCompletionSource, string>;
+    selectedProviderModels: Record<ApiProvider, string>;
     tokenizer: TokenizerType;
     providerSpecific: {
       openrouter: {
@@ -329,7 +328,7 @@ export interface LegacySettings {
   main_api?: string;
   extension_settings?: {
     connectionManager?: {
-      profiles?: Record<string, { id: string; mode: 'cc' | 'tc'; api: ChatCompletionSource; model: string }>;
+      profiles?: Record<string, { id: string; mode: 'cc' | 'tc'; api: ApiProvider; model: string }>;
       selected?: string;
     };
   };

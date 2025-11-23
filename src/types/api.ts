@@ -1,7 +1,7 @@
 import type { I18nKey } from './i18n';
 import type { SettingsPath } from './settings';
 
-export const chat_completion_sources = {
+export const api_providers = {
   OPENAI: 'openai',
   CLAUDE: 'claude',
   OPENROUTER: 'openrouter',
@@ -26,13 +26,12 @@ export const chat_completion_sources = {
   ZAI: 'zai',
 } as const;
 
-export type ChatCompletionSource = (typeof chat_completion_sources)[keyof typeof chat_completion_sources];
+export type ApiProvider = (typeof api_providers)[keyof typeof api_providers];
 
 export interface ConnectionProfile {
   id: string;
   name: string;
-  api?: string;
-  chat_completion_source?: ChatCompletionSource;
+  provider?: ApiProvider;
   model?: string;
   sampler?: string;
 }
@@ -45,11 +44,10 @@ export interface ApiModel {
 }
 
 export interface AiConfigCondition {
-  api?: string | string[];
-  source?: ChatCompletionSource | ChatCompletionSource[];
+  provider?: ApiProvider | ApiProvider[];
 }
 
-// TODO: Some values might change based on model/source, e.g., max tokens
+// TODO: Some values might change based on model/provider, e.g., max tokens
 export interface AiConfigItem {
   id?: SettingsPath;
   widget:

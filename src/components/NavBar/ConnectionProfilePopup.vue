@@ -21,19 +21,17 @@ const settingsStore = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
 const profileName = ref('New Profile');
 
-const includeApi = ref(true);
-const includeSource = ref(true);
+const includeProvider = ref(true);
 const includeModel = ref(true);
 const includeSampler = ref(true);
 
-const currentApi = computed(() => settingsStore.settings.api.main);
-const currentSource = computed(() => settingsStore.settings.api.chatCompletionSource);
+const currentProvider = computed(() => settingsStore.settings.api.provider);
 const currentModel = computed(() => apiStore.activeModel);
 const currentSampler = computed(() => settingsStore.settings.api.selectedSampler);
 
 const modelLabel = computed(() => {
-  const source = currentSource.value;
-  switch (source) {
+  const provider = currentProvider.value;
+  switch (provider) {
     case 'openai':
       return t('apiConnections.openaiModel');
     case 'claude':
@@ -47,7 +45,7 @@ const modelLabel = computed(() => {
     case 'azure_openai':
       return t('apiConnections.azureModel');
     case 'custom':
-    // Fallback for all other sources without a specific label to a generic "Model Name"
+    // Fallback for all other providers without a specific label to a generic "Model Name"
     case 'ai21':
     case 'makersuite':
     case 'vertexai':
@@ -73,8 +71,7 @@ watch(
   (isVisible) => {
     if (isVisible) {
       profileName.value = 'New Profile';
-      includeApi.value = true;
-      includeSource.value = true;
+      includeProvider.value = true;
       includeModel.value = true;
       includeSampler.value = true;
       dialog.value?.showModal();
@@ -99,8 +96,7 @@ function save() {
     name: trimmedName,
   };
 
-  if (includeApi.value) profile.api = currentApi.value;
-  if (includeSource.value) profile.chat_completion_source = currentSource.value;
+  if (includeProvider.value) profile.provider = currentProvider.value;
   if (includeModel.value) profile.model = currentModel.value;
   if (includeSampler.value) profile.sampler = currentSampler.value;
 
@@ -122,16 +118,13 @@ function save() {
         <h4>{{ t('apiConnections.profileManagement.fieldsToInclude') }}</h4>
 
         <div class="fields-grid">
-          <Checkbox v-model="includeApi" :label="t('apiConnections.api')" />
-          <div class="field-value">{{ currentApi }}</div>
-
-          <Checkbox v-model="includeSource" :label="t('apiConnections.source')" />
-          <div class="field-value">{{ currentSource }}</div>
+          <Checkbox v-model="includeProvider" :label="t('apiConnections.provider')" />
+          <div class="field-value">{{ currentProvider }}</div>
 
           <Checkbox v-model="includeModel" :label="modelLabel" />
           <div class="field-value">{{ currentModel }}</div>
 
-          <Checkbox v-model="includeSampler" :label="t('aiConfig.presets.chatCompletion.label')" />
+          <Checkbox v-model="includeSampler" :label="t('aiConfig.presets.sampler.label')" />
           <div class="field-value">{{ currentSampler }}</div>
         </div>
       </div>

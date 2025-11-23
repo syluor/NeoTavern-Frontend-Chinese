@@ -55,7 +55,7 @@ function deepClone<T>(obj: T): T {
   if (typeof obj !== 'object') {
     return obj;
   }
-  return structuredClone(obj);
+  return JSON.parse(JSON.stringify(obj)) as T;
 }
 
 /**

@@ -66,6 +66,11 @@ const groqModelOptions = [
   { label: 'mixtral-8x7b-32768', value: 'mixtral-8x7b-32768' },
 ];
 
+const deepseekModelOptions = [
+  { label: 'deepseek-chat', value: 'deepseek-chat' },
+  { label: 'deepseek-reasoner', value: 'deepseek-reasoner' },
+];
+
 const middleoutOptions = computed(() => [
   { label: t('apiConnections.middleout.on'), value: OpenrouterMiddleoutType.ON },
   { label: t('apiConnections.middleout.off'), value: OpenrouterMiddleoutType.OFF },
@@ -415,6 +420,17 @@ onMounted(() => {
               :model-value="settingsStore.settings.api.selectedProviderModels.azure_openai"
               placeholder="This is the model name inside your deployment"
               @update:model-value="settingsStore.setSetting('api.selectedProviderModels.azure_openai', String($event))"
+            />
+          </FormItem>
+        </div>
+
+        <!-- Deepseek Form -->
+        <div v-show="settingsStore.settings.api.chatCompletionSource === chat_completion_sources.DEEPSEEK">
+          <FormItem :label="t('apiConnections.deepseekModel')">
+            <Select
+              :model-value="settingsStore.settings.api.selectedProviderModels.deepseek"
+              :options="deepseekModelOptions"
+              @update:model-value="settingsStore.setSetting('api.selectedProviderModels.deepseek', String($event))"
             />
           </FormItem>
         </div>

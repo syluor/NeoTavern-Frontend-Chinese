@@ -741,6 +741,7 @@ export interface MessageSchema {
     azureDeploymentName: string;
     azureApiVersion: string;
     azureModel: string;
+    deepseekModel: string;
     connect: string;
     connecting: string;
     sources: {

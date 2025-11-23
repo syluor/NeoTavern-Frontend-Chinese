@@ -738,6 +738,7 @@
     "azureDeploymentName": "Deployment Name",
     "azureApiVersion": "API Version",
     "azureModel": "Model Name",
+    "deepseekModel": "DeepSeek Model",
     "connect": "Connect",
     "connecting": "Connecting",
     "sources": {

@@ -146,7 +146,8 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     try {
       loadingBooks.value.add(filename);
       const book = await api.fetchWorldInfoBook(filename);
-      if (book.name) {
+      if (book.entries.length) {
+        book.name = book.name ?? filename;
         worldInfoCache.value[filename] = book;
       }
     } catch (error) {
@@ -172,7 +173,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
     if (book) {
       try {
         await api.saveWorldInfoBook(book.name, book);
-        worldInfoCache.value[book.name] = structuredClone(book);
+        worldInfoCache.value[book.name] = JSON.parse(JSON.stringify(book));
         await nextTick();
         await eventEmitter.emit('world-info:book-updated', book);
       } catch (error) {
@@ -332,7 +333,6 @@ export const useWorldInfoStore = defineStore('world-info', () => {
       inputValue: book.name,
     });
 
-
     if (result === POPUP_RESULT.AFFIRMATIVE && newName && newName.trim() && newName !== book.name) {
       try {
         book.name = newName;
@@ -364,7 +364,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
       }
       const filename = uuidv4();
       const newBook: WorldInfoBook = {
-        ...structuredClone(book),
+        ...JSON.parse(JSON.stringify(book)),
         name: newName,
       };
       try {
@@ -407,7 +407,7 @@ export const useWorldInfoStore = defineStore('world-info', () => {
   async function duplicateSelectedEntry() {
     if (!selectedEntry.value || !selectedBookForEntry.value || !selectedFilename.value) return;
     const book = selectedBookForEntry.value;
-    const entryToCopy = structuredClone(selectedEntry.value);
+    const entryToCopy = JSON.parse(JSON.stringify(selectedEntry.value));
 
     const newEntry = {
       ...entryToCopy,

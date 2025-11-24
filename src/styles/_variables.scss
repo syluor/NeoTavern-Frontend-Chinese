@@ -108,7 +108,7 @@ $base-border-radius-rounded: 8px;
 
   // --- Layout & Sizing ---
   --panel-width: 50vw;
-  --panel-width-wide: 80vw;
+  --panel-width-wide: calc(100vw - var(--nav-bar-width));
   --sidebar-width: 360px;
   --sidebar-min-width: 240px;
   --sidebar-max-width: 800px;

@@ -76,18 +76,21 @@ onMounted(() => {
     icon: 'fa-sliders',
     title: t('navbar.aiConfig'),
     component: AiConfigDrawer,
+    layout: 'wide',
   });
 
   uiStore.registerNavBarItem('api-status', {
     icon: 'fa-plug',
     title: t('navbar.apiConnections'),
     component: ApiConnectionsDrawer,
+    layout: 'wide',
   });
 
   uiStore.registerNavBarItem('formatting', {
     icon: 'fa-font',
     title: t('navbar.formatting'),
     component: FormattingDrawer,
+    layout: 'wide',
   });
 
   uiStore.registerNavBarItem('world-info', {
@@ -101,12 +104,14 @@ onMounted(() => {
     icon: 'fa-user-cog',
     title: t('navbar.userSettings'),
     component: UserSettingsDrawer,
+    layout: 'wide',
   });
 
   uiStore.registerNavBarItem('backgrounds', {
     icon: 'fa-panorama',
     title: t('navbar.backgrounds'),
     component: BackgroundsDrawer,
+    layout: 'wide',
   });
 
   uiStore.registerNavBarItem('extensions', {

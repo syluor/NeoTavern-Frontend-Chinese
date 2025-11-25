@@ -35,11 +35,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <template v-if="isSideOnly">
+  <div v-show="isSideOnly" style="height: 100%">
     <div class="standalone-pane extensions-panel">
       <SidebarHeader :title="t('navbar.extensions')" class="extensions-panel-header" />
       <div class="sidebar-controls extensions-panel-controls">
-        <div class="sidebar-controls__row extensions-panel-controls-row">
+        <div class="sidebar-controls-row extensions-panel-controls-row">
           <Button variant="ghost" icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
           <Button
             variant="ghost"
@@ -80,9 +80,9 @@ onMounted(() => {
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
-  <template v-else-if="isMainOnly">
+  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
     <div class="standalone-pane extensions-panel">
       <div class="main-page-header">
         <div class="main-page-header-left">
@@ -123,10 +123,10 @@ onMounted(() => {
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
   <SplitPane
-    v-else
+    v-show="!isSideOnly && !isMainOnly"
     v-model:collapsed="isBrowserCollapsed"
     storage-key="extensionsBrowserWidth"
     :initial-width="250"
@@ -134,7 +134,7 @@ onMounted(() => {
   >
     <template #side>
       <div class="sidebar-controls extensions-panel-controls">
-        <div class="sidebar-controls__row extensions-panel-controls-row">
+        <div class="sidebar-controls-row extensions-panel-controls-row">
           <Button variant="ghost" icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
           <Button
             variant="ghost"
@@ -144,7 +144,7 @@ onMounted(() => {
           />
           <Toggle v-model="notifyOnUpdates" :title="t('extensions.notifyUpdates')" style="margin-left: auto" />
         </div>
-        <div class="sidebar-controls__row extensions-panel-controls-row">
+        <div class="sidebar-controls-row extensions-panel-controls-row">
           <Search v-model="extensionStore.searchTerm" :placeholder="t('common.search')" />
         </div>
       </div>

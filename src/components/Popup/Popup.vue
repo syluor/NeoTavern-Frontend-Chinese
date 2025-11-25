@@ -196,14 +196,12 @@ function handleEnter(evt: KeyboardEvent) {
     <div class="popup-body">
       <!-- eslint-disable-next-line vue/no-v-html -->
       <h3 v-if="title" class="popup-title" v-html="sanitizedTitle"></h3>
-      <!-- title 內容已透過 DOMPurify 消毒 -->
       <div
         class="popup-content"
         :class="{ 'is-input': type === POPUP_TYPE.INPUT, 'is-crop': type === POPUP_TYPE.CROP }"
       >
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-if="content" class="popup-message" v-html="sanitizedContent"></div>
-        <!-- content 內容已透過 DOMPurify 消毒 -->
 
         <component :is="component" v-if="component" v-bind="componentProps" />
 

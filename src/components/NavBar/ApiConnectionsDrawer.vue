@@ -92,47 +92,6 @@ const providerOptions = computed(() => [
   },
 ]);
 
-// Instruct Logic
-const currentProviderCaps = computed(() => PROVIDER_CAPABILITIES[settingsStore.settings.api.provider]);
-const showFormatter = computed(() => {
-  const caps = currentProviderCaps.value;
-  return caps && caps.supportsText && caps.supportsChat;
-});
-
-const formatterOptions = computed(() => [
-  { label: t('common.chat'), value: 'chat' },
-  { label: t('common.text'), value: 'text' },
-]);
-
-const instructTemplateOptions = computed(() => {
-  return apiStore.instructTemplates.map((t) => ({ label: t.name, value: t.name }));
-});
-
-function createTemplate() {
-  editingTemplateId.value = undefined;
-  isInstructPopupVisible.value = true;
-}
-
-function editTemplate() {
-  editingTemplateId.value = settingsStore.settings.api.instructTemplateName;
-  isInstructPopupVisible.value = true;
-}
-
-async function deleteTemplate() {
-  const name = settingsStore.settings.api.instructTemplateName;
-  if (!name) return;
-
-  const { result } = await popupStore.show({
-    title: t('apiConnections.instruct.deleteTitle'),
-    content: t('apiConnections.instruct.deleteContent', { name }),
-    type: POPUP_TYPE.CONFIRM,
-  });
-
-  if (result === POPUP_RESULT.AFFIRMATIVE) {
-    await apiStore.deleteInstructTemplate(name);
-  }
-}
-
 const postProcessingOptions = computed(() => [
   { label: t('apiConnections.postProcessing.prompts.none'), value: CustomPromptPostProcessing.NONE },
   {

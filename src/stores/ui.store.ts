@@ -58,7 +58,7 @@ export const useUiStore = defineStore('ui', () => {
   function registerSidebar(id: string, definition: Omit<SidebarDefinition, 'id'>, side: 'left' | 'right') {
     const rawComponent = markRaw(definition.component);
     const registry = side === 'left' ? leftSidebarRegistry : rightSidebarRegistry;
-    const layoutId = side === 'right' ? definition.layoutId ?? 'chat' : definition.layoutId;
+    const layoutId = side === 'right' ? (definition.layoutId ?? 'chat') : definition.layoutId;
     registry.value.set(id, { ...definition, component: rawComponent, layoutId, id });
     if (side === 'right') {
       cleanupRightSidebarForLayout(activeMainLayout.value);
@@ -154,9 +154,7 @@ export const useUiStore = defineStore('ui', () => {
     }
 
     if (!sidebarMatchesLayout(definition, layoutId)) {
-      console.warn(
-        `[UiStore] Attempted to open right sidebar "${viewId}" not available for layout "${layoutId}"`,
-      );
+      console.warn(`[UiStore] Attempted to open right sidebar "${viewId}" not available for layout "${layoutId}"`);
       return;
     }
 

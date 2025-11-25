@@ -1,21 +1,21 @@
 import ConnectionProfileSelector from './ConnectionProfileSelector.vue';
 import DraggableList from './DraggableList.vue';
 import DrawerHeader from './DrawerHeader.vue';
-import SidebarHeader from './SidebarHeader.vue';
 import EmptyState from './EmptyState.vue';
+import MainContentFullscreenToggle from './MainContentFullscreenToggle.vue';
 import Pagination from './Pagination.vue';
+import SidebarHeader from './SidebarHeader.vue';
 import SmartAvatar from './SmartAvatar.vue';
 import SplitPane from './SplitPane.vue';
-import MainContentFullscreenToggle from './MainContentFullscreenToggle.vue';
 
 export {
   ConnectionProfileSelector,
   DraggableList,
   DrawerHeader,
-  SidebarHeader,
   EmptyState,
+  MainContentFullscreenToggle,
   Pagination,
+  SidebarHeader,
   SmartAvatar,
   SplitPane,
-  MainContentFullscreenToggle,
 };

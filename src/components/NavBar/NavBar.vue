@@ -8,9 +8,7 @@ const uiStore = useUiStore();
 const navItems = computed(() => Array.from(uiStore.navBarRegistry));
 const mainNavItems = computed(() => navItems.value.filter(([, item]) => item.section === 'main'));
 const floatingNavItems = computed(() => navItems.value.filter(([, item]) => item.section === 'floating'));
-const drawerNavItems = computed(() =>
-  navItems.value.filter(([, item]) => !item.section || item.section === 'drawer'),
-);
+const drawerNavItems = computed(() => navItems.value.filter(([, item]) => !item.section || item.section === 'drawer'));
 
 function onNavItemClick(id: string, onClick?: () => void) {
   if (onClick) {

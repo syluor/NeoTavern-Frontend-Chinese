@@ -188,16 +188,16 @@ const sortOptions = computed(() => [
 </script>
 
 <template>
-  <template v-if="isSideOnly">
+  <div v-show="isSideOnly" style="height: 100%">
     <div class="standalone-pane character-panel world-info-drawer">
       <SidebarHeader :title="t('navbar.worldInfo')" class="world-info-drawer-header" />
       <div class="sidebar-controls world-info-controls">
-        <div class="sidebar-controls__row world-info-controls-row">
+        <div class="sidebar-controls-row world-info-controls-row">
           <Button variant="ghost" icon="fa-plus" :title="t('worldInfo.newWorld')" @click="handleCreateBook" />
           <FileInput accept=".json" icon="fa-file-import" :label="t('worldInfo.import')" @change="handleFileImport" />
           <Button variant="ghost" icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.initialize" />
         </div>
-        <div class="sidebar-controls__row world-info-controls-row">
+        <div class="sidebar-controls-row world-info-controls-row">
           <Search v-model="worldInfoUiStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
             <template #actions>
               <Select
@@ -293,9 +293,9 @@ const sortOptions = computed(() => [
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
-  <template v-else-if="isMainOnly">
+  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
     <div class="standalone-pane world-info-drawer">
       <div class="main-page-header">
         <div class="main-page-header-left">
@@ -355,10 +355,10 @@ const sortOptions = computed(() => [
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
   <SplitPane
-    v-else
+    v-show="!isSideOnly && !isMainOnly"
     v-model:collapsed="isBrowserCollapsed"
     storage-key="worldinfoBrowserWidth"
     :initial-width="350"
@@ -366,12 +366,12 @@ const sortOptions = computed(() => [
   >
     <template #side>
       <div class="sidebar-controls world-info-controls">
-        <div class="sidebar-controls__row world-info-controls-row">
+        <div class="sidebar-controls-row world-info-controls-row">
           <Button variant="ghost" icon="fa-plus" :title="t('worldInfo.newWorld')" @click="handleCreateBook" />
           <FileInput accept=".json" icon="fa-file-import" :label="t('worldInfo.import')" @change="handleFileImport" />
           <Button variant="ghost" icon="fa-sync" :title="t('worldInfo.refresh')" @click="worldInfoStore.initialize" />
         </div>
-        <div class="sidebar-controls__row world-info-controls-row">
+        <div class="sidebar-controls-row world-info-controls-row">
           <Search v-model="worldInfoUiStore.browserSearchTerm" :placeholder="t('worldInfo.searchPlaceholder')">
             <template #actions>
               <Select

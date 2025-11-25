@@ -33,9 +33,7 @@ const avatarUrls = computed(() => {
 });
 
 const rightSidebarItems = computed(() =>
-  Array.from(uiStore.rightSidebarRegistry).filter(
-    ([, def]) => (def.layoutId ?? 'chat') === uiStore.activeMainLayout,
-  ),
+  Array.from(uiStore.rightSidebarRegistry).filter(([, def]) => (def.layoutId ?? 'chat') === uiStore.activeMainLayout),
 );
 
 const lastMessageDate = computed(() => {

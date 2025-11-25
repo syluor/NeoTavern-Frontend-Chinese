@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { useUiStore } from '../../stores/ui.store';
 import ChatHeader from '../Chat/ChatHeader.vue';
 import ChatInterface from '../Chat/ChatInterface.vue';
 import ZoomedAvatar from '../ZoomedAvatar.vue';
-import { useUiStore } from '../../stores/ui.store';
 
 const uiStore = useUiStore();
 </script>

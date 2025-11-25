@@ -6,8 +6,8 @@ import { useApiStore } from '../../stores/api.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types/popup';
-import { Button, FormItem, Select } from '../UI';
 import InstructTemplatePopup from '../NavBar/InstructTemplatePopup.vue';
+import { Button, FormItem, Select } from '../UI';
 
 const { t } = useStrictI18n();
 const apiStore = useApiStore();
@@ -80,17 +80,17 @@ async function deleteTemplate() {
 
 <template>
   <div class="api-formatting-panel">
-    <div v-if="showFormatter" class="api-connections-drawer-section">
+    <div v-show="showFormatter" class="api-connections-drawer-section">
       <FormItem :label="t('apiConnections.formatter')">
         <Select v-model="settingsStore.settings.api.formatter" :options="supportedFormatterOptions" />
       </FormItem>
     </div>
 
-    <div v-else class="api-connections-drawer-section neutral_warning">
+    <div v-show="!showFormatter" class="api-connections-drawer-section neutral_warning">
       {{ t('aiConfig.formattingUnavailable') }}
     </div>
 
-    <div v-if="settingsStore.settings.api.formatter === 'text'" class="api-connections-drawer-section">
+    <div v-show="settingsStore.settings.api.formatter === 'text'" class="api-connections-drawer-section">
       <h3>{{ t('apiConnections.instruct.title') }}</h3>
       <div class="preset-manager-controls">
         <!-- @vue-ignore -->

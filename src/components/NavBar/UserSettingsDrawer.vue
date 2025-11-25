@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { SidebarHeader } from '../common';
 import { Checkbox, CollapsibleSection, FormItem, RangeControl, Search, Select } from '../../components/UI';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { SettingDefinition, Settings, SettingsPath } from '../../types';
 import type { I18nKey } from '../../types/i18n';
 import type { ValueForPath } from '../../types/utils';
+import { SidebarHeader } from '../common';
 
 const { t } = useStrictI18n();
 const settingsStore = useSettingsStore();

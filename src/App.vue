@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import CharacterPanel from './components/CharacterPanel/CharacterPanel.vue';
 import ChatManagement from './components/Chat/ChatManagement.vue';
 import RecentChats from './components/Chat/RecentChats.vue';
-import CharacterPanel from './components/CharacterPanel/CharacterPanel.vue';
 import ChatMainLayout from './components/Layout/ChatMainLayout.vue';
 import AiConfigDrawer from './components/NavBar/AiConfigDrawer.vue';
 import BackgroundsDrawer from './components/NavBar/BackgroundsDrawer.vue';
@@ -40,9 +40,7 @@ const currentMainLayoutProps = computed(() => {
 });
 
 const activeRightSidebars = computed(() =>
-  Array.from(uiStore.rightSidebarRegistry).filter(
-    ([, def]) => (def.layoutId ?? 'chat') === uiStore.activeMainLayout,
-  ),
+  Array.from(uiStore.rightSidebarRegistry).filter(([, def]) => (def.layoutId ?? 'chat') === uiStore.activeMainLayout),
 );
 
 onMounted(() => {

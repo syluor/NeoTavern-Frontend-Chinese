@@ -102,11 +102,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <template v-if="isSideOnly">
+  <div v-show="isSideOnly" style="height: 100%">
     <div class="standalone-pane character-panel">
       <SidebarHeader :title="t('navbar.characterManagement')" />
       <div class="sidebar-controls character-panel-controls">
-        <div class="sidebar-controls__row character-panel-actions">
+        <div class="sidebar-controls-row character-panel-actions">
           <Button variant="ghost" icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
           <FileInput
             accept=".json,.png"
@@ -127,7 +127,7 @@ onMounted(async () => {
           />
         </div>
 
-        <div v-show="isSearchActive" class="sidebar-controls__row character-panel-search-row">
+        <div v-show="isSearchActive" class="sidebar-controls-row character-panel-search-row">
           <Search v-model="characterUiStore.searchTerm" :placeholder="t('characterPanel.searchPlaceholder')">
             <template #actions>
               <div style="min-width: 140px">
@@ -191,9 +191,9 @@ onMounted(async () => {
         </template>
       </div>
     </div>
-  </template>
+  </div>
 
-  <template v-else-if="isMainOnly">
+  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
     <div class="standalone-pane character-panel">
       <div class="main-page-header">
         <div class="main-page-header-left">
@@ -222,17 +222,17 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
   <SplitPane
-    v-else
+    v-show="!isSideOnly && !isMainOnly"
     v-model:collapsed="settingsStore.settings.account.characterBrowserExpanded"
     storage-key="characterBrowserWidth"
     class="character-panel"
   >
     <template #side>
       <div class="sidebar-controls character-panel-controls">
-        <div class="sidebar-controls__row character-panel-actions">
+        <div class="sidebar-controls-row character-panel-actions">
           <Button variant="ghost" icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
           <FileInput
             accept=".json,.png"
@@ -253,7 +253,7 @@ onMounted(async () => {
           />
         </div>
 
-        <div v-show="isSearchActive" class="sidebar-controls__row character-panel-search-row">
+        <div v-show="isSearchActive" class="sidebar-controls-row character-panel-search-row">
           <Search v-model="characterUiStore.searchTerm" :placeholder="t('characterPanel.searchPlaceholder')">
             <template #actions>
               <div style="min-width: 140px">

@@ -76,25 +76,6 @@ function createDefaultSettings(): Settings {
   return defaultSettings as Settings;
 }
 
-function migrateSplitPaneDefaults(settings: Settings): boolean {
-  const account = settings.account;
-  if (!account || account.splitPaneDefaultsMigrated) return false;
-
-  const paneFlags: Array<'characterBrowserExpanded' | 'personaBrowserExpanded'> = [
-    'characterBrowserExpanded',
-    'personaBrowserExpanded',
-  ];
-
-  for (const flag of paneFlags) {
-    if (account[flag]) {
-      account[flag] = false;
-    }
-  }
-
-  account.splitPaneDefaultsMigrated = true;
-  return true;
-}
-
 function migrateExperimentalPreset(legacyPreset: LegacyOaiPresetSettings): SamplerSettings {
   // Migrate prompts from legacy ordered config to flat list
   const migratedPrompts: Prompt[] = [];
@@ -451,7 +432,6 @@ export const useSettingsStore = defineStore('settings', () => {
         }
 
         settings.value = experimentalSettings;
-        const appliedSplitPaneMigration = migrateSplitPaneDefaults(settings.value);
 
         const uiStore = useUiStore();
         uiStore.activePlayerName = legacySettings.username || null;
@@ -459,9 +439,6 @@ export const useSettingsStore = defineStore('settings', () => {
 
         settingsInitializing.value = false;
         await nextTick();
-        if (appliedSplitPaneMigration) {
-          saveSettingsDebounced();
-        }
         await eventEmitter.emit('app:loaded');
       } catch (error) {
         console.error('Failed to initialize settings:', error);

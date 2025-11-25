@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { aiConfigDefinition } from '../../ai-config-definition';
-import { SidebarHeader } from '../common';
 import { Button, Tabs } from '../../components/UI';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useApiStore } from '../../stores/api.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { AiConfigCondition } from '../../types';
-import ApiFormattingPanel from '../AiConfig/ApiFormattingPanel.vue';
 import AiConfigItemRenderer from '../AiConfig/AiConfigItemRenderer.vue';
+import ApiFormattingPanel from '../AiConfig/ApiFormattingPanel.vue';
 import PromptManager from '../AiConfig/PromptManager.vue';
+import { SidebarHeader } from '../common';
 import ApiConnectionsDrawer from './ApiConnectionsDrawer.vue';
 
 const { t } = useStrictI18n();
@@ -73,7 +73,7 @@ onMounted(() => {
     </SidebarHeader>
 
     <div class="sidebar-controls ai-config-drawer-controls">
-      <div class="sidebar-controls__row ai-config-drawer-controls-row">
+      <div class="sidebar-controls-row ai-config-drawer-controls-row">
         <Tabs
           v-model="activeTab"
           style="margin-bottom: 0; border-bottom: none"

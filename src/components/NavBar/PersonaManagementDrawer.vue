@@ -213,11 +213,11 @@ onMounted(() => {
       </template>
     </SidebarHeader>
 
-    <template v-if="isSideOnly">
+    <div v-show="isSideOnly" style="height: 100%">
       <div class="standalone-pane persona-drawer-split">
         <div class="persona-drawer-sidebar">
           <div class="sidebar-controls persona-drawer-controls">
-            <div class="sidebar-controls__row persona-drawer-actions-row">
+            <div class="sidebar-controls-row persona-drawer-actions-row">
               <Button icon="fa-ranking-star">{{ t('personaManagement.usageStats') }}</Button>
               <Button icon="fa-file-export">{{ t('personaManagement.backup') }}</Button>
               <FileInput
@@ -228,7 +228,7 @@ onMounted(() => {
                 @change="handleFileImport"
               />
             </div>
-            <div class="sidebar-controls__row persona-drawer-search-row">
+            <div class="sidebar-controls-row persona-drawer-search-row">
               <Search v-model="personaUiStore.searchTerm" :placeholder="t('common.search')">
                 <template #actions>
                   <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
@@ -291,9 +291,9 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </template>
+    </div>
 
-    <template v-else-if="isMainOnly">
+    <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
       <div class="standalone-pane persona-drawer-split">
         <div class="main-page-header">
           <div class="main-page-header-left">
@@ -413,10 +413,10 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </template>
+    </div>
 
     <SplitPane
-      v-else
+      v-show="!isSideOnly && !isMainOnly"
       v-model:collapsed="personaUiStore.isBrowserExpanded"
       storage-key="personaBrowserWidth"
       :initial-width="350"
@@ -426,7 +426,7 @@ onMounted(() => {
       <template #side>
         <div class="persona-drawer-sidebar">
           <div class="sidebar-controls persona-drawer-controls">
-            <div class="sidebar-controls__row persona-drawer-actions-row">
+            <div class="sidebar-controls-row persona-drawer-actions-row">
               <Button icon="fa-ranking-star">{{ t('personaManagement.usageStats') }}</Button>
               <Button icon="fa-file-export">{{ t('personaManagement.backup') }}</Button>
               <FileInput
@@ -437,20 +437,20 @@ onMounted(() => {
                 @change="handleFileImport"
               />
             </div>
-            <div class="sidebar-controls__row persona-drawer-search-row">
-            <Search v-model="personaUiStore.searchTerm" :placeholder="t('common.search')">
-              <template #actions>
-                <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
-                  {{ t('personaManagement.create') }}
-                </Button>
-                <Select v-model="personaUiStore.sortOrder" :options="sortOptions" />
-                <Button
-                  variant="ghost"
-                  icon="fa-table-cells-large"
-                  @click="personaUiStore.isGridView = !personaUiStore.isGridView"
-                />
-              </template>
-            </Search>
+            <div class="sidebar-controls-row persona-drawer-search-row">
+              <Search v-model="personaUiStore.searchTerm" :placeholder="t('common.search')">
+                <template #actions>
+                  <Button icon="fa-person-circle-question" @click="personaStore.createPersona">
+                    {{ t('personaManagement.create') }}
+                  </Button>
+                  <Select v-model="personaUiStore.sortOrder" :options="sortOptions" />
+                  <Button
+                    variant="ghost"
+                    icon="fa-table-cells-large"
+                    @click="personaUiStore.isGridView = !personaUiStore.isGridView"
+                  />
+                </template>
+              </Search>
             </div>
           </div>
 

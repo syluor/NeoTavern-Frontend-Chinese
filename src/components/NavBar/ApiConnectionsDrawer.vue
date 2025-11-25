@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { apiConnectionDefinition } from '../../api-connection-definition';
 import { PROVIDER_CAPABILITIES } from '../../api/provider-definitions';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { TokenizerType } from '../../constants';
+import { CustomPromptPostProcessing, TokenizerType } from '../../constants';
 import { useApiStore } from '../../stores/api.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
@@ -69,9 +69,7 @@ const tokenizerOptions = computed(() => [
 const providerOptions = computed(() => [
   {
     label: '',
-    options: [
-      { label: t('apiConnections.providers.custom'), value: api_providers.CUSTOM },
-    ],
+    options: [{ label: t('apiConnections.providers.custom'), value: api_providers.CUSTOM }],
   },
   {
     label: '',
@@ -116,6 +114,30 @@ const formatterOptions = computed(() => [
 const instructTemplateOptions = computed(() => {
   return apiStore.instructTemplates.map((t) => ({ label: t.name, value: t.name }));
 });
+
+const postProcessingOptions = computed(() => [
+  { label: t('apiConnections.postProcessing.prompts.none'), value: CustomPromptPostProcessing.NONE },
+  {
+    label: t('apiConnections.postProcessing.withTools'),
+    options: [
+      { label: t('apiConnections.postProcessing.prompts.merge_tools'), value: CustomPromptPostProcessing.MERGE_TOOLS },
+      { label: t('apiConnections.postProcessing.prompts.semi_tools'), value: CustomPromptPostProcessing.SEMI_TOOLS },
+      {
+        label: t('apiConnections.postProcessing.prompts.strict_tools'),
+        value: CustomPromptPostProcessing.STRICT_TOOLS,
+      },
+    ],
+  },
+  {
+    label: t('apiConnections.postProcessing.noTools'),
+    options: [
+      { label: t('apiConnections.postProcessing.prompts.merge'), value: CustomPromptPostProcessing.MERGE },
+      { label: t('apiConnections.postProcessing.prompts.semi'), value: CustomPromptPostProcessing.SEMI },
+      { label: t('apiConnections.postProcessing.prompts.strict'), value: CustomPromptPostProcessing.STRICT },
+      { label: t('apiConnections.postProcessing.prompts.single'), value: CustomPromptPostProcessing.SINGLE },
+    ],
+  },
+]);
 
 function createTemplate() {
   editingTemplateId.value = undefined;
@@ -257,6 +279,19 @@ onMounted(() => {
       </FormItem>
 
       <div class="api-connections-drawer-section">
+        <FormItem
+          :label="t('apiConnections.postProcessing.label')"
+          :description="t('apiConnections.postProcessing.description')"
+        >
+          <div id="custom_prompt_post_processing">
+            <Select
+              v-model="settingsStore.settings.api.customPromptPostProcessing"
+              :options="postProcessingOptions"
+              :title="t('apiConnections.postProcessing.tooltip')"
+            />
+          </div>
+        </FormItem>
+
         <div class="api-connections-drawer-actions">
           <Button :loading="apiStore.isConnecting" :disabled="apiStore.isConnecting" @click.prevent="apiStore.connect">
             {{ apiStore.isConnecting ? t('apiConnections.connecting') : t('apiConnections.connect') }}

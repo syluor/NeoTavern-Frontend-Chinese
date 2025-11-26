@@ -6,7 +6,7 @@ import { useApiStore } from '../../stores/api.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types/popup';
-import PresetControl from '../common/PresetControl.vue';
+import { PresetControl } from '../common';
 import InstructTemplatePopup from '../NavBar/InstructTemplatePopup.vue';
 import { FormItem, Select } from '../UI';
 

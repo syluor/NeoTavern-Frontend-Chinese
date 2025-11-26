@@ -5,6 +5,7 @@ import EmptyState from './EmptyState.vue';
 import MainContentFullscreenToggle from './MainContentFullscreenToggle.vue';
 import Pagination from './Pagination.vue';
 import PanelLayout from './PanelLayout.vue';
+import PresetControl from './PresetControl.vue';
 import SidebarHeader from './SidebarHeader.vue';
 import SmartAvatar from './SmartAvatar.vue';
 import SplitPane from './SplitPane.vue';
@@ -17,6 +18,7 @@ export {
   MainContentFullscreenToggle,
   Pagination,
   PanelLayout,
+  PresetControl,
   SidebarHeader,
   SmartAvatar,
   SplitPane,

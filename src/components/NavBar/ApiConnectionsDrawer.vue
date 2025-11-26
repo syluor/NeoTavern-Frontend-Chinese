@@ -9,8 +9,7 @@ import type { AiConfigCondition, ConnectionProfile } from '../../types';
 import { api_providers } from '../../types';
 import AiConfigItemRenderer from '../AiConfig/AiConfigItemRenderer.vue';
 import ApiFormattingPanel from '../AiConfig/ApiFormattingPanel.vue';
-import { ConnectionProfileSelector } from '../common';
-import PresetControl from '../common/PresetControl.vue';
+import { ConnectionProfileSelector, PresetControl } from '../common';
 import { Button, FormItem, Select } from '../UI';
 import ConnectionProfilePopup from './ConnectionProfilePopup.vue';
 

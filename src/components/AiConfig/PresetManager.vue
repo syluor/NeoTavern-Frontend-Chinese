@@ -6,7 +6,7 @@ import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { AiConfigValueItem } from '../../types';
 import { POPUP_TYPE } from '../../types';
-import PresetControl from '../common/PresetControl.vue';
+import { PresetControl } from '../common';
 import { Button } from '../UI';
 
 const props = defineProps<{

@@ -3,6 +3,7 @@ import type { PropType } from 'vue';
 import { computed, markRaw, onMounted, ref, watch } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
+import { GenerationMode } from '../../constants';
 import { useCharacterStore } from '../../stores/character.store';
 import { useChatStore } from '../../stores/chat.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -121,6 +122,30 @@ function startEditing() {
 function saveEdit() {
   const reasoningToSave = isEditingReasoning.value ? editedReasoning.value : undefined;
   chatStore.saveMessageEdit(editedContent.value, reasoningToSave);
+
+  if (props.message.is_system || chatStore.isGenerating || !props.message.is_user) {
+    return;
+  }
+
+  // Last or second-to-last user message edited
+  if (props.index >= chatStore.activeChat!.messages.length - 2) {
+    if (isLastMessage.value) {
+      chatStore.generateResponse(GenerationMode.NEW);
+    } else {
+      const nextMessage = chatStore.activeChat!.messages[props.index + 1];
+      const isNextMessageBot = !nextMessage.is_user && !nextMessage.is_system;
+      if (isNextMessageBot) {
+        chatStore.generateResponse(GenerationMode.ADD_SWIPE)
+      }
+    }
+  }
+}
+
+function handleEditKeydown(event: KeyboardEvent) {
+  if (event.ctrlKey && event.key === 'Enter') {
+    event.preventDefault();
+    saveEdit();
+  }
 }
 
 function cancelEdit() {
@@ -310,7 +335,7 @@ async function showPromptItemization() {
             <Textarea v-model="editedReasoning" :label="t('chat.reasoning.title')" :rows="3" :resizable="true" />
           </div>
         </transition>
-        <Textarea v-model="editedContent" :rows="5" :resizable="true" />
+        <Textarea v-model="editedContent" :rows="5" :resizable="true" @keydown="handleEditKeydown" />
       </div>
 
       <div v-if="canSwipe" class="message-footer">

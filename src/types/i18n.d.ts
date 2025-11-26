@@ -445,6 +445,7 @@ export interface MessageSchema {
     cancel: string;
     save: string;
     yes: string;
+    close: string;
     no: string;
     none: string;
     loading: string;
@@ -477,6 +478,7 @@ export interface MessageSchema {
     create: string;
     rename: string;
     activate: string;
+    add: string;
   };
   popup: {
     cropAvatar: {
@@ -700,6 +702,12 @@ export interface MessageSchema {
     };
     validation: {
       nameRequired: string;
+    };
+    alternateGreetings: {
+      title: string;
+      label: string;
+      placeholder: string;
+      empty: string;
     };
   };
   extensions: {

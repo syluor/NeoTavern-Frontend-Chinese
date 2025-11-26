@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { cloneDeep, set } from 'lodash-es';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, markRaw, onUnmounted, ref, watch } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import { default_avatar, DEFAULT_CHARACTER } from '../../constants';
@@ -19,6 +19,7 @@ import { getThumbnailUrl } from '../../utils/character';
 import { humanizedDateTime } from '../../utils/commons';
 import Popup from '../Popup/Popup.vue';
 import { Button, CollapsibleSection, FormItem, Input, RangeControl, Select, TagInput, Textarea } from '../UI';
+import AlternateGreetingsModal from './AlternateGreetingsModal.vue';
 
 const { t } = useStrictI18n();
 const characterStore = useCharacterStore();
@@ -286,6 +287,40 @@ async function handleRename() {
   }
 }
 
+async function openAlternateGreetings() {
+  if (!localCharacter.value) return;
+
+  if (!localCharacter.value.data) {
+    localCharacter.value.data = {};
+  }
+  if (!localCharacter.value.data.alternate_greetings) {
+    localCharacter.value.data.alternate_greetings = [];
+  }
+
+  // We pass a callback to receive live updates from the component.
+  // This allows us to update the character store (via localCharacter watcher)
+  // immediately as the user edits, without waiting for the popup to close.
+  const updateGreetings = (newGreetings: string[]) => {
+    if (localCharacter.value && localCharacter.value.data) {
+      localCharacter.value.data.alternate_greetings = newGreetings;
+    }
+  };
+
+  await popupStore.show({
+    title: t('characterEditor.alternateGreetings.title'),
+    component: markRaw(AlternateGreetingsModal),
+    componentProps: {
+      greetings: localCharacter.value.data.alternate_greetings,
+      'onUpdate:greetings': updateGreetings,
+    },
+    type: POPUP_TYPE.CONFIRM,
+    large: true,
+    wide: true,
+    okButton: 'common.close',
+    cancelButton: false,
+  });
+}
+
 const displayAvatarUrl = computed(() => {
   if (!characterUiStore.editFormCharacter) return '';
 
@@ -500,6 +535,14 @@ const embeddedLorebookName = computed({
         </FormItem>
 
         <FormItem :label="t('characterEditor.firstMessage')" data-field-name="first_mes">
+          <div class="first-message-header">
+            <Button variant="ghost" icon="fa-list-ul" @click="openAlternateGreetings">
+              {{ t('characterEditor.alternateGreetings.label') }}
+              <span v-if="localCharacter.data?.alternate_greetings?.length" class="count-badge">
+                ({{ localCharacter.data.alternate_greetings.length }})
+              </span>
+            </Button>
+          </div>
           <Textarea
             v-model="localCharacter.first_mes!"
             :rows="10"
@@ -747,5 +790,16 @@ const embeddedLorebookName = computed({
 }
 .text-lg {
   font-size: 1.2em;
+}
+
+.first-message-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.count-badge {
+  margin-left: 4px;
+  opacity: 0.7;
 }
 </style>

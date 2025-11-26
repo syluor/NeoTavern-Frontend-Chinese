@@ -442,6 +442,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "yes": "Yes",
+    "close": "Close",
     "no": "No",
     "none": "None",
     "loading": "Loading...",
@@ -473,7 +474,8 @@
     "edit": "Edit",
     "create": "Create",
     "rename": "Rename",
-    "activate": "Activate"
+    "activate": "Activate",
+    "add": "Add"
   },
   "popup": {
     "cropAvatar": {
@@ -697,6 +699,12 @@
     },
     "validation": {
       "nameRequired": "Character name is required."
+    },
+    "alternateGreetings": {
+      "title": "Alternate Greetings",
+      "label": "Alternate Greetings",
+      "placeholder": "Enter an alternate greeting...",
+      "empty": "No alternate greetings added yet."
     }
   },
   "extensions": {

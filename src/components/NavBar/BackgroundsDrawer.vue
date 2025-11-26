@@ -19,7 +19,7 @@ const isScrolled = ref(false);
 const THUMBNAIL_COLUMNS_MIN = 2;
 const THUMBNAIL_COLUMNS_MAX = 8;
 
-const lockedBackgroundUrl = computed(() => chatStore.activeChat?.metadata.custom_background);
+const hasActiveChat = computed(() => !!chatStore.activeChatFile);
 
 async function handleFileSelected(files: File[]) {
   if (files[0]) {
@@ -112,6 +112,16 @@ onMounted(() => {
           @change="handleFileSelected"
         />
         <span class="expander"></span>
+
+        <!-- Global Lock/Unlock Toggle -->
+        <Button
+          v-if="hasActiveChat"
+          :variant="backgroundStore.isLocked ? 'confirm' : 'ghost'"
+          :icon="backgroundStore.isLocked ? 'fa-lock' : 'fa-lock-open'"
+          :title="backgroundStore.isLocked ? t('backgrounds.actions.unlock') : t('backgrounds.actions.lock')"
+          @click="backgroundStore.toggleLock"
+        />
+
         <div style="width: 120px">
           <Select v-model="backgroundStore.fitting" :options="fittingOptions" :title="t('backgrounds.fitting')" />
         </div>
@@ -152,7 +162,9 @@ onMounted(() => {
           :class="{
             'is-selected':
               backgroundStore.currentBackgroundUrl === `url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`,
-            'is-locked': lockedBackgroundUrl === `url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`,
+            'is-locked':
+              backgroundStore.isLocked &&
+              backgroundStore.currentBackgroundUrl === `url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`,
           }"
           :title="bg"
           @click="backgroundStore.selectBackground(bg)"
@@ -161,18 +173,6 @@ onMounted(() => {
             <div class="background-item-title">{{ getBgFileName(bg) }}</div>
           </div>
           <div class="background-item-menu">
-            <Button
-              variant="ghost"
-              icon="fa-lock"
-              :title="t('backgrounds.actions.lock')"
-              @click.stop="backgroundStore.lockBackground(`url(&quot;/backgrounds/${encodeURIComponent(bg)}&quot;)`)"
-            />
-            <Button
-              variant="ghost"
-              icon="fa-lock-open"
-              :title="t('backgrounds.actions.unlock')"
-              @click.stop="backgroundStore.unlockBackground()"
-            />
             <Button
               variant="ghost"
               icon="fa-pen-to-square"

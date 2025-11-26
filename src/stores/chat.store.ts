@@ -152,11 +152,11 @@ export const useChatStore = defineStore('chat', () => {
       await apiSaveChat(activeChatFile.value, chatToSave);
 
       await promptStore.saveItemizedPrompts(activeChatFile.value);
-      const chatInfo = chatInfos.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
+      const chatInfo = chatInfos.value.find((c) => c.file_name === activeChatFile.value);
       if (chatInfo) {
         chatInfo.chat_metadata = activeChat.value.metadata;
       }
-      const recentChatInfo = recentChats.value.find((c) => c.file_name === activeChatFile.value)?.chat_metadata;
+      const recentChatInfo = recentChats.value.find((c) => c.file_name === activeChatFile.value);
       if (recentChatInfo) {
         recentChatInfo.chat_metadata = activeChat.value.metadata;
       }

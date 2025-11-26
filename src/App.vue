@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, type CSSProperties } from 'vue';
 import CharacterPanel from './components/CharacterPanel/CharacterPanel.vue';
 import ChatManagement from './components/Chat/ChatManagement.vue';
 import RecentChats from './components/Chat/RecentChats.vue';
@@ -29,9 +29,36 @@ const extensionStore = useExtensionStore();
 const secretStore = useSecretStore();
 const { t } = useStrictI18n();
 
-const backgroundStyle = computed(() => ({
-  backgroundImage: backgroundStore.currentBackgroundUrl,
-}));
+const backgroundStyle = computed<CSSProperties>(() => {
+  const fitting = backgroundStore.fitting;
+  let size = 'cover';
+  let repeat = 'no-repeat';
+  let position = 'center center';
+
+  switch (fitting) {
+    case 'contain':
+      size = 'contain';
+      break;
+    case 'stretch':
+      size = '100% 100%';
+      break;
+    case 'center':
+      size = 'auto';
+      break;
+    case 'cover':
+    case 'classic':
+    default:
+      size = 'cover';
+      break;
+  }
+
+  return {
+    backgroundImage: backgroundStore.currentBackgroundUrl,
+    backgroundSize: size,
+    backgroundRepeat: repeat,
+    backgroundPosition: position,
+  };
+});
 
 const isFullScreen = computed(() => settingsStore.settings.account.chatFullScreen);
 

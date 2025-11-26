@@ -8,7 +8,7 @@ export interface ChatMetadata {
   name?: string;
   integrity: string;
   custom_background?: string;
-  chat_backgrounds?: string[];
+  chat_background?: string;
   chat_lorebooks?: string[];
 
   members?: string[];
@@ -28,9 +28,6 @@ export interface ChatMetadata {
     };
     members: Record<string, GroupMemberStatus>;
   };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
 }
 
 export interface SwipeInfo {

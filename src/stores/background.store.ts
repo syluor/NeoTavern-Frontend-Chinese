@@ -1,14 +1,11 @@
 import { defineStore } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { deleteBackground, fetchAllBackgrounds, renameBackground, uploadBackground } from '../api/backgrounds';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { toast } from '../composables/useToast';
 import type { BackgroundFitting } from '../types';
 import { useChatStore } from './chat.store';
 import { useSettingsStore } from './settings.store';
-
-const BG_METADATA_KEY = 'custom_background';
-const LIST_METADATA_KEY = 'chat_backgrounds';
 
 export const useBackgroundStore = defineStore('background', () => {
   const { t } = useStrictI18n();
@@ -29,8 +26,12 @@ export const useBackgroundStore = defineStore('background', () => {
     set: (value) => (settingsStore.settings.ui.background.fitting = value),
   });
 
+  const isLocked = computed(() => {
+    return !!chatStore.activeChat?.metadata.custom_background;
+  });
+
   const currentBackgroundUrl = computed(() => {
-    const lockedBg = chatStore.activeChat?.metadata[BG_METADATA_KEY];
+    const lockedBg = chatStore.activeChat?.metadata.custom_background;
     return lockedBg ?? settingsStore.settings.ui.background.url;
   });
 
@@ -40,14 +41,6 @@ export const useBackgroundStore = defineStore('background', () => {
 
   const filteredChatBackgrounds = computed(() =>
     chatBackgrounds.value.filter((bg) => bg.toLowerCase().includes(searchTerm.value.toLowerCase())),
-  );
-
-  watch(
-    () => chatStore.activeChat?.metadata,
-    () => {
-      chatBackgrounds.value = chatStore.activeChat?.metadata[LIST_METADATA_KEY] ?? [];
-    },
-    { deep: true, immediate: true },
   );
 
   async function initialize() {
@@ -68,8 +61,8 @@ export const useBackgroundStore = defineStore('background', () => {
 
   function selectBackground(fileName: string) {
     const fileUrl = `url("/backgrounds/${encodeURIComponent(fileName)}")`;
-    if (chatStore.activeChat?.metadata[BG_METADATA_KEY]) {
-      // If locked, clicking a new background updates the lock
+
+    if (isLocked.value) {
       lockBackground(fileUrl);
     } else {
       settingsStore.settings.ui.background.name = fileName;
@@ -78,15 +71,27 @@ export const useBackgroundStore = defineStore('background', () => {
   }
 
   function lockBackground(url: string) {
-    if (!chatStore.activeChatFile) {
+    if (!chatStore.activeChat) {
       toast.warning(t('backgrounds.errors.noChatLock'));
       return;
     }
-    chatStore.activeChat!.metadata[BG_METADATA_KEY] = url;
+
+    chatStore.activeChat.metadata.custom_background = url;
+    chatStore.saveChatDebounced();
   }
 
-  function unlockBackground() {
-    delete chatStore.activeChat!.metadata[BG_METADATA_KEY];
+  function toggleLock() {
+    if (!chatStore.activeChat) {
+      toast.warning(t('backgrounds.errors.noChatLock'));
+      return;
+    }
+
+    if (isLocked.value) {
+      delete chatStore.activeChat!.metadata.custom_background;
+    } else {
+      chatStore.activeChat.metadata.custom_background = settingsStore.settings.ui.background.url;
+    }
+    chatStore.saveChatDebounced();
   }
 
   async function handleUpload(file: File) {
@@ -135,6 +140,7 @@ export const useBackgroundStore = defineStore('background', () => {
     searchTerm,
     thumbnailColumns,
     fitting,
+    isLocked,
     currentBackgroundUrl,
     filteredSystemBackgrounds,
     filteredChatBackgrounds,
@@ -142,7 +148,7 @@ export const useBackgroundStore = defineStore('background', () => {
     setBackground,
     selectBackground,
     lockBackground,
-    unlockBackground,
+    toggleLock,
     handleUpload,
     handleDelete,
     handleRename,

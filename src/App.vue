@@ -15,6 +15,7 @@ import Popup from './components/Popup/Popup.vue';
 import Sidebar from './components/Shared/Sidebar.vue';
 import { useStrictI18n } from './composables/useStrictI18n';
 import { useBackgroundStore } from './stores/background.store';
+import { useExtensionStore } from './stores/extension.store';
 import { usePopupStore } from './stores/popup.store';
 import { useSettingsStore } from './stores/settings.store';
 import { useUiStore } from './stores/ui.store';
@@ -23,6 +24,7 @@ const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
 const uiStore = useUiStore();
 const backgroundStore = useBackgroundStore();
+const extensionStore = useExtensionStore();
 const { t } = useStrictI18n();
 
 const backgroundStyle = computed(() => ({
@@ -31,12 +33,14 @@ const backgroundStyle = computed(() => ({
 
 const isFullScreen = computed(() => settingsStore.settings.account.chatFullScreen);
 
-const currentMainLayoutComponent = computed(() => {
-  return uiStore.getNavBarItem(uiStore.activeMainLayout)?.layoutComponent ?? ChatMainLayout;
-});
-
-const currentMainLayoutProps = computed(() => {
-  return uiStore.getNavBarItem(uiStore.activeMainLayout)?.layoutProps ?? {};
+const allMainLayouts = computed(() => {
+  return Array.from(uiStore.navBarRegistry.entries())
+    .filter(([, item]) => !!item.layoutComponent)
+    .map(([id, item]) => ({
+      id,
+      component: item.layoutComponent,
+      props: item.layoutProps ?? {},
+    }));
 });
 
 const activeRightSidebars = computed(() =>
@@ -45,6 +49,7 @@ const activeRightSidebars = computed(() =>
 
 onMounted(() => {
   settingsStore.initializeSettings();
+  extensionStore.initializeExtensions();
 
   // Register Left Sidebar
   uiStore.registerSidebar(
@@ -148,7 +153,6 @@ onMounted(() => {
   uiStore.registerNavBarItem('chat', {
     icon: 'fa-comments',
     title: t('navbar.chat'),
-    section: 'main',
     layoutComponent: ChatMainLayout,
     defaultSidebarId: 'recent-chats',
   });
@@ -156,7 +160,6 @@ onMounted(() => {
   uiStore.registerNavBarItem('character', {
     icon: 'fa-address-card',
     title: t('navbar.characterManagement'),
-    section: 'main',
     layoutComponent: CharacterPanel,
     layoutProps: { mode: 'main-only' },
     defaultSidebarId: 'character-side',
@@ -165,7 +168,6 @@ onMounted(() => {
   uiStore.registerNavBarItem('world-info', {
     icon: 'fa-book-atlas',
     title: t('navbar.worldInfo'),
-    section: 'main',
     layoutComponent: WorldInfoDrawer,
     layoutProps: { mode: 'main-only' },
     defaultSidebarId: 'world-info-side',
@@ -174,7 +176,6 @@ onMounted(() => {
   uiStore.registerNavBarItem('extensions', {
     icon: 'fa-cubes',
     title: t('navbar.extensions'),
-    section: 'main',
     layoutComponent: ExtensionsDrawer,
     layoutProps: { mode: 'main-only' },
     defaultSidebarId: 'extensions-side',
@@ -183,7 +184,6 @@ onMounted(() => {
   uiStore.registerNavBarItem('persona', {
     icon: 'fa-face-smile',
     title: t('navbar.personaManagement'),
-    section: 'main',
     layoutComponent: PersonaManagementDrawer,
     layoutProps: { mode: 'main-only' },
     defaultSidebarId: 'persona-side',
@@ -193,18 +193,16 @@ onMounted(() => {
   uiStore.registerNavBarItem('ai-config-nav', {
     icon: 'fa-sliders',
     title: t('navbar.aiConfig'),
-    section: 'floating',
     targetSidebarId: 'ai-config',
   });
 
   uiStore.registerNavBarItem('user-settings-nav', {
     icon: 'fa-user-cog',
     title: t('navbar.userSettings'),
-    section: 'floating',
     targetSidebarId: 'user-settings',
   });
 
-  uiStore.setActiveMainLayout('chat', 'recent-chats');
+  uiStore.activateNavBarItem('chat');
 });
 </script>
 
@@ -229,7 +227,18 @@ onMounted(() => {
       'right-open': uiStore.isRightSidebarOpen,
     }"
   >
-    <component :is="currentMainLayoutComponent" v-bind="currentMainLayoutProps" />
+    <!--
+      We wrap the layout component in a div to ensure v-show works correctly 
+      even if the component has multiple root nodes (fragments), which avoids Vue warnings.
+    -->
+    <div
+      v-for="layout in allMainLayouts"
+      :key="layout.id"
+      v-show="uiStore.activeMainLayout === layout.id"
+      style="height: 100%; width: 100%"
+    >
+      <component :is="layout.component" v-bind="layout.props" />
+    </div>
   </main>
 
   <Sidebar side="right" :is-open="uiStore.isRightSidebarOpen" storage-key="rightSidebarWidth">

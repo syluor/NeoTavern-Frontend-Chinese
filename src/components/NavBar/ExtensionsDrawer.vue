@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useExtensionStore } from '../../stores/extension.store';
 import { EmptyState, MainContentFullscreenToggle, SidebarHeader, SplitPane } from '../common';
@@ -8,6 +8,7 @@ import { Button, ListItem, Search, Toggle } from '../UI';
 const { t } = useStrictI18n();
 const props = defineProps<{
   mode?: 'full' | 'main-only' | 'side-only';
+  title?: string;
 }>();
 const extensionStore = useExtensionStore();
 
@@ -26,18 +27,12 @@ function installExtension() {
   // TODO: Open install extension popup
   alert(t('extensions.installPopupNotImplemented'));
 }
-
-onMounted(() => {
-  if (Object.keys(extensionStore.extensions).length === 0) {
-    extensionStore.initializeExtensions();
-  }
-});
 </script>
 
 <template>
-  <div v-show="isSideOnly" style="height: 100%">
+  <div v-if="isSideOnly" style="height: 100%">
     <div class="standalone-pane extensions-panel">
-      <SidebarHeader :title="t('navbar.extensions')" class="extensions-panel-header" />
+      <SidebarHeader :title="props.title ?? t('navbar.extensions')" class="extensions-panel-header" />
       <div class="sidebar-controls extensions-panel-controls">
         <div class="sidebar-controls-row extensions-panel-controls-row">
           <Button variant="ghost" icon="fa-cubes" :title="t('extensions.manage')" @click="manageExtensions" />
@@ -82,14 +77,14 @@ onMounted(() => {
     </div>
   </div>
 
-  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
+  <div v-else-if="isMainOnly" style="height: 100%">
     <div class="standalone-pane extensions-panel">
       <div class="main-page-header">
         <div class="main-page-header-left">
           <MainContentFullscreenToggle />
         </div>
         <div class="main-page-header-main">
-          <h3>{{ t('navbar.extensions') }}</h3>
+          <h3>{{ props.title ?? t('navbar.extensions') }}</h3>
         </div>
         <div class="main-page-header-actions"></div>
       </div>
@@ -126,7 +121,7 @@ onMounted(() => {
   </div>
 
   <SplitPane
-    v-show="!isSideOnly && !isMainOnly"
+    v-else
     v-model:collapsed="isBrowserCollapsed"
     storage-key="extensionsBrowserWidth"
     :initial-width="250"

@@ -20,6 +20,7 @@ import { Button, Checkbox, FileInput, FormItem, ListItem, Search, Select, Textar
 const { t } = useStrictI18n();
 const props = defineProps<{
   mode?: 'full' | 'main-only' | 'side-only';
+  title?: string;
 }>();
 const personaStore = usePersonaStore();
 const personaUiStore = usePersonaUiStore();
@@ -205,7 +206,11 @@ onMounted(() => {
 
 <template>
   <div class="persona-drawer">
-    <SidebarHeader v-if="!isMainOnly" class="persona-drawer-header" :title="t('personaManagement.title')">
+    <SidebarHeader
+      v-if="!isMainOnly"
+      class="persona-drawer-header"
+      :title="props.title ?? t('personaManagement.title')"
+    >
       <template #actions>
         <a href="https://docs.sillytavern.app/usage/core-concepts/personas/" target="_blank" class="note-link-span">
           <span class="fa-solid fa-circle-question"></span>

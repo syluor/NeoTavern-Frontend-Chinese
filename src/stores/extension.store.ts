@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { discoverExtensions, fetchManifest } from '../api/extensions';
 import { builtInExtensions } from '../extensions/built-in';
 import type { BuiltInExtensionModule, ExtensionManifest } from '../types';
@@ -86,6 +86,8 @@ export const useExtensionStore = defineStore('extension', () => {
       };
     }
 
+    await nextTick();
+
     try {
       // 2. Load External
       const discovered = await discoverExtensions();
@@ -115,6 +117,8 @@ export const useExtensionStore = defineStore('extension', () => {
           };
         }
       }
+
+      await nextTick();
 
       await activateExtensions();
     } catch (error) {

@@ -14,6 +14,7 @@ const { t } = useStrictI18n();
 
 const props = defineProps<{
   mode?: 'full' | 'main-only' | 'side-only';
+  title?: string;
 }>();
 
 const characterStore = useCharacterStore();
@@ -102,9 +103,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-show="isSideOnly" style="height: 100%">
+  <div v-if="isSideOnly" style="height: 100%">
     <div class="standalone-pane character-panel">
-      <SidebarHeader :title="t('navbar.characterManagement')" />
+      <SidebarHeader :title="props.title ?? t('navbar.characterManagement')" />
       <div class="sidebar-controls character-panel-controls">
         <div class="sidebar-controls-row character-panel-actions">
           <Button variant="ghost" icon="fa-user-plus" :title="t('characterPanel.createNew')" @click="createNew" />
@@ -193,14 +194,14 @@ onMounted(async () => {
     </div>
   </div>
 
-  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
+  <div v-else-if="isMainOnly" style="height: 100%">
     <div class="standalone-pane character-panel">
       <div class="main-page-header">
         <div class="main-page-header-left">
           <MainContentFullscreenToggle />
         </div>
         <div class="main-page-header-main">
-          <h3>{{ t('navbar.characterManagement') }}</h3>
+          <h3>{{ props.title ?? t('navbar.characterManagement') }}</h3>
         </div>
         <div class="main-page-header-actions"></div>
       </div>
@@ -225,7 +226,7 @@ onMounted(async () => {
   </div>
 
   <SplitPane
-    v-show="!isSideOnly && !isMainOnly"
+    v-else
     v-model:collapsed="settingsStore.settings.account.characterBrowserExpanded"
     storage-key="characterBrowserWidth"
     class="character-panel"

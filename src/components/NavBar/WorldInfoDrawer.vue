@@ -15,6 +15,7 @@ const { t } = useStrictI18n();
 
 const props = defineProps<{
   mode?: 'full' | 'main-only' | 'side-only';
+  title?: string;
 }>();
 const worldInfoStore = useWorldInfoStore();
 const worldInfoUiStore = useWorldInfoUiStore();
@@ -188,9 +189,9 @@ const sortOptions = computed(() => [
 </script>
 
 <template>
-  <div v-show="isSideOnly" style="height: 100%">
+  <div v-if="isSideOnly" style="height: 100%">
     <div class="standalone-pane character-panel world-info-drawer">
-      <SidebarHeader :title="t('navbar.worldInfo')" class="world-info-drawer-header" />
+      <SidebarHeader :title="props.title ?? t('navbar.worldInfo')" class="world-info-drawer-header" />
       <div class="sidebar-controls world-info-controls">
         <div class="sidebar-controls-row world-info-controls-row">
           <Button variant="ghost" icon="fa-plus" :title="t('worldInfo.newWorld')" @click="handleCreateBook" />
@@ -295,14 +296,14 @@ const sortOptions = computed(() => [
     </div>
   </div>
 
-  <div v-show="!isSideOnly && isMainOnly" style="height: 100%">
+  <div v-else-if="isMainOnly" style="height: 100%">
     <div class="standalone-pane world-info-drawer">
       <div class="main-page-header">
         <div class="main-page-header-left">
           <MainContentFullscreenToggle />
         </div>
         <div class="main-page-header-main">
-          <h3>{{ t('navbar.worldInfo') }}</h3>
+          <h3>{{ props.title ?? t('navbar.worldInfo') }}</h3>
         </div>
         <div class="main-page-header-actions"></div>
       </div>
@@ -358,7 +359,7 @@ const sortOptions = computed(() => [
   </div>
 
   <SplitPane
-    v-show="!isSideOnly && !isMainOnly"
+    v-else
     v-model:collapsed="isBrowserCollapsed"
     storage-key="worldinfoBrowserWidth"
     :initial-width="350"

@@ -70,6 +70,15 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: false,
   },
+  {
+    id: 'ui.chat.forbidExternalMedia',
+    label: 'settings.ui.chat.forbidExternalMedia.label',
+    description: 'settings.ui.chat.forbidExternalMedia.description',
+    category: 'Chat/Message Handling',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: true,
+  },
 
   // --- UI & Display ---
   {

@@ -202,6 +202,7 @@ export function migrateLegacyToExperimental(userSettingsResponse: ParsedUserSett
       },
       chat: {
         reasoningCollapsed: false,
+        forbidExternalMedia: p.forbid_external_media ?? true,
       },
     },
     chat: {

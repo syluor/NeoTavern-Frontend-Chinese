@@ -965,6 +965,10 @@ export interface MessageSchema {
           label: string;
           description: string;
         };
+        forbidExternalMedia: {
+          label: string;
+          description: string;
+        };
       };
     };
   };

@@ -961,6 +961,10 @@
         "reasoningCollapsed": {
           "label": "Collapse Reasoning by Default",
           "description": "If enabled, the reasoning (thinking) block on messages will be collapsed by default."
+        },
+        "forbidExternalMedia": {
+          "label": "Forbid External Media",
+          "description": "Prevent loading of external media in chat messages for privacy and security."
         }
       }
     }

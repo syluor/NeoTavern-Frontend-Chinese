@@ -109,12 +109,14 @@ const formattedTimestamp = computed(() => {
   return formatTimeStamp(props.message.send_date);
 });
 
+const forbidExternalMedia = computed(() => settingsStore.settings.ui.chat.forbidExternalMedia);
+
 const formattedContent = computed(() => {
-  return formatMessage(props.message);
+  return formatMessage(props.message, forbidExternalMedia.value);
 });
 
 const formattedReasoning = computed(() => {
-  return formatReasoning(props.message);
+  return formatReasoning(props.message, forbidExternalMedia.value);
 });
 
 const isLastMessage = computed(

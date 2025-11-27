@@ -57,7 +57,24 @@ marked.use({
   extensions: [dialogue1Extension, dialogue2Extension, dialogue3Extension],
 });
 
-export function formatText(text: string): string {
+const MEDIA_TAGS = ['img', 'video', 'audio', 'iframe', 'embed', 'object', 'picture', 'source', 'track'];
+
+// Helper to handle DOMPurify in both Browser and Test (Node/JSDOM) environments
+let sanitizerInstance: typeof DOMPurify | null = null;
+
+function getSanitizer() {
+  if (sanitizerInstance) return sanitizerInstance;
+
+  if (typeof DOMPurify === 'function') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sanitizerInstance = (DOMPurify as any)(window);
+  } else {
+    sanitizerInstance = DOMPurify;
+  }
+  return sanitizerInstance;
+}
+
+export function formatText(text: string, forbidExternalMedia: boolean = false): string {
   if (!text) return '';
 
   const rawHtml = marked.parse(text) as string;
@@ -67,22 +84,29 @@ export function formatText(text: string): string {
     RETURN_DOM_FRAGMENT: false,
     ADD_TAGS: ['style', 'custom-style', 'q'],
     ADD_ATTR: ['target', 'class', 'id'],
+    FORBID_TAGS: forbidExternalMedia ? MEDIA_TAGS : [],
   };
 
-  const sanitizedHtml = DOMPurify.sanitize(rawHtml, config) as string;
+  const sanitizer = getSanitizer();
+  if (!sanitizer || typeof sanitizer.sanitize !== 'function') {
+    console.warn('DOMPurify sanitizer not initialized correctly.');
+    return rawHtml;
+  }
+
+  const sanitizedHtml = sanitizer.sanitize(rawHtml, config) as string;
 
   return scopeHtml(sanitizedHtml);
 }
 
-export function formatMessage(message: ChatMessage): string {
+export function formatMessage(message: ChatMessage, forbidExternalMedia: boolean = false): string {
   const textToFormat = message?.extra?.display_text || message.mes;
-  return formatText(textToFormat);
+  return formatText(textToFormat, forbidExternalMedia);
 }
 
-export function formatReasoning(message: ChatMessage): string {
+export function formatReasoning(message: ChatMessage, forbidExternalMedia: boolean = false): string {
   if (!message.extra?.reasoning) return '';
   const textToFormat = message.extra.reasoning_display_text || message.extra.reasoning;
-  return formatText(textToFormat);
+  return formatText(textToFormat, forbidExternalMedia);
 }
 
 // --- Chat Initialization ---

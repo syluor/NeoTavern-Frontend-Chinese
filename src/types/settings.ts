@@ -275,6 +275,7 @@ export interface Settings {
     };
     chat: {
       reasoningCollapsed: boolean;
+      forbidExternalMedia: boolean;
     };
   };
   chat: {

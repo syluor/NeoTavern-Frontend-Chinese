@@ -80,7 +80,7 @@ function createDefaultSettings(): Settings {
   return defaultSettings as Settings;
 }
 
-function migrateExperimentalPreset(legacyPreset: LegacyOaiPresetSettings): SamplerSettings {
+export function migrateExperimentalPreset(legacyPreset: LegacyOaiPresetSettings): SamplerSettings {
   // Migrate prompts from legacy ordered config to flat list
   const migratedPrompts: Prompt[] = [];
 

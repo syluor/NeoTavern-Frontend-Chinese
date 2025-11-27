@@ -14,13 +14,13 @@ import { PROVIDER_CAPABILITIES } from '../api/provider-definitions';
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { toast } from '../composables/useToast';
 import { defaultPrompts } from '../constants';
-import type { ApiModel, ConnectionProfile, SamplerSettings } from '../types';
+import type { ApiModel, ConnectionProfile, LegacyOaiPresetSettings, SamplerSettings } from '../types';
 import { api_providers, POPUP_RESULT, POPUP_TYPE } from '../types';
 import type { InstructTemplate } from '../types/instruct';
 import { downloadFile, readFileAsText, uuidv4 } from '../utils/commons';
 import { usePopupStore } from './popup.store';
 import { useSecretStore } from './secret.store';
-import { useSettingsStore } from './settings.store';
+import { migrateExperimentalPreset, useSettingsStore } from './settings.store';
 
 export const useApiStore = defineStore('api', () => {
   const { t } = useStrictI18n();
@@ -348,8 +348,22 @@ export const useApiStore = defineStore('api', () => {
 
       try {
         const content = await readFileAsText(file);
-        const presetData = JSON.parse(content);
+        let presetData = JSON.parse(content);
         const name = file.name.replace(/\.json$/, '');
+
+        // Detect legacy preset
+        if ('openai_max_context' in presetData || 'prompt_order' in presetData) {
+          console.log('Legacy preset detected, migrating...', name);
+          try {
+            presetData = migrateExperimentalPreset(presetData as LegacyOaiPresetSettings);
+            toast.success('Legacy preset migrated successfully.'); // TODO: i18n
+          } catch (error) {
+            console.error('Migration failed:', error);
+            toast.error('Failed to migrate legacy preset.'); // TODO: i18n
+            return;
+          }
+        }
+
         // TODO: Add confirmation for overwriting existing preset, like original ST
         await saveExperimentalPreset(name, presetData);
         await loadPresetsForApi();

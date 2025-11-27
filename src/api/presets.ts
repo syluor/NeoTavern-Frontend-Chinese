@@ -60,8 +60,6 @@ export async function deleteExperimentalPreset(name: string): Promise<void> {
   if (!response.ok) {
     throw new Error('Failed to delete preset');
   }
-
-  await response.json();
 }
 
 export async function fetchAllInstructTemplates(): Promise<InstructTemplate[]> {

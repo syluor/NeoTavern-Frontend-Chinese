@@ -84,12 +84,6 @@ const activeRightSidebars = computed(() =>
 );
 
 onMounted(async () => {
-  settingsStore.initializeSettings();
-  extensionStore.initializeExtensions();
-  secretStore.fetchSecrets();
-  chatStore.chatInfos = await listChats();
-  chatStore.recentChats = await listRecentChats();
-
   // Register Left Sidebar
   registryStore.registerSidebar(
     'recent-chats',
@@ -245,6 +239,12 @@ onMounted(async () => {
   // we check if we can call it via UIStore facade or LayoutStore directly.
   // The layoutStore internally uses registryStore.
   layoutStore.activateNavBarItem('chat');
+
+  await settingsStore.initializeSettings();
+  await secretStore.fetchSecrets();
+  chatStore.chatInfos = await listChats();
+  chatStore.recentChats = await listRecentChats();
+  await extensionStore.initializeExtensions();
 });
 </script>
 

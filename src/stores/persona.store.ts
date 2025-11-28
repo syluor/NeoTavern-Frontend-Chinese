@@ -164,7 +164,11 @@ export const usePersonaStore = defineStore('persona', () => {
 
   async function deletePersona(avatarId: string) {
     try {
-      await deletePersonaAvatar(avatarId);
+      try {
+        await deletePersonaAvatar(avatarId);
+      } catch {
+        console.warn('Avatar deletion failed on server, ignoring.');
+      }
 
       personas.value = personas.value.filter((p) => p.avatarId !== avatarId);
 

@@ -990,7 +990,7 @@
         },
         "forbidExternalMedia": {
           "label": "Forbid External Media",
-          "description": "Prevent loading of external media in chat messages for privacy and security."
+          "description": "Prevent loading of external media in chat messages."
         }
       }
     },

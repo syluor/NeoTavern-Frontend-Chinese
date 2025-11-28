@@ -329,6 +329,8 @@
     justify-content: center;
 
     img {
+      width: var(--avatar-width);
+      height: var(--avatar-height);
       object-fit: cover;
       border-radius: var(--avatar-border-radius-round);
     }

@@ -997,7 +997,7 @@
     "chat": {
       "stopOnNameHijack": {
         "label": "Stop on name hijack",
-        "description": "Stop generation if the AI tries to speak for another character or user. It is a <b>{'{{name}}'}: </b> check.",
+        "description": "Stop generation if the AI tries to speak for another character or user. It is a {'{{name}}'}: check.",
         "options": {
           "none": "None",
           "single": "Single Chat Only",

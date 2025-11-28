@@ -48,9 +48,32 @@ watch(
 );
 
 function getChatAvatars(chat: ChatInfo): string[] {
+  // If it's a group chat, get members from group config
+  const groupMembers = chat.chat_metadata.group?.members;
+  if (groupMembers) {
+    const memberIds = Object.keys(groupMembers);
+    return memberIds.slice(0, 4).map((m) => getThumbnailUrl('avatar', m));
+  }
+
+  // Fallback / Standard chat members
   const members = chat.chat_metadata.members || [];
-  if (members.length === 0) return [];
-  return members.slice(0, 4).map((m) => getThumbnailUrl('avatar', m));
+  if (members.length > 0) {
+    return members.slice(0, 4).map((m) => getThumbnailUrl('avatar', m));
+  }
+
+  // Fallback to default if no members found but it is a valid chat
+  return [];
+}
+
+function isGroupChat(chat: ChatInfo): boolean {
+  return !!chat.chat_metadata.group;
+}
+
+function getMemberCount(chat: ChatInfo): number {
+  if (chat.chat_metadata.group?.members) {
+    return Object.keys(chat.chat_metadata.group.members).length;
+  }
+  return chat.chat_metadata.members?.length || 0;
 }
 
 async function onItemClick(chat: ChatInfo) {
@@ -169,86 +192,47 @@ onMounted(() => {
     </div>
 
     <div class="recent-chats-content">
-      <div v-for="chat in paginatedRecentChats" :key="chat.file_id">
-        <ListItem
-          :active="chatStore.activeChatFile === chat.file_id"
-          :selected="selectedChats.has(chat.file_id)"
-          @click="onItemClick(chat)"
-        >
-          <template #start>
-            <div class="recent-chat-item-avatar-wrapper">
-              <SmartAvatar :urls="getChatAvatars(chat)" style="width: 45px; height: 45px" />
-              <div v-show="isSelectionMode" class="selection-checkbox">
-                <i v-if="selectedChats.has(chat.file_id)" class="fa-solid fa-check"></i>
-              </div>
+      <ListItem
+        v-for="chat in paginatedRecentChats"
+        :key="chat.file_id"
+        :active="chatStore.activeChatFile === chat.file_id"
+        :selected="selectedChats.has(chat.file_id)"
+        @click="onItemClick(chat)"
+      >
+        <template #start>
+          <div class="recent-chat-avatar">
+            <SmartAvatar :urls="getChatAvatars(chat)" />
+
+            <!-- Group Chat Indicator / Member Count -->
+            <div v-if="isGroupChat(chat)" class="recent-chat-group-badge" :title="t('chat.groupChat')">
+              <i class="fa-solid fa-users"></i>
+              <span v-if="getMemberCount(chat) > 0" class="count">{{ getMemberCount(chat) }}</span>
             </div>
-          </template>
-          <template #default>
-            <div class="recent-chat-item-name">
+
+            <!-- Selection Checkbox -->
+            <div v-show="isSelectionMode" class="recent-chat-selection-indicator">
+              <i v-if="selectedChats.has(chat.file_id)" class="fa-solid fa-check"></i>
+            </div>
+          </div>
+        </template>
+
+        <template #default>
+          <div class="recent-chat-info">
+            <div class="recent-chat-name" :title="chat.chat_metadata.name || chat.file_id">
               {{ chat.chat_metadata.name || chat.file_id }}
             </div>
-            <div class="recent-chat-item-preview">
+            <div class="recent-chat-preview">
               {{ chat.mes || t('chat.emptyLog') }}
             </div>
-            <div class="recent-chat-item-meta">
+            <div class="recent-chat-meta">
               <span>{{ formatTimeStamp(chat.last_mes) }}</span>
               <span>{{ chat.chat_items }} {{ t('common.messages').toLowerCase() }}</span>
             </div>
-          </template>
-        </ListItem>
-      </div>
+          </div>
+        </template>
+      </ListItem>
 
       <EmptyState v-if="recentChats.length === 0" icon="fa-comments" :description="t('chatManagement.noRecentChats')" />
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.recent-chat-item-avatar-wrapper {
-  position: relative;
-  width: 45px;
-  height: 45px;
-
-  .selection-checkbox {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 18px;
-    height: 18px;
-    background-color: var(--theme-emphasis-color);
-    color: var(--black-100);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7em;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 5;
-    border: 2px solid var(--theme-background-tint);
-  }
-}
-
-.recent-chat-item-name {
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.95em;
-  color: var(--theme-text-color);
-}
-
-.recent-chat-item-preview {
-  font-size: 0.85em;
-  opacity: 0.7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.recent-chat-item-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75em;
-  opacity: 0.5;
-}
-</style>

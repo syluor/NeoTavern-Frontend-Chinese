@@ -529,6 +529,7 @@ export interface MessageSchema {
     loadError: string;
     createError: string;
     emptyLog: string;
+    groupChat: string;
     generate: {
       noPrompts: string;
       errorFallback: string;

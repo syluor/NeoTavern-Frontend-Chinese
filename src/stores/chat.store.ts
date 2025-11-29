@@ -443,6 +443,11 @@ export const useChatStore = defineStore('chat', () => {
 
   async function saveMessageEdit(newContent: string, newReasoning?: string) {
     if (chatUiStore.activeMessageEditState !== null && activeChat.value) {
+      newContent = newContent.trim();
+      if (newReasoning) {
+        newReasoning = newReasoning.trim();
+      }
+
       const index = chatUiStore.activeMessageEditState.index;
       const message = activeChat.value.messages[index];
       message.mes = newContent;

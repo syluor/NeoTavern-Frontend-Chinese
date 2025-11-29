@@ -520,7 +520,7 @@
     "perPage": "{count} / page"
   },
   "chat": {
-    "inputPlaceholder": "Type a message, or /? for help",
+    "inputPlaceholder": "Type a message",
     "options": "Options",
     "send": "Send a message",
     "loadError": "Failed to load chat.",

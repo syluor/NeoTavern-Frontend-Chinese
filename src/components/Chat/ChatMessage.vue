@@ -73,7 +73,10 @@ watch(isEditing, (editing) => {
 });
 
 const avatarUrls = computed(() => {
-  const character = characterStore.characters.find((c) => c.avatar === props.message.original_avatar);
+  let character = characterStore.characters.find((c) => c.avatar === props.message.original_avatar);
+  if (!character) {
+    character = characterStore.characters.find((c) => c.name === props.message.name);
+  }
   return resolveAvatarUrls({
     type: 'avatar',
     file: character?.avatar,

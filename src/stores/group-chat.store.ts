@@ -52,7 +52,10 @@ export const useGroupChatStore = defineStore('group-chat', () => {
     if (!chatStore.activeChat) return;
     if (chatStore.activeChat.metadata.members?.includes(avatar)) return;
 
-    chatStore.activeChat.metadata.members?.push(avatar);
+    if (chatStore.activeChat.metadata.members === undefined) {
+      chatStore.activeChat.metadata.members = [];
+    }
+    chatStore.activeChat.metadata.members.push(avatar);
 
     if (!chatStore.activeChat.metadata.group) {
       chatStore.activeChat.metadata.group = {

@@ -530,34 +530,28 @@ function getCharName(avatar: string) {
 
       <!-- Tab: Config -->
       <div v-show="activeTab === 'config'" class="chat-management-config-tab">
-        <div v-if="chatStore.activeChat?.metadata.promptOverrides">
-          <FormItem :label="t('chatManagement.scenarioOverride')">
-            <Textarea
-              v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
-              :rows="6"
-              :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
-              @update:model-value="saveDebounced"
-            />
-          </FormItem>
+        <FormItem v-if="chatStore.activeChat?.metadata.promptOverrides" :label="t('chatManagement.scenarioOverride')">
+          <Textarea
+            v-model="chatStore.activeChat.metadata.promptOverrides.scenario!"
+            :rows="6"
+            :placeholder="t('chatManagement.scenarioOverridePlaceholder')"
+            @update:model-value="saveDebounced"
+          />
+        </FormItem>
 
-          <hr />
+        <FormItem :label="t('chatManagement.connectionProfile')">
+          <ConnectionProfileSelector v-model="activeChatConnectionProfile" />
+        </FormItem>
 
-          <FormItem :label="t('chatManagement.connectionProfile')">
-            <ConnectionProfileSelector v-model="activeChatConnectionProfile" />
-          </FormItem>
-
-          <hr />
-
-          <FormItem :label="t('chatManagement.chatLorebooks')">
-            <Select
-              v-model="activeChatLorebooks"
-              :options="availableLorebooks"
-              multiple
-              searchable
-              :placeholder="t('chatManagement.selectLorebooks')"
-            />
-          </FormItem>
-        </div>
+        <FormItem :label="t('chatManagement.chatLorebooks')">
+          <Select
+            v-model="activeChatLorebooks"
+            :options="availableLorebooks"
+            multiple
+            searchable
+            :placeholder="t('chatManagement.selectLorebooks')"
+          />
+        </FormItem>
       </div>
     </div>
   </div>

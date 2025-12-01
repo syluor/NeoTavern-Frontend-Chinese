@@ -81,19 +81,30 @@ export const useApiStore = defineStore('api', () => {
     const profile = connectionProfiles.value.find((p) => p.name === profileName);
     if (!profile) return;
 
-    if (profile.provider) settingsStore.settings.api.provider = profile.provider;
-    if (profile.sampler) settingsStore.settings.api.selectedSampler = profile.sampler;
-    if (profile.model) {
+    if (profile.provider && profile.provider !== settingsStore.settings.api.provider) {
+      settingsStore.settings.api.provider = profile.provider;
+    }
+    if (profile.sampler && profile.sampler !== settingsStore.settings.api.selectedSampler) {
+      settingsStore.settings.api.selectedSampler = profile.sampler;
+    }
+    if (
+      profile.model &&
+      profile.model !==
+        settingsStore.settings.api.selectedProviderModels[profile.provider ?? settingsStore.settings.api.provider]
+    ) {
       const provider = profile.provider ?? settingsStore.settings.api.provider;
       settingsStore.settings.api.selectedProviderModels[provider] = profile.model;
     }
-    if (profile.formatter) {
+    if (profile.formatter && settingsStore.settings.api.formatter !== profile.formatter) {
       settingsStore.settings.api.formatter = profile.formatter;
     }
-    if (profile.instructTemplate) {
+    if (profile.instructTemplate && profile.instructTemplate !== settingsStore.settings.api.instructTemplateName) {
       settingsStore.settings.api.instructTemplateName = profile.instructTemplate;
     }
-    if (profile.customPromptPostProcessing !== undefined) {
+    if (
+      profile.customPromptPostProcessing !== undefined &&
+      profile.customPromptPostProcessing !== settingsStore.settings.api.customPromptPostProcessing
+    ) {
       settingsStore.settings.api.customPromptPostProcessing = profile.customPromptPostProcessing;
     }
 
@@ -151,6 +162,17 @@ export const useApiStore = defineStore('api', () => {
           settingsStore.settings.api.proxy.password = '';
         }
         connect();
+      }
+    },
+  );
+
+  // Watch connection profile changes
+  watch(
+    () => settingsStore.settings.api.selectedConnectionProfile,
+    (newProfile, oldProfile) => {
+      if (settingsStore.settingsInitializing) return;
+      if (newProfile !== oldProfile && newProfile) {
+        selectConnectionProfile(newProfile);
       }
     },
   );

@@ -11,7 +11,7 @@ import { usePersonaStore } from '../../stores/persona.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
-import { POPUP_RESULT, POPUP_TYPE, type Character } from '../../types';
+import { POPUP_RESULT, POPUP_TYPE, type Character, type CropData } from '../../types';
 import { getThumbnailUrl } from '../../utils/character';
 import { getBase64Async } from '../../utils/commons';
 import { EmptyState, Pagination, PanelLayout, SidebarHeader } from '../common';
@@ -139,7 +139,7 @@ async function handleAvatarChange(files: File[]) {
   if (!files[0] || !personaStore.activePersonaId) return;
   const file = files[0];
 
-  let cropData;
+  let cropData: CropData | undefined = undefined;
   if (!settingsStore.settings.ui.avatars.neverResize) {
     const dataUrl = await getBase64Async(file);
     const { result, value } = await popupStore.show({
@@ -149,7 +149,7 @@ async function handleAvatarChange(files: File[]) {
       wide: true,
     });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;
-    cropData = value;
+    cropData = value as CropData;
   }
 
   await personaStore.uploadPersonaAvatar(personaStore.activePersonaId, file, cropData);

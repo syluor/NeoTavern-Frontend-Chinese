@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { CropData, ZoomedAvatar } from '../types';
+import type { ZoomedAvatar } from '../types';
 
 export const useUiStore = defineStore('ui', () => {
   const isChatSaving = ref(false);
   const isDeleteMode = ref(false);
   const isSendPress = ref(false);
-  const cropData = ref<CropData | null>(null);
   const activePlayerName = ref<string | null>(null);
   const activePlayerAvatar = ref<string | null>(null);
   const zoomedAvatars = ref<ZoomedAvatar[]>([]);
@@ -31,7 +30,6 @@ export const useUiStore = defineStore('ui', () => {
     isChatSaving,
     isDeleteMode,
     isSendPress,
-    cropData,
     activePlayerName,
     activePlayerAvatar,
     zoomedAvatars,

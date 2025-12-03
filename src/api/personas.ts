@@ -1,3 +1,4 @@
+import type { CropData } from '../types';
 import { getRequestHeaders } from '../utils/client';
 
 export async function fetchAllPersonaAvatars(): Promise<string[]> {
@@ -25,9 +26,7 @@ export async function deletePersonaAvatar(avatarId: string): Promise<void> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function uploadPersonaAvatar(formData: FormData, cropData?: any): Promise<{ path: string }> {
-  // TODO: Proper type
+export async function uploadPersonaAvatar(formData: FormData, cropData?: CropData): Promise<{ path: string }> {
   let url = '/api/avatars/upload';
   if (cropData) {
     url += `?crop=${encodeURIComponent(JSON.stringify(cropData))}`;

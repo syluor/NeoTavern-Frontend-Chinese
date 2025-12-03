@@ -14,11 +14,11 @@ import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useUiStore } from '../../stores/ui.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
-import type { Character } from '../../types';
+import type { Character, CropData } from '../../types';
 import { POPUP_RESULT, POPUP_TYPE, type PopupOptions } from '../../types';
 import { getThumbnailUrl } from '../../utils/character';
 import { formatText } from '../../utils/chat';
-import { humanizedDateTime } from '../../utils/commons';
+import { getBase64Async, humanizedDateTime } from '../../utils/commons';
 import Popup from '../Popup/Popup.vue';
 import { Button, CollapsibleSection, FormItem, Input, RangeControl, Select, TagInput, Textarea } from '../UI';
 import AlternateGreetingsModal from './AlternateGreetingsModal.vue';
@@ -70,6 +70,7 @@ const editorPopupTitle = ref('');
 
 const avatarPreviewUrl = ref<string | null>(null);
 const selectedAvatarFile = ref<File | null>(null);
+const cropDataForCreate = ref<CropData | undefined>(undefined);
 const isSubmitting = ref(false);
 
 const localCharacter = ref<Character | null>(null);
@@ -113,6 +114,8 @@ watch(
 
 onUnmounted(() => {
   revokePreviewUrl();
+  selectedAvatarFile.value = null;
+  cropDataForCreate.value = undefined;
 });
 
 function toggleFavorite() {
@@ -157,21 +160,39 @@ async function handleAvatarFileChange(event: Event) {
   if (input.files && input.files[0]) {
     const file = input.files[0];
 
+    let cropData: CropData | undefined = undefined;
+    if (!settingsStore.settings.ui.avatars.neverResize) {
+      const dataUrl = await getBase64Async(file);
+      const { result, value } = await popupStore.show({
+        title: t('popup.cropAvatar.title'),
+        type: POPUP_TYPE.CROP,
+        cropImage: dataUrl,
+        wide: true,
+      });
+      if (result !== POPUP_RESULT.AFFIRMATIVE) {
+        input.value = '';
+        return;
+      }
+      cropData = value as CropData;
+    }
+
     if (isCreating.value) {
       revokePreviewUrl();
       avatarPreviewUrl.value = URL.createObjectURL(file);
       selectedAvatarFile.value = file;
+      cropDataForCreate.value = cropData;
       if (!localCharacter.value.name) {
         const name = file.name.replace(/\.[^/.]+$/, '');
         localCharacter.value.name = name;
       }
     } else {
       try {
-        await characterStore.updateCharacterImage(localCharacter.value.avatar, file);
+        await characterStore.updateCharacterImage(localCharacter.value.avatar, file, cropData);
       } catch {
         toast.error(t('character.updateImage.error'));
       }
     }
+    input.value = '';
   }
 }
 
@@ -190,6 +211,7 @@ async function handleCreate() {
       const res = await fetch(default_avatar);
       const blob = await res.blob();
       selectedAvatarFile.value = new File([blob], 'avatar.png', { type: 'image/png' });
+      cropDataForCreate.value = undefined;
     } catch {
       toast.error(t('characterEditor.validation.avatarRequired'));
       return;
@@ -201,12 +223,16 @@ async function handleCreate() {
     const newAvatar = await characterStore.createNewCharacter(
       characterUiStore.editFormCharacter as Character,
       selectedAvatarFile.value,
+      cropDataForCreate.value,
     );
     if (newAvatar) {
       characterUiStore.cancelCreating();
       characterUiStore.draftCharacter = DEFAULT_CHARACTER;
       characterUiStore.selectCharacterByAvatar(newAvatar);
       characterUiStore.highlightCharacter(newAvatar);
+      selectedAvatarFile.value = null;
+      cropDataForCreate.value = undefined;
+      revokePreviewUrl();
     }
   } catch {
     toast.error(t('character.create.error'));

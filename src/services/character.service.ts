@@ -7,6 +7,7 @@ import {
   updateCharacterImage as apiUpdateCharacterImage,
   fetchAllCharacters,
 } from '../api/characters';
+import type { CropData } from '../types';
 import { type Character } from '../types/character';
 import { createCharacterFormData, getThumbnailUrl } from '../utils/character';
 import { uuidv4 } from '../utils/commons';
@@ -32,12 +33,12 @@ export const characterService = {
     await apiSaveCharacter({ ...changes, avatar });
   },
 
-  async create(character: Character, file?: File): Promise<{ avatar: string } | undefined> {
+  async create(character: Character, file?: File, cropData?: CropData): Promise<{ avatar: string } | undefined> {
     const uuid = uuidv4();
     const fileName = `${uuid}.png`;
     const fileToSend = file ? new File([file], fileName, { type: file.type }) : null;
     const formData = createCharacterFormData(character, fileToSend, uuid);
-    const result = await apiCreateCharacter(formData);
+    const result = await apiCreateCharacter(formData, cropData);
 
     if (result && result.file_name) {
       return { avatar: result.file_name };
@@ -66,8 +67,8 @@ export const characterService = {
     throw new Error('Import failed: No filename returned');
   },
 
-  async updateImage(avatar: string, imageFile: File): Promise<void> {
-    await apiUpdateCharacterImage(avatar, imageFile);
+  async updateImage(avatar: string, imageFile: File, cropData?: CropData): Promise<void> {
+    await apiUpdateCharacterImage(avatar, imageFile, cropData);
   },
 
   async duplicate(character: Character): Promise<{ avatar: string } | undefined> {

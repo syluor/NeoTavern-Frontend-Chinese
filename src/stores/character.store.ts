@@ -4,7 +4,7 @@ import { computed, nextTick, ref } from 'vue';
 import { useAutoSave } from '../composables/useAutoSave';
 import { useCharacterTokens } from '../composables/useCharacterTokens';
 import { characterService } from '../services/character.service';
-import { type Character } from '../types';
+import { type Character, type CropData } from '../types';
 import { getCharacterDifferences } from '../utils/character';
 import { onlyUnique } from '../utils/commons';
 import { eventEmitter } from '../utils/extensions';
@@ -137,8 +137,12 @@ export const useCharacterStore = defineStore('character', () => {
     return results;
   }
 
-  async function createNewCharacter(character: Character, file?: File): Promise<string | undefined> {
-    const result = await characterService.create(character, file);
+  async function createNewCharacter(
+    character: Character,
+    file?: File,
+    cropData?: CropData,
+  ): Promise<string | undefined> {
+    const result = await characterService.create(character, file, cropData);
     if (result) {
       await refreshCharacters();
       const createdChar = characters.value.find((c) => c.avatar === result.avatar);
@@ -161,8 +165,8 @@ export const useCharacterStore = defineStore('character', () => {
     delete characterImageTimestamps.value[avatar];
   }
 
-  async function updateCharacterImage(avatar: string, imageFile: File) {
-    await characterService.updateImage(avatar, imageFile);
+  async function updateCharacterImage(avatar: string, imageFile: File, cropData?: CropData) {
+    await characterService.updateImage(avatar, imageFile, cropData);
     if (characters.value.find((c) => c.avatar === avatar)) {
       characterImageTimestamps.value[avatar] = Date.now();
     }

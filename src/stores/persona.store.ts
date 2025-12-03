@@ -8,7 +8,7 @@ import {
 import { useStrictI18n } from '../composables/useStrictI18n';
 import { toast } from '../composables/useToast';
 import { default_user_avatar } from '../constants';
-import { type Character, type Persona, type PersonaDescription } from '../types';
+import { type Character, type CropData, type Persona, type PersonaDescription } from '../types';
 import { getThumbnailUrl } from '../utils/character';
 import { uuidv4 } from '../utils/commons';
 import { eventEmitter } from '../utils/extensions';
@@ -144,8 +144,7 @@ export const usePersonaStore = defineStore('persona', () => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function uploadPersonaAvatar(avatar: string | null, file: File, cropData?: any) {
+  async function uploadPersonaAvatar(avatar: string | null, file: File, cropData?: CropData) {
     if (!avatar) return;
 
     const formData = new FormData();

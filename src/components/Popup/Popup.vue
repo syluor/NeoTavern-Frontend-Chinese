@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import 'cropperjs';
 import DOMPurify from 'dompurify';
 import type { Component, PropType } from 'vue';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -10,13 +9,7 @@ import { POPUP_RESULT, POPUP_TYPE, type CustomPopupButton } from '../../types';
 import type { I18nKey } from '../../types/i18n';
 import { formatText } from '../../utils/chat';
 import { Button, Textarea } from '../UI';
-
-interface CropperSelectionElement extends HTMLElement {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import ImageCropper from '../UI/ImageCropper.vue';
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -46,7 +39,7 @@ const { t } = useStrictI18n();
 const settings = useSettingsStore();
 const dialog = ref<HTMLDialogElement | null>(null);
 const mainInputComponent = ref<InstanceType<typeof Textarea> | null>(null);
-const cropperSelection = ref<CropperSelectionElement | null>(null);
+const cropper = ref<InstanceType<typeof ImageCropper> | null>(null);
 const internalInputValue = ref(props.inputValue);
 const generatedButtons = ref<CustomPopupButton[]>([]);
 const sanitizedTitle = computed(() => DOMPurify.sanitize(props.title));
@@ -154,14 +147,8 @@ function handleResult(result: number) {
   if (result !== POPUP_RESULT.CANCELLED) {
     if (props.type === POPUP_TYPE.INPUT) {
       payload.value = internalInputValue.value;
-    } else if (props.type === POPUP_TYPE.CROP && cropperSelection.value) {
-      const { x, y, width, height } = cropperSelection.value;
-      payload.value = {
-        x: Math.round(x),
-        y: Math.round(y),
-        width: Math.round(width),
-        height: Math.round(height),
-      };
+    } else if (props.type === POPUP_TYPE.CROP && cropper.value) {
+      payload.value = cropper.value.getData();
     }
   }
   emit('submit', payload);
@@ -215,20 +202,7 @@ function handleEnter(evt: KeyboardEvent) {
         />
 
         <div v-if="type === POPUP_TYPE.CROP" class="crop-container">
-          <cropper-canvas>
-            <cropper-image :src="cropImage" alt="Image to crop" translatable></cropper-image>
-            <cropper-shade hidden></cropper-shade>
-            <cropper-handle action="move" plain></cropper-handle>
-            <cropper-selection
-              ref="cropperSelection"
-              :initial-coverage="0.8"
-              :aspect-ratio="1"
-              :movable="false"
-              :resizable="false"
-            >
-              <cropper-grid hidden></cropper-grid>
-            </cropper-selection>
-          </cropper-canvas>
+          <ImageCropper ref="cropper" :src="cropImage" :aspect-ratio="1" />
         </div>
       </div>
 

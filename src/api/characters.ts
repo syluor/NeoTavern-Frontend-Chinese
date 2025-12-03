@@ -1,5 +1,5 @@
 import { useUiStore } from '../stores/ui.store';
-import type { Character } from '../types';
+import type { Character, CropData } from '../types';
 import { getRequestHeaders } from '../utils/client';
 
 const API_BASE = '/api/characters';
@@ -76,8 +76,12 @@ export async function importCharacter(file: File): Promise<{ file_name: string; 
   return data;
 }
 
-export async function createCharacter(formData: FormData): Promise<{ file_name: string }> {
-  const response = await fetch(`${API_BASE}/create`, {
+export async function createCharacter(formData: FormData, cropData?: CropData): Promise<{ file_name: string }> {
+  let url = `${API_BASE}/create`;
+  if (cropData) {
+    url += `?crop=${encodeURIComponent(JSON.stringify(cropData))}`;
+  }
+  const response = await fetch(url, {
     method: 'POST',
     headers: getRequestHeaders({ omitContentType: true }),
     body: formData,
@@ -105,12 +109,16 @@ export async function deleteCharacter(avatar: string, deleteChats: boolean): Pro
   }
 }
 
-export async function updateCharacterImage(avatar: string, imageFile: File): Promise<void> {
+export async function updateCharacterImage(avatar: string, imageFile: File, cropData?: CropData | null): Promise<void> {
   const formData = new FormData();
   formData.append('avatar_url', avatar);
   formData.append('avatar', imageFile);
 
-  const response = await fetch(`${API_BASE}/edit-avatar`, {
+  let url = `${API_BASE}/edit-avatar`;
+  if (cropData) {
+    url += `?crop=${encodeURIComponent(JSON.stringify(cropData))}`;
+  }
+  const response = await fetch(url, {
     method: 'POST',
     headers: getRequestHeaders({ omitContentType: true }),
     body: formData,

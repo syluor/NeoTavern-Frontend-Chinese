@@ -32,6 +32,11 @@ function handleExtensionSelect(extension: Extension) {
   extensionStore.selectExtension(extension.id);
   layoutStore.autoCloseSidebarsOnMobile();
 }
+
+function handleClose() {
+  layoutStore.activateNavBarItem('chat');
+  layoutStore.autoCloseSidebarsOnMobile();
+}
 </script>
 
 <template>
@@ -43,6 +48,11 @@ function handleExtensionSelect(extension: Extension) {
     :initial-width="250"
     class="extensions-panel"
   >
+    <template #main-header-actions>
+      <div class="sidebar-mobile-header">
+        <Button icon="fa-xmark" variant="ghost" @click="handleClose" />
+      </div>
+    </template>
     <template #side>
       <div class="sidebar-controls extensions-panel-controls">
         <div class="sidebar-controls-row extensions-panel-controls-row">

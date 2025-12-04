@@ -202,6 +202,11 @@ onMounted(() => {
     worldInfoStore.initialize();
   }
 });
+
+function handleClose() {
+  layoutStore.activateNavBarItem('chat');
+  layoutStore.autoCloseSidebarsOnMobile();
+}
 </script>
 
 <template>
@@ -226,6 +231,11 @@ onMounted(() => {
       :initial-width="350"
       class="persona-drawer-split"
     >
+      <template #main-header-actions>
+        <div class="sidebar-mobile-header">
+          <Button icon="fa-xmark" variant="ghost" @click="handleClose" />
+        </div>
+      </template>
       <template #side>
         <div class="persona-drawer-sidebar">
           <div class="sidebar-controls persona-drawer-controls">

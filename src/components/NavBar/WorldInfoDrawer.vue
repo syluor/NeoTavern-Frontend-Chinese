@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { ApiTokenizer } from '../../api/tokenizer';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { DebounceTimeout } from '../../constants';
+import { useLayoutStore } from '../../stores/layout.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useWorldInfoUiStore } from '../../stores/world-info-ui.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
@@ -23,6 +24,7 @@ const props = defineProps<{
 const worldInfoStore = useWorldInfoStore();
 const worldInfoUiStore = useWorldInfoUiStore();
 const popupStore = usePopupStore();
+const layoutStore = useLayoutStore();
 
 const isBrowserCollapsed = ref(false);
 const bookTokenCounts = ref<Record<string, number>>({});
@@ -217,6 +219,11 @@ const sortOptions = computed(() => [
   { value: 'uid:asc', label: t('worldInfo.sorting.uidAsc') },
   { value: 'uid:desc', label: t('worldInfo.sorting.uidDesc') },
 ]);
+
+function handleClose() {
+  layoutStore.activateNavBarItem('chat');
+  layoutStore.autoCloseSidebarsOnMobile();
+}
 </script>
 
 <template>
@@ -228,6 +235,11 @@ const sortOptions = computed(() => [
     :initial-width="350"
     class="character-panel world-info-drawer"
   >
+    <template #main-header-actions>
+      <div class="sidebar-mobile-header">
+        <Button icon="fa-xmark" variant="ghost" @click="handleClose" />
+      </div>
+    </template>
     <template #side>
       <div class="sidebar-controls world-info-controls">
         <div class="sidebar-controls-row world-info-controls-row">

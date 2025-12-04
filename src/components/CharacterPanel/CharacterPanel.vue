@@ -92,6 +92,11 @@ const sortOptions = [
   { value: 'fav:desc', label: t('characterPanel.sorting.favorites') },
 ];
 
+function handleClose() {
+  layoutStore.activateNavBarItem('chat');
+  layoutStore.autoCloseSidebarsOnMobile();
+}
+
 onMounted(async () => {
   if (characterStore.characters.length === 0) {
     try {
@@ -115,6 +120,11 @@ onMounted(async () => {
     class="character-panel"
     @update:collapsed="(val) => (settingsStore.settings.account.characterBrowserExpanded = val)"
   >
+    <template #main-header-actions>
+      <div class="sidebar-mobile-header">
+        <Button icon="fa-xmark" variant="ghost" @click="handleClose" />
+      </div>
+    </template>
     <template #side>
       <div class="sidebar-controls character-panel-controls">
         <div class="sidebar-controls-row character-panel-actions">

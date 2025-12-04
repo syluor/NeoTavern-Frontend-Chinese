@@ -143,4 +143,27 @@
       font-size: 1.1em;
     }
   }
+
+  /* PanelLayout: Show mobile header when in side-only mode */
+  .standalone-pane {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .sidebar-mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--theme-border-color);
+      background-color: var(--theme-background-tint);
+      flex-shrink: 0;
+
+      .mobile-header-title {
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+    }
+  }
 }

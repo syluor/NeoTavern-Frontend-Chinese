@@ -519,6 +519,7 @@ const embeddedLorebookName = computed({
               :title="t('characterEditor.favorite')"
               @click="toggleFavorite"
             />
+            <!-- TODO: Take care of unused buttons -->
             <Button variant="ghost" icon="fa-globe" :title="t('characterEditor.lore')" />
             <Button variant="ghost" icon="fa-passport" :title="t('characterEditor.chatLore')" />
             <Button variant="ghost" icon="fa-face-smile" :title="t('characterEditor.personas')" />

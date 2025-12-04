@@ -51,6 +51,14 @@ export function isMobile() {
   return mobileTypes.includes(result.platform.type);
 }
 
+/**
+ * Check if the current viewport width is considered "mobile".
+ */
+export function isViewportMobile(): boolean {
+  if (typeof window === 'undefined') return false;
+  return isMobile() || window.matchMedia('(max-width: 768px)').matches;
+}
+
 // --- DOM Utils ---
 
 /**

@@ -892,3 +892,88 @@
   min-height: 500px;
   resize: none !important;
 }
+
+// =============================================================================
+// Mobile UI Component Overrides
+// =============================================================================
+@media (max-width: 768px) {
+  /* Panel Layout Header Toggle */
+  .main-page-header-left .menu-button {
+    display: none;
+  }
+
+  /* Split Pane Mobile Transformation */
+  .split-pane {
+    &-panel--side {
+      width: 100% !important;
+      border-right: none;
+
+      /* Mobile transition override */
+      transition: none !important;
+
+      /* Logic: If collapsed (true) -> Show Main, Hide Side.
+         If NOT collapsed (false) -> Show Side, Hide Main.
+         
+         Existing Desktop Logic: collapsed -> Side width 0.
+         We re-use "collapsed" state to mean "List View Hidden".
+      */
+    }
+
+    /* When collapsed, we want to see MAIN, hide SIDE */
+    &.is-collapsed .split-pane-panel--side {
+      display: none;
+      width: 0 !important;
+    }
+
+    &.is-collapsed .split-pane-main {
+      display: flex;
+    }
+
+    /* When NOT collapsed, we want to see SIDE, hide MAIN */
+    &:not(.is-collapsed) .split-pane-panel--side {
+      display: flex;
+    }
+
+    &:not(.is-collapsed) .split-pane-main {
+      display: none;
+    }
+
+    /* Divider and Toggle Button Styling */
+    &-divider {
+      /* Remove the resizing cursor/area */
+      width: 0;
+      margin: 0;
+      /* Position the toggle button floating */
+      position: absolute;
+      bottom: calc(var(--nav-bar-height) + 20px);
+      right: 20px;
+      z-index: 100;
+      pointer-events: none;
+      /* Let clicks pass through area */
+      cursor: default;
+    }
+
+    &-collapse-toggle {
+      pointer-events: auto;
+      cursor: pointer;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--color-accent-cobalt-30a);
+      border: 1px solid var(--theme-border-color);
+      color: var(--white-100);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+
+      /* Reset transform centering */
+      top: auto;
+      left: auto;
+      transform: none;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+    }
+  }
+}

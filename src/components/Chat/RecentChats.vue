@@ -4,6 +4,7 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import { chatService } from '../../services/chat.service';
 import { useChatStore } from '../../stores/chat.store';
+import { useLayoutStore } from '../../stores/layout.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_RESULT, POPUP_TYPE, type ChatInfo } from '../../types';
@@ -16,6 +17,7 @@ const { t } = useStrictI18n();
 const chatStore = useChatStore();
 const settingsStore = useSettingsStore();
 const popupStore = usePopupStore();
+const layoutStore = useLayoutStore();
 
 const currentPage = ref(1);
 const itemsPerPage = ref(settingsStore.settings.account.recentChatsPageSize ?? 10);
@@ -80,7 +82,8 @@ async function onItemClick(chat: ChatInfo) {
   if (isSelectionMode.value) {
     toggleSelection(chat.file_id);
   } else {
-    await chatStore.setActiveChatFile(chat.file_id);
+    chatStore.setActiveChatFile(chat.file_id);
+    layoutStore.autoCloseLeftSidebarOnMobile();
   }
 }
 

@@ -118,6 +118,7 @@ $base-border-radius-rounded: 8px;
   --sidebar-max-width: 800px;
   --header-height: 48px;
   --layout-message-right-spacing: 32px;
+  --nav-bar-height: 0px; // Default 0 for desktop (vertical rail)
 
   --spacing-xxs: 2px;
   --spacing-xs: 4px;
@@ -194,4 +195,33 @@ $base-border-radius-rounded: 8px;
 
   // --- Text Formatting ---
   --theme-reasoning-saturation-factor: 0.5;
+}
+
+// =============================================================================
+// Mobile Overrides
+// =============================================================================
+@media (max-width: 768px) {
+  :root {
+    /* Navbar moves to bottom */
+    --nav-bar-width: 0px;
+    --nav-bar-height: 60px;
+
+    /* Sidebars are full width overlays */
+    --sidebar-width: 100%;
+    --sidebar-left-width: 100%;
+    --sidebar-right-width: 100%;
+
+    /* Panels take full width */
+    --panel-width: 100%;
+    --panel-width-wide: 100%;
+
+    /* Increase font for readability/touch */
+    --base-font-size: 14px;
+    --font-scale: 1;
+
+    /* Adjust layout spacing */
+    --layout-message-right-spacing: 0px;
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+  }
 }

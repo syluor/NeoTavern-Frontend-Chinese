@@ -64,6 +64,11 @@
   }
 }
 
+// Mobile Header (Hidden on Desktop)
+.sidebar-mobile-header {
+  display: none;
+}
+
 // =============================================================================
 // Vanilla Sidebar
 // =============================================================================
@@ -88,4 +93,54 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
+}
+
+// =============================================================================
+// Mobile Sidebar Overrides
+// =============================================================================
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    /* Full height minus navbar */
+    height: calc(100% - var(--nav-bar-height));
+    width: 100% !important;
+    z-index: var(--z-sidebar);
+    border: none;
+
+    &--left {
+      left: 0;
+      transform: translateX(-100%);
+    }
+
+    &--right {
+      right: 0;
+      transform: translateX(100%);
+    }
+
+    &.is-open {
+      transform: translateX(0);
+    }
+
+    /* Hide Resizer on Mobile */
+    &-resizer {
+      display: none;
+    }
+  }
+
+  /* Show Mobile Header */
+  .sidebar-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--theme-border-color);
+    background-color: var(--theme-background-tint);
+    flex-shrink: 0;
+
+    .mobile-header-title {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  }
 }

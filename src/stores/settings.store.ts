@@ -4,6 +4,7 @@ import { computed, nextTick, ref } from 'vue';
 import { fetchAllExperimentalPresets } from '../api/presets';
 import { fetchUserSettings, fetchV2Settings, saveV2Settings } from '../api/settings';
 import { useAutoSave } from '../composables/useAutoSave';
+import { useMobile } from '../composables/useMobile';
 import { toast } from '../composables/useToast';
 import { SendOnEnterOptions } from '../constants';
 import {
@@ -15,13 +16,14 @@ import { settingsDefinition } from '../settings-definition';
 import { type SettingDefinition, type Settings, type SettingsPath } from '../types';
 import type { LegacySettings } from '../types/settings';
 import type { ValueForPath } from '../types/utils';
-import { isMobile } from '../utils/client';
 import { eventEmitter } from '../utils/extensions';
 import { useUiStore } from './ui.store';
 
 type SettingsValue<P extends SettingsPath> = ValueForPath<Settings, P>;
 
 export const useSettingsStore = defineStore('settings', () => {
+  const { isMobile } = useMobile();
+
   const settings = ref<Settings>(createDefaultSettings());
   const settingsInitializing = ref(true);
   const definitions = ref<SettingDefinition[]>(settingsDefinition);
@@ -53,7 +55,7 @@ export const useSettingsStore = defineStore('settings', () => {
       case SendOnEnterOptions.DISABLED:
         return false;
       case SendOnEnterOptions.AUTO:
-        return !isMobile();
+        return !isMobile.value;
       case SendOnEnterOptions.ENABLED:
         return true;
       default:

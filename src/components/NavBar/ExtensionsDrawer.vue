@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
-import { useExtensionStore } from '../../stores/extension.store';
+import { useExtensionStore, type Extension } from '../../stores/extension.store';
+import { useLayoutStore } from '../../stores/layout.store';
 import { EmptyState } from '../common';
 import PanelLayout from '../common/PanelLayout.vue';
 import { Button, FormItem, ListItem, Search, Toggle } from '../UI';
@@ -12,6 +13,7 @@ const props = defineProps<{
   title?: string;
 }>();
 const extensionStore = useExtensionStore();
+const layoutStore = useLayoutStore();
 
 const isBrowserCollapsed = ref(false); // TODO: load from account storage
 const notifyOnUpdates = ref(false); // TODO: Connect this to settings
@@ -24,6 +26,11 @@ function manageExtensions() {
 function installExtension() {
   // TODO: Open install extension popup
   alert(t('extensions.installPopupNotImplemented'));
+}
+
+function handleExtensionSelect(extension: Extension) {
+  extensionStore.selectExtension(extension.id);
+  layoutStore.autoCloseLeftSidebarOnMobile();
 }
 </script>
 
@@ -60,7 +67,7 @@ function installExtension() {
           <ListItem
             :active="extensionStore.selectedExtensionId === extension.id"
             :data-extension-id="extension.id"
-            @click="extensionStore.selectExtension(extension.id)"
+            @click="handleExtensionSelect(extension)"
           >
             <template #start>
               <i class="fa-solid fa-puzzle-piece" style="opacity: 0.7"></i>

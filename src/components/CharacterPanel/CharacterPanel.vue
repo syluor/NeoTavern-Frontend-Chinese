@@ -4,7 +4,9 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import { useCharacterUiStore } from '../../stores/character-ui.store';
 import { useCharacterStore } from '../../stores/character.store';
+import { useLayoutStore } from '../../stores/layout.store';
 import { useSettingsStore } from '../../stores/settings.store';
+import type { Character } from '../../types';
 import { getThumbnailUrl } from '../../utils/character';
 import { EmptyState, Pagination, PanelLayout } from '../common';
 import { Button, FileInput, ListItem, Search, Select } from '../UI';
@@ -20,6 +22,7 @@ const props = defineProps<{
 const characterStore = useCharacterStore();
 const characterUiStore = useCharacterUiStore();
 const settingsStore = useSettingsStore();
+const layoutStore = useLayoutStore();
 
 const isSearchActive = ref(false);
 const highlightedItemRef = ref<HTMLElement | null>(null);
@@ -36,6 +39,11 @@ watch(
 
 function createNew() {
   characterUiStore.startCreating();
+}
+
+function handleCharacterSelect(character: Character) {
+  characterUiStore.selectCharacterByAvatar(character.avatar);
+  layoutStore.autoCloseLeftSidebarOnMobile();
 }
 
 async function handleFileImport(files: File[]) {
@@ -168,7 +176,7 @@ onMounted(async () => {
             :active="characterUiStore.editFormCharacter?.avatar === character.avatar"
             :class="{ 'flash animated': character.avatar === characterUiStore.highlightedAvatar }"
             :data-character-avatar="character.avatar"
-            @click="characterUiStore.selectCharacterByAvatar(character.avatar)"
+            @click="handleCharacterSelect(character)"
           >
             <template #start>
               <img :src="getThumbnailUrl('avatar', character.avatar)" :alt="`${character.name} Avatar`" />

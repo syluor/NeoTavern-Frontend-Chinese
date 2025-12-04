@@ -406,3 +406,28 @@ select.text-pole {
     position: relative;
   }
 }
+
+// =============================================================================
+// Mobile Layout Overrides
+// =============================================================================
+@media (max-width: 768px) {
+  #main-content {
+    /* Reset absolute positioning for mobile flow */
+    position: relative;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0;
+
+    /* Adjust height to account for bottom navbar */
+    height: calc(100vh - var(--nav-bar-height, 60px));
+    height: calc(100dvh - var(--nav-bar-height, 60px));
+
+    /* Disable the pushing effect of sidebars on mobile */
+    &.full-screen.left-open,
+    &.full-screen.right-open {
+      left: 0 !important;
+      right: 0 !important;
+      transform: none;
+    }
+  }
+}

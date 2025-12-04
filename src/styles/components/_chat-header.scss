@@ -97,3 +97,10 @@
     padding: 0 var(--spacing-md);
   }
 }
+
+@media (max-width: 768px) {
+  /* Hide fullscreen toggle on mobile as it is always fullscreen */
+  .chat-header-group.left {
+    display: none;
+  }
+}

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, reactive, ref } from 'vue';
+import { useMobile } from '../composables/useMobile';
 import { useComponentRegistryStore } from './component-registry.store';
 
 type RightSidebarState = {
@@ -9,6 +10,7 @@ type RightSidebarState = {
 
 export const useLayoutStore = defineStore('layout', () => {
   const registryStore = useComponentRegistryStore();
+  const { isMobile } = useMobile();
 
   const activeDrawer = ref<string | null>(null);
   const activeMainLayout = ref<string>('chat');
@@ -44,6 +46,13 @@ export const useLayoutStore = defineStore('layout', () => {
   function closeLeftSidebar() {
     isLeftSidebarOpen.value = false;
     leftSidebarView.value = null;
+  }
+
+  function autoCloseLeftSidebarOnMobile() {
+    if (isMobile.value && isLeftSidebarOpen.value) {
+      isLeftSidebarOpen.value = false;
+      leftSidebarView.value = null;
+    }
   }
 
   function cleanupRightSidebarForLayout(layoutId: string) {
@@ -136,6 +145,7 @@ export const useLayoutStore = defineStore('layout', () => {
     rightSidebarView,
     toggleLeftSidebar,
     closeLeftSidebar,
+    autoCloseLeftSidebarOnMobile,
     toggleRightSidebar,
     closeRightSidebar,
     cleanupRightSidebarForLayout,

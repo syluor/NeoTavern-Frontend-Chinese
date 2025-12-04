@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useAnimationControl } from '../../composables/useAnimationControl';
+import { useMobile } from '../../composables/useMobile';
 import { useResizable } from '../../composables/useResizable';
 import type { Settings } from '../../types';
 
@@ -18,13 +19,15 @@ const emit = defineEmits<{
 }>();
 
 const { animationsDisabled } = useAnimationControl();
+const { isMobile } = useMobile();
 
 const paneRef = ref<HTMLElement | null>(null);
 const handleRef = ref<HTMLElement | null>(null);
 
-// If side is right, we might need different logic in useResizable or CSS,
-// but looking at existing usage, most are left-side browsers.
-// CharacterPanel, ExtensionsDrawer, WorldInfoDrawer are all left-side browsers.
+// useResizable does not currently support dynamic disabling/enabling via props easily,
+// but it is resilient to resize events if it's not dragged.
+// We can conditionally render the logic or just let it exist but hide the handle via CSS.
+// However, on desktop we want resizable behavior.
 useResizable(paneRef, handleRef, {
   storageKey: props.storageKey,
   initialWidth: props.initialWidth ?? 350,
@@ -36,22 +39,44 @@ useResizable(paneRef, handleRef, {
 function toggleCollapse() {
   emit('update:collapsed', !props.collapsed);
 }
+
+// Icon logic reactive to mobile state
+const iconClass = computed(() => {
+  if (isMobile.value) {
+    return props.collapsed ? 'fa-list' : 'fa-xmark';
+  }
+  return props.collapsed ? 'fa-angles-right' : 'fa-angles-left';
+});
 </script>
 
 <template>
-  <div class="split-pane" :class="{ 'is-collapsed': collapsed, 'animations-disabled': animationsDisabled }">
+  <!-- 
+    We add 'is-mobile' class to help CSS scoping if needed, 
+    though mostly handled by @media queries in global styles.
+  -->
+  <div
+    class="split-pane"
+    :class="{
+      'is-collapsed': collapsed,
+      'animations-disabled': animationsDisabled,
+      'is-mobile': isMobile,
+    }"
+  >
     <div ref="paneRef" class="split-pane-panel split-pane-panel--side">
       <slot name="side" />
     </div>
 
     <div ref="handleRef" class="split-pane-divider">
-      <div class="split-pane-collapse-toggle" :title="collapsed ? 'Expand' : 'Collapse'" @click.stop="toggleCollapse">
-        <i class="fa-solid" :class="collapsed ? 'fa-angles-right' : 'fa-angles-left'"></i>
+      <div
+        class="split-pane-collapse-toggle"
+        :title="collapsed ? 'Show List' : 'Show Content'"
+        @click.stop="toggleCollapse"
+      >
+        <i class="fa-solid" :class="iconClass"></i>
       </div>
     </div>
 
     <div class="split-pane-main">
-      <!-- Core main pane for split layouts; standalone main-only views no longer wrap content in extra split-pane-main -->
       <slot name="main" />
     </div>
   </div>

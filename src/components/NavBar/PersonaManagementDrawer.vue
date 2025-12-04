@@ -6,6 +6,7 @@ import { useStrictI18n } from '../../composables/useStrictI18n';
 import { DebounceTimeout } from '../../constants';
 import { useCharacterStore } from '../../stores/character.store';
 import { useChatStore } from '../../stores/chat.store';
+import { useLayoutStore } from '../../stores/layout.store';
 import { usePersonaUiStore } from '../../stores/persona-ui.store';
 import { usePersonaStore } from '../../stores/persona.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -29,6 +30,7 @@ const popupStore = usePopupStore();
 const chatStore = useChatStore();
 const characterStore = useCharacterStore();
 const worldInfoStore = useWorldInfoStore();
+const layoutStore = useLayoutStore();
 
 // --- Local UI State ---
 const currentPage = ref(1);
@@ -97,6 +99,7 @@ watch(
 function selectPersona(id: string) {
   personaUiStore.viewMode = 'editor';
   personaStore.setActivePersona(id);
+  layoutStore.autoCloseLeftSidebarOnMobile();
 }
 
 function selectGlobalSettings() {

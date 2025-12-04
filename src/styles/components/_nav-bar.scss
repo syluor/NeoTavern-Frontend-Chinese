@@ -86,3 +86,59 @@
     }
   }
 }
+
+// =============================================================================
+// Mobile Navbar (Bottom Bar)
+// =============================================================================
+@media (max-width: 768px) {
+  .nav-bar {
+    width: 100%;
+    height: var(--nav-bar-height);
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-right: none;
+    border-top: 1px solid var(--theme-border-color);
+    border-radius: 0;
+    box-shadow: 0 -2px 10px 0 var(--black-30a);
+  }
+
+  .nav-bar-nav {
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 0;
+    gap: 0;
+    width: 100%;
+  }
+
+  .nav-bar-section {
+    flex-direction: row;
+    width: auto;
+    gap: var(--spacing-md);
+
+    & + & {
+      margin-top: 0;
+      border-left: 1px solid var(--theme-border-color);
+      padding-left: var(--spacing-sm);
+    }
+  }
+
+  .nav-item-content {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: var(--nav-bar-height); /* Subtract nav height */
+    height: auto; /* Full height minus nav */
+    width: 100% !important;
+    min-width: 0;
+    border-right: none;
+    border-left: none;
+    border-radius: 0;
+
+    &.wide {
+      width: 100%;
+    }
+  }
+}

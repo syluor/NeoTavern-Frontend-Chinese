@@ -36,6 +36,7 @@ const isMainOnly = computed(() => displayMode.value === 'main-only');
     <div class="standalone-pane">
       <div class="main-page-header">
         <div class="main-page-header-left">
+          <!-- Hidden on mobile via CSS -->
           <MainContentFullscreenToggle />
         </div>
         <div class="main-page-header-main">

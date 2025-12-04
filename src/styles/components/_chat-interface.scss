@@ -204,3 +204,24 @@
   height: 24px;
   margin: 0 var(--spacing-xs);
 }
+
+// =============================================================================
+// Mobile Chat Interface
+// =============================================================================
+@media (max-width: 768px) {
+  .chat-interface {
+    /* Ensure the input doesn't get hidden behind the keyboard or toolbar */
+    height: 100%;
+  }
+
+  .chat-interface-messages {
+    flex: 1;
+    /* Adjust padding for smaller screens */
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .chat-form {
+    position: sticky;
+    bottom: 0;
+  }
+}

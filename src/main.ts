@@ -13,6 +13,7 @@ async function initializeApp() {
   const app = createApp(App);
   app.use(pinia);
   app.use(i18n);
+  app.config.performance = true;
 
   // Dynamically import and initialize the extension API
   const { setMainAppInstance } = await import('./utils/extensions');

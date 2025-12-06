@@ -23,6 +23,7 @@ const worldInfoStore = useWorldInfoStore();
 const popupStore = usePopupStore();
 const promptStore = usePromptStore();
 const { t } = useStrictI18n();
+
 const userInput = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 const isOptionsMenuVisible = ref(false);
@@ -121,6 +122,47 @@ async function checkAndImportCharacterBooks() {
   }
 }
 
+
+// 1. Compute specific things to watch instead of the whole object
+const messagesLength = computed(() => chatStore.activeChat?.messages.length || 0);
+
+const lastMessageContent = computed(() => {
+  const msgs = chatStore.activeChat?.messages;
+  if (!msgs || msgs.length === 0) return '';
+  return msgs[msgs.length - 1].mes;
+});
+
+// 2. Efficient Scroll Handler using requestAnimationFrame
+const handleStreamingScroll = () => {
+  const el = messagesContainer.value;
+  if (!el) return;
+
+  requestAnimationFrame(() => {
+    // 100px tolerance
+    const isScrolledToBottom = el.scrollHeight - el.clientHeight <= el.scrollTop + 100;
+
+    if (isScrolledToBottom) {
+      // Use 'auto' (instant) instead of 'smooth' for streaming to prevent lag/jitter
+      el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
+    }
+  });
+};
+
+// 3. Watch for NEW message blocks (User sent, or bot started replying)
+watch(messagesLength, () => {
+  nextTick(() => {
+    const el = messagesContainer.value;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
+  });
+});
+
+// 4. Watch for STREAMING content (Text updating within the last message)
+watch(lastMessageContent, () => {
+  handleStreamingScroll();
+});
+
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
   await nextTick();
@@ -138,27 +180,6 @@ watch(
       checkAndImportCharacterBooks();
     }
   },
-);
-
-// Watch for changes in the chat history to handle auto-scrolling.
-watch(
-  () => chatStore.activeChat,
-  () => {
-    const el = messagesContainer.value;
-    if (!el) return;
-
-    // Check if the user is near the bottom before the DOM updates.
-    // A tolerance of 100px allows for some leeway.
-    const isScrolledToBottom = el.scrollHeight - el.clientHeight <= el.scrollTop + 100;
-
-    // If the user is at the bottom, scroll down after the next DOM update.
-    if (isScrolledToBottom) {
-      nextTick(() => {
-        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-      });
-    }
-  },
-  { deep: true }, // Deep watch is necessary to detect streaming updates inside a message.
 );
 
 watch(

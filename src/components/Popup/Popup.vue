@@ -8,8 +8,7 @@ import { useSettingsStore } from '../../stores/settings.store';
 import { POPUP_RESULT, POPUP_TYPE, type CustomPopupButton } from '../../types';
 import type { I18nKey } from '../../types/i18n';
 import { formatText } from '../../utils/chat';
-import { Button, Textarea } from '../UI';
-import ImageCropper from '../UI/ImageCropper.vue';
+import { Button, ImageCropper, Textarea } from '../UI';
 
 const props = defineProps({
   id: { type: String, required: true },

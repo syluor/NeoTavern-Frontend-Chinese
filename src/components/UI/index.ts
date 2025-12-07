@@ -4,6 +4,7 @@ import CollapsibleSection from './CollapsibleSection.vue';
 import FileInput from './FileInput.vue';
 import FormItem from './FormItem.vue';
 import Icon from './Icon.vue';
+import ImageCropper from './ImageCropper.vue';
 import Input from './Input.vue';
 import ListItem from './ListItem.vue';
 import RangeControl from './RangeControl.vue';
@@ -12,6 +13,7 @@ import Select from './Select.vue';
 import Tabs from './Tabs.vue';
 import TagInput from './TagInput.vue';
 import Textarea from './Textarea.vue';
+import TextareaExpanded from './TextareaExpanded.vue';
 import Toggle from './Toggle.vue';
 
 export {
@@ -21,6 +23,7 @@ export {
   FileInput,
   FormItem,
   Icon,
+  ImageCropper,
   Input,
   ListItem,
   RangeControl,
@@ -29,5 +32,6 @@ export {
   Tabs,
   TagInput,
   Textarea,
+  TextareaExpanded,
   Toggle,
 };

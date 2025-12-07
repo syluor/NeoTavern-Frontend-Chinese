@@ -28,12 +28,18 @@ export enum MountableComponent {
   FileInput = 'FileInput',
   FormItem = 'FormItem',
   Icon = 'Icon',
+  ImageCropper = 'ImageCropper',
   Input = 'Input',
   ListItem = 'ListItem',
+  MainContentFullscreenToggle = 'MainContentFullscreenToggle',
+  PanelLayout = 'PanelLayout',
+  PresetControl = 'PresetControl',
   Search = 'Search',
   Select = 'Select',
+  SidebarHeader = 'SidebarHeader',
   Tabs = 'Tabs',
   Textarea = 'Textarea',
+  TextareaExpanded = 'TextareaExpanded',
   Toggle = 'Toggle',
   CollapsibleSection = 'CollapsibleSection',
   RangeControl = 'RangeControl',
@@ -62,6 +68,55 @@ export interface MountableComponentPropsMap {
     loading?: boolean;
     title?: string;
     onClick?: (event: MouseEvent) => void;
+  };
+  [MountableComponent.ImageCropper]: {
+    src: string;
+    aspectRatio?: number;
+  };
+  [MountableComponent.MainContentFullscreenToggle]: Record<string, never>;
+  [MountableComponent.PanelLayout]: {
+    mode?: 'full' | 'main-only' | 'side-only';
+    title: string;
+    storageKey: string;
+    initialWidth?: number;
+    collapsed?: boolean;
+    'onUpdate:collapsed'?: (val: boolean) => void;
+  };
+  [MountableComponent.PresetControl]: {
+    modelValue?: string | number;
+    options?: { label: string; value: string | number }[];
+    searchable?: boolean;
+    disabled?: boolean;
+    loading?: boolean;
+    createTitle?: string;
+    editTitle?: string;
+    deleteTitle?: string;
+    importTitle?: string;
+    exportTitle?: string;
+    saveTitle?: string;
+    allowCreate?: boolean;
+    allowEdit?: boolean;
+    allowDelete?: boolean;
+    allowImport?: boolean;
+    allowExport?: boolean;
+    allowSave?: boolean;
+    deleteVariant?: 'ghost' | 'danger';
+    'onUpdate:modelValue'?: (value: string | number) => void;
+    onCreate?: () => void;
+    onEdit?: () => void;
+    onDelete?: () => void;
+    onImport?: () => void;
+    onExport?: () => void;
+    onSave?: () => void;
+  };
+  [MountableComponent.SidebarHeader]: {
+    title?: string;
+  };
+  [MountableComponent.TextareaExpanded]: {
+    popupId: string;
+    value: string;
+    label?: string;
+    'onUpdate:value'?: (value: string) => void;
   };
   [MountableComponent.Checkbox]: {
     modelValue: boolean;

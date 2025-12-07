@@ -1067,7 +1067,17 @@
       }
     },
     "chatBranching": {
-      "branchButtonTitle": "Branch Chat"
+      "branchButtonTitle": "Branch from this message",
+      "branchPointTitle": "Branched at message #",
+      "rootChatTitle": "Root Chat",
+      "rootLabel": "Root",
+      "totalMessagesTitle": "Total Messages",
+      "createdTitle": "Created: ",
+      "branchTreeTitle": "Branch Tree",
+      "chatTreeTitle": "Chat Tree",
+      "noChatLoaded": "No chat is currently loaded.",
+      "branchCreationFailed": "Failed to create branch",
+      "branchName": "Branch"
     }
   },
   "persona": {

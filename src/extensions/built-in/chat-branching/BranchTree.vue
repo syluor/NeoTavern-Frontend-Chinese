@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useStrictI18n } from '../../../composables/useStrictI18n';
 import type { ChatInfo } from '../../../types/chat';
 import type { BranchNode } from './types';
 
@@ -14,6 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const containerRef = ref<HTMLElement | null>(null);
+const { t } = useStrictI18n();
 
 // Layout constants
 const NODE_WIDTH = 220;
@@ -181,20 +183,29 @@ watch(
               <!-- Branch Point Info -->
               <div
                 class="meta-pill"
-                :title="node.parentId ? 'Branched at message #' + node.branchPointIndex : 'Root Chat'"
+                :title="
+                  node.parentId
+                    ? t('extensionsBuiltin.chatBranching.branchPointTitle') + node.branchPointIndex
+                    : t('extensionsBuiltin.chatBranching.rootChatTitle')
+                "
               >
                 <i class="fa-solid fa-code-branch" :class="{ 'is-root': !node.parentId }"></i>
-                <span>{{ node.parentId ? `#${node.branchPointIndex}` : 'Root' }}</span>
+                <span>{{
+                  node.parentId ? `#${node.branchPointIndex}` : t('extensionsBuiltin.chatBranching.rootLabel')
+                }}</span>
               </div>
 
               <!-- Messages Count -->
-              <div class="meta-pill" title="Total Messages">
+              <div class="meta-pill" :title="t('extensionsBuiltin.chatBranching.totalMessagesTitle')">
                 <i class="fa-regular fa-comments"></i>
                 <span>{{ getMessageCount(node.id) }}</span>
               </div>
 
               <!-- Timestamp -->
-              <div class="meta-text" :title="'Created: ' + new Date(node.timestamp).toLocaleString()">
+              <div
+                class="meta-text"
+                :title="t('extensionsBuiltin.chatBranching.createdTitle') + new Date(node.timestamp).toLocaleString()"
+              >
                 <i class="fa-regular fa-clock"></i>
                 <span>{{ formatDate(node.timestamp) }}</span>
               </div>

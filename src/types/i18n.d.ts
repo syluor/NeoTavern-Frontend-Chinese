@@ -1071,6 +1071,16 @@ export interface MessageSchema {
     };
     chatBranching: {
       branchButtonTitle: string;
+      branchPointTitle: string;
+      rootChatTitle: string;
+      rootLabel: string;
+      totalMessagesTitle: string;
+      createdTitle: string;
+      branchTreeTitle: string;
+      chatTreeTitle: string;
+      noChatLoaded: string;
+      branchCreationFailed: string;
+      branchName: string;
     };
   };
   persona: {

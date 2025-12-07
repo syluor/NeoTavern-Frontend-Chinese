@@ -50,7 +50,9 @@ export function activate(api: ChatBranchingAPI) {
     try {
       // 1. Prepare new metadata
       const newMetadata = structuredClone(metadata) as ChatMetadata;
-      newMetadata.name = newMetadata.name ? `${newMetadata.name} (Branch)` : 'Branch';
+      newMetadata.name = newMetadata.name
+        ? `${newMetadata.name} (${t('extensionsBuiltin.chatBranching.branchName')})`
+        : t('extensionsBuiltin.chatBranching.branchName');
       // Generate new integrity using UUID
       newMetadata.integrity = api.uuid();
 
@@ -88,7 +90,7 @@ export function activate(api: ChatBranchingAPI) {
       await chat.load(newFilename);
     } catch (error) {
       console.error('Branching failed', error);
-      ui.showToast('Failed to create branch', 'error');
+      ui.showToast(t('extensionsBuiltin.chatBranching.branchCreationFailed'), 'error');
     }
   };
 
@@ -129,7 +131,7 @@ export function activate(api: ChatBranchingAPI) {
   const showTree = async () => {
     const currentChatInfo = chat.getChatInfo();
     if (!currentChatInfo) {
-      ui.showToast('No chat is currently loaded.', 'warning');
+      ui.showToast(t('extensionsBuiltin.chatBranching.noChatLoaded'), 'warning');
       return;
     }
 
@@ -144,7 +146,7 @@ export function activate(api: ChatBranchingAPI) {
     const s = settings.get();
 
     await ui.showPopup({
-      title: 'Branch Tree',
+      title: t('extensionsBuiltin.chatBranching.branchTreeTitle'),
       component: BranchTree,
       componentProps: {
         graph: s.graph,
@@ -167,7 +169,7 @@ export function activate(api: ChatBranchingAPI) {
 
   api.ui.registerNavBarItem('branch-tree-view', {
     icon: 'fa-sitemap',
-    title: 'Chat Tree',
+    title: t('extensionsBuiltin.chatBranching.chatTreeTitle'),
     onClick: () => {
       showTree();
     },

@@ -3,7 +3,7 @@ import type { EventPriority } from '../constants';
 import type { PromptBuilder } from '../services/prompt-engine';
 import type { WorldInfoProcessor } from '../services/world-info';
 import type { Character } from './character';
-import type { ChatMessage, ChatMetadata } from './chat';
+import type { ChatMessage, ChatMetadata, FullChat } from './chat';
 import type { DrawerType } from './common';
 import type { ExtensionEventMap } from './events';
 import type { ApiChatMessage, ChatCompletionPayload, GenerationResponse, StreamedChunk } from './generation';
@@ -220,6 +220,12 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
    */
   meta: ExtensionMetadata;
 
+  /**
+   * Generates a UUID v4 string.
+   * @returns A RFC4122 version 4 UUID string.
+   */
+  uuid: () => string;
+
   chat: {
     sendMessage: (
       messageText: string,
@@ -247,6 +253,20 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
      * This replicates the internal prompt building logic used during generation.
      */
     buildPrompt: (options?: { generationId?: string; characterAvatar?: string }) => Promise<ApiChatMessage[]>;
+
+    /**
+     * Creates a new chat file with the provided content.
+     * @param chat The full chat object (header + messages)
+     * @param filename Optional filename (without extension). If not provided, a UUID will be generated.
+     * @returns The filename of the created chat.
+     */
+    create: (chat: FullChat, filename?: string) => Promise<string>;
+
+    /**
+     * Loads a chat by its filename.
+     * @param filename The filename of the chat to load (without extension).
+     */
+    load: (filename: string) => Promise<void>;
 
     metadata: {
       get: () => Readonly<ChatMetadata> | null;

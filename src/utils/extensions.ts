@@ -16,6 +16,7 @@ import { getMessageTimeStamp, uuidv4 } from './commons';
 // Internal Store Imports
 import { ChatCompletionService, buildChatCompletionPayload } from '../api/generation';
 import { toast } from '../composables/useToast';
+import { chatService } from '../services/chat.service';
 import { useApiStore } from '../stores/api.store';
 import { useCharacterStore } from '../stores/character.store';
 import { useChatStore } from '../stores/chat.store';
@@ -199,6 +200,7 @@ export function disposeExtension(extensionId: string) {
 
 const baseExtensionAPI: ExtensionAPI = {
   meta: { id: '', containerId: '' },
+  uuid: () => uuidv4(),
   chat: {
     sendMessage: async (messageText, options) => {
       await useChatStore().sendMessage(messageText, {
@@ -329,6 +331,34 @@ const baseExtensionAPI: ExtensionAPI = {
       });
 
       return await builder.build();
+    },
+    create: async (chat, filename) => {
+      const chatStore = useChatStore();
+      const finalFilename = filename || uuidv4();
+      await chatService.create(finalFilename, chat);
+
+      const header = chat[0];
+      const messages = chat.slice(1) as ChatMessage[];
+      const last = messages[messages.length - 1];
+
+      // Update store lists manually to avoid full refresh
+      const info = {
+        chat_metadata: header.chat_metadata,
+        chat_items: messages.length,
+        file_id: finalFilename,
+        file_name: `${finalFilename}.jsonl`,
+        file_size: JSON.stringify(chat).length,
+        last_mes: Date.now(),
+        mes: last?.mes || '',
+      };
+
+      chatStore.chatInfos.push(info);
+      chatStore.recentChats.push(info);
+
+      return finalFilename;
+    },
+    load: async (filename) => {
+      await useChatStore().setActiveChatFile(filename);
     },
     metadata: {
       get: () => deepClone(useChatStore().activeChat?.metadata ?? null),

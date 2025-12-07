@@ -558,7 +558,6 @@ export interface MessageSchema {
       swipeLeft: string;
       swipeRight: string;
       itemization: string;
-      branch: string;
     };
     delete: {
       confirmTitle: string;
@@ -1069,6 +1068,9 @@ export interface MessageSchema {
         promptLabel: string;
         reset: string;
       };
+    };
+    chatBranching: {
+      branchButtonTitle: string;
     };
   };
   persona: {

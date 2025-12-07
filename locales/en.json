@@ -554,8 +554,7 @@
       "moveDown": "Move message down",
       "swipeLeft": "Previous swipe",
       "swipeRight": "Next swipe",
-      "itemization": "Prompt Itemization",
-      "branch": "Branch from this message"
+      "itemization": "Prompt Itemization"
     },
     "delete": {
       "confirmTitle": "Confirm Deletion",
@@ -1066,6 +1065,9 @@
         "promptLabel": "Prompt Template",
         "reset": "Reset"
       }
+    },
+    "chatBranching": {
+      "branchButtonTitle": "Branch Chat"
     }
   },
   "persona": {

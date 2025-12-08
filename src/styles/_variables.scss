@@ -83,6 +83,18 @@ $base-border-radius-rounded: 8px;
   --theme-shadow-color: #{rgba(0, 0, 0, 0.5)};
   --theme-border-color: #{rgba(0, 0, 0, 0.5)};
 
+  // --- Scrollbar Defaults ---
+  --scrollbar-thumb-color: var(--grey-7070a);
+  --scrollbar-track-color: rgba(126, 126, 126, 0.2);
+  --scrollbar-width: var(--spacing-xs);
+  // Default radius makes it pill-shaped
+  --scrollbar-thumb-radius: 10px;
+  --scrollbar-track-radius: 0px;
+  // Border width creates a "gap" between thumb and track for the floating look
+  --scrollbar-thumb-border-width: 2px;
+  // Inner shadow gives depth
+  --scrollbar-thumb-shadow-color: var(--black-50a);
+
   // Checkbox colors for calculating tick color
   --theme-checkbox-bg-r: 220;
   --theme-checkbox-bg-g: 220;
@@ -111,6 +123,9 @@ $base-border-radius-rounded: 8px;
   );
 
   // --- Layout & Sizing ---
+  --nav-bar-width: 0px; // Default
+  --nav-bar-height: 0px;
+
   --panel-width: 50vw;
   --panel-width-wide: calc(100vw - var(--nav-bar-width));
   --sidebar-width: 360px;
@@ -118,7 +133,6 @@ $base-border-radius-rounded: 8px;
   --sidebar-max-width: 800px;
   --header-height: 48px;
   --layout-message-right-spacing: 32px;
-  --nav-bar-height: 0px; // Default 0 for desktop (vertical rail)
 
   --spacing-xxs: 2px;
   --spacing-xs: 4px;
@@ -147,10 +161,10 @@ $base-border-radius-rounded: 8px;
   --send-form-icon-size: calc(var(--font-size-main) * 1.9);
   --send-form-height: calc(var(--send-form-icon-size) + var(--send-form-padding));
 
-  // Nav Bar
+  // Nav Bar Sizing (used in calculations)
   --nav-bar-padding: calc(var(--font-size-main) / 3);
   --nav-bar-icon-size: calc(var(--font-size-main) * 2);
-  --nav-bar-width: calc(var(--nav-bar-icon-size) + var(--nav-bar-padding) * 2);
+  --nav-bar-width-desktop: calc(var(--nav-bar-icon-size) + var(--nav-bar-padding) * 2);
 
   // Avatars
   --avatar-height: 48px;
@@ -163,8 +177,6 @@ $base-border-radius-rounded: 8px;
   // Component Sizing
   --textarea-padding-y: var(--spacing-sm);
   --textarea-padding-x: var(--spacing-md);
-
-  --scrollbar-width: var(--spacing-xs);
 
   // --- Effects ---
   --blur-strength: 10; // Unitless value for slider controls
@@ -200,6 +212,12 @@ $base-border-radius-rounded: 8px;
 // =============================================================================
 // Mobile Overrides
 // =============================================================================
+@media (min-width: 769px) {
+  :root {
+    --nav-bar-width: var(--nav-bar-width-desktop);
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     /* Navbar moves to bottom */

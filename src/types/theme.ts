@@ -17,17 +17,35 @@ export interface ThemeVariables {
   '--color-warning': string;
   '--color-error-crimson': string;
 
-  // Sizing & Layout
+  // Scrollbar
+  '--scrollbar-width': string;
+  '--scrollbar-thumb-color': string;
+  '--scrollbar-track-color': string;
+  '--scrollbar-thumb-radius': string;
+  '--scrollbar-track-radius': string;
+  '--scrollbar-thumb-border-width': string;
+  '--scrollbar-thumb-shadow-color': string;
+
+  // Typography & Sizing
   '--font-size-main': string;
   '--font-family-main': string;
   '--font-family-mono': string;
   '--base-border-radius': string;
   '--blur-strength': string;
   '--shadow-width': string;
+
+  // Layout
+  '--panel-width': string;
+  '--sidebar-width': string;
+
+  // Avatars
+  '--avatar-width': string;
+  '--avatar-height': string;
+  '--avatar-border-radius': string;
 }
 
 export interface Theme {
-  isSystem?: boolean; // Prevent deletion of defaults
+  isSystem?: boolean;
   variables: Partial<ThemeVariables>;
 }
 
@@ -51,7 +69,17 @@ export const THEME_CATEGORIES: Record<string, (keyof ThemeVariables)[]> = {
     '--color-error-crimson',
   ],
   Typography: ['--font-family-main', '--font-family-mono', '--font-size-main'],
-  UI: ['--base-border-radius', '--blur-strength', '--shadow-width'],
+  Scrollbar: [
+    '--scrollbar-width',
+    '--scrollbar-thumb-color',
+    '--scrollbar-track-color',
+    '--scrollbar-thumb-shadow-color',
+    '--scrollbar-thumb-radius',
+    '--scrollbar-track-radius',
+    '--scrollbar-thumb-border-width',
+  ],
+  UI: ['--base-border-radius', '--blur-strength', '--shadow-width', '--panel-width', '--sidebar-width'],
+  Avatars: ['--avatar-width', '--avatar-height', '--avatar-border-radius'],
 };
 
 export const VARIABLE_LABELS: Record<keyof ThemeVariables, string> = {
@@ -69,12 +97,28 @@ export const VARIABLE_LABELS: Record<keyof ThemeVariables, string> = {
   '--color-accent-green': 'Accent Green',
   '--color-warning': 'Warning Color',
   '--color-error-crimson': 'Error Color',
+
+  '--scrollbar-width': 'Width',
+  '--scrollbar-thumb-color': 'Thumb Color',
+  '--scrollbar-track-color': 'Track Color',
+  '--scrollbar-thumb-radius': 'Thumb Radius',
+  '--scrollbar-track-radius': 'Track Radius',
+  '--scrollbar-thumb-border-width': 'Thumb Border Spacing',
+  '--scrollbar-thumb-shadow-color': 'Thumb Inner Shadow',
+
   '--font-size-main': 'Base Font Size',
   '--font-family-main': 'Main Font Family',
   '--font-family-mono': 'Monospace Font Family',
-  '--base-border-radius': 'Border Radius',
+  '--base-border-radius': 'Global Border Radius',
   '--blur-strength': 'Blur Strength (px)',
   '--shadow-width': 'Shadow Size (px)',
+
+  '--panel-width': 'Main Panel Width',
+  '--sidebar-width': 'Sidebar Width',
+
+  '--avatar-width': 'Avatar Width',
+  '--avatar-height': 'Avatar Height',
+  '--avatar-border-radius': 'Avatar Radius',
 };
 
 export const VARIABLE_TYPES: Record<keyof ThemeVariables, 'color' | 'text' | 'number'> = {
@@ -92,10 +136,26 @@ export const VARIABLE_TYPES: Record<keyof ThemeVariables, 'color' | 'text' | 'nu
   '--color-accent-green': 'color',
   '--color-warning': 'color',
   '--color-error-crimson': 'color',
+
+  '--scrollbar-width': 'text',
+  '--scrollbar-thumb-color': 'color',
+  '--scrollbar-track-color': 'color',
+  '--scrollbar-thumb-radius': 'text',
+  '--scrollbar-track-radius': 'text',
+  '--scrollbar-thumb-border-width': 'text',
+  '--scrollbar-thumb-shadow-color': 'color',
+
   '--font-size-main': 'text',
   '--font-family-main': 'text',
   '--font-family-mono': 'text',
   '--base-border-radius': 'text',
   '--blur-strength': 'number',
   '--shadow-width': 'number',
+
+  '--panel-width': 'text',
+  '--sidebar-width': 'text',
+
+  '--avatar-width': 'text',
+  '--avatar-height': 'text',
+  '--avatar-border-radius': 'text',
 };

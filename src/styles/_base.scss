@@ -4,26 +4,41 @@
 
 @use 'mixins' as *;
 
+// Standard CSS Scrollbars (Firefox)
+// Firefox has limited support. It does not support pixel-perfect width,
+// border-radius, borders, or shadows on scrollbars.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+// Webkit Scrollbars (Chrome, Safari, Edge, Opera)
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
+  height: var(--scrollbar-width); // Support horizontal scrollbar sizing too
   scrollbar-gutter: stable;
 }
 
 ::-webkit-scrollbar-track {
   cursor: default;
+  background-color: transparent; // Defaults transparent unless hovered usually
+  border-radius: var(--scrollbar-track-radius);
 
   &:hover {
-    background-color: rgba(126, 126, 126, 0.2);
+    background-color: var(--scrollbar-track-color);
   }
 }
 
 ::-webkit-scrollbar-thumb {
   min-height: 40px;
-  background-color: var(--grey-7070a);
-  box-shadow: inset 0 0 0 1px var(--black-50a);
-  border-radius: 10px;
+  background-color: var(--scrollbar-thumb-color);
+
+  // Granular control
+  border-radius: var(--scrollbar-thumb-radius);
+  border: var(--scrollbar-thumb-border-width) solid transparent;
+  box-shadow: inset 0 0 0 1px var(--scrollbar-thumb-shadow-color);
+
   background-clip: content-box;
-  border: 2px solid transparent;
   cursor: grab;
 
   &:active {

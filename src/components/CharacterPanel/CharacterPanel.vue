@@ -39,6 +39,7 @@ watch(
 
 function createNew() {
   characterUiStore.startCreating();
+  layoutStore.autoCloseSidebarsOnMobile();
 }
 
 function handleCharacterSelect(character: Character) {

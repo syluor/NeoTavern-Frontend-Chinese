@@ -289,13 +289,16 @@ async function openLastChat() {
     createNewChat();
   }
   layoutStore.activateNavBarItem('chat');
+  layoutStore.autoCloseSidebarsOnMobile();
 }
 
 async function createNewChat() {
   if (!localCharacter.value) return;
-  const chatName = `${localCharacter.value.name.replace(/\s+/g, '_')}_${humanizedDateTime()}`;
+  const chatName = `${localCharacter.value.name} - ${humanizedDateTime()}`;
   try {
-    await chatStore.createNewChatForCharacter(localCharacter.value.avatar, chatName);
+    chatStore.createNewChatForCharacter(localCharacter.value.avatar, chatName);
+    layoutStore.activateNavBarItem('chat');
+    layoutStore.autoCloseSidebarsOnMobile();
   } catch {
     toast.error(t('chat.createError'));
   }

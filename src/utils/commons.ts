@@ -47,18 +47,14 @@ export class StringHash {
 
 export function humanizedDateTime() {
   const now = new Date(Date.now());
-  const dt = {
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
-    day: now.getDate(),
-    hour: now.getHours(),
-    minute: now.getMinutes(),
-    second: now.getSeconds(),
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   };
-  for (const key in dt) {
-    dt[key as keyof typeof dt] = dt[key as keyof typeof dt].toString().padStart(2, '0') as string & number;
-  }
-  return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s`;
+  return now.toLocaleString(undefined, options);
 }
 
 export function getMessageTimeStamp() {

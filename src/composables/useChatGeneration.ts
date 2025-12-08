@@ -674,6 +674,8 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
         lastMessage.swipes.push('');
         lastMessage.swipe_id = lastMessage.swipes.length - 1;
         lastMessage.mes = '';
+        lastMessage.extra.display_text = '';
+        lastMessage.extra.reasoning_display_text = '';
       } else {
         // Continue
         targetMessageIndex = activeChatMessages.length - 1;

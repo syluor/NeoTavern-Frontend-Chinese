@@ -77,11 +77,13 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
+      host: true,
       allowedHosts: true,
       proxy: proxyRules,
     },
     preview: {
       port: 4173,
+      host: true,
       allowedHosts: true,
       proxy: proxyRules,
     },

@@ -7,7 +7,7 @@ A modern, experimental frontend for SillyTavern, built with Vue 3 and Vite.
 ## Prerequisites
 
 - **Node.js:** Version 20 or higher is required.
-- **SillyTavern Backend:** You must have a running instance of the SillyTavern backend.
+- **SillyTavern Backend:** You must have a running instance of the [SillyTavern backend](https://github.com/SillyTavern/SillyTavern).
 - **V2-Server Plugin:** You must install the [V2-Server](https://github.com/bmen25124/SillyTavern-V2-Server) plugin.
 
 ## Installation and Usage

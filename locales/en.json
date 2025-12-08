@@ -1077,7 +1077,8 @@
       "chatTreeTitle": "Chat Tree",
       "noChatLoaded": "No chat is currently loaded.",
       "branchCreationFailed": "Failed to create branch",
-      "branchName": "Branch"
+      "branchName": "Branch",
+      "loadChatFailed": "Failed to load selected chat"
     }
   },
   "persona": {

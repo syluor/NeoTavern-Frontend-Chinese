@@ -8,6 +8,7 @@ const props = defineProps<{
   graph: Record<string, BranchNode>;
   chatInfoMap: Record<string, ChatInfo>;
   activeId: string | null;
+  onSelect?: (id: string) => Promise<void>;
 }>();
 
 const emit = defineEmits<{
@@ -171,7 +172,15 @@ watch(
         :key="node.id"
         class="tree-node-group"
         :transform="`translate(${node.x}, ${node.y})`"
-        @click="emit('select', node.id)"
+        @click="
+          async () => {
+            if (props.onSelect) {
+              await props.onSelect(node.id);
+            } else {
+              emit('select', node.id);
+            }
+          }
+        "
       >
         <foreignObject :width="NODE_WIDTH" :height="NODE_HEIGHT">
           <div class="branch-card" :class="{ active: node.id === activeId }">

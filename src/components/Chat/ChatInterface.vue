@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useMobile } from '../../composables/useMobile';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { toast } from '../../composables/useToast';
 import { GenerationMode } from '../../constants';
@@ -7,6 +8,7 @@ import { convertCharacterBookToWorldInfoBook } from '../../services/world-info';
 import { useCharacterStore } from '../../stores/character.store';
 import { useChatSelectionStore } from '../../stores/chat-selection.store';
 import { useChatStore } from '../../stores/chat.store';
+import { useLayoutStore } from '../../stores/layout.store';
 import { usePopupStore } from '../../stores/popup.store';
 import { usePromptStore } from '../../stores/prompt.store';
 import { useSettingsStore } from '../../stores/settings.store';
@@ -22,6 +24,8 @@ const chatSelectionStore = useChatSelectionStore();
 const worldInfoStore = useWorldInfoStore();
 const popupStore = usePopupStore();
 const promptStore = usePromptStore();
+const { isMobile } = useMobile();
+const layoutStore = useLayoutStore();
 const { t } = useStrictI18n();
 
 const userInput = ref('');
@@ -164,8 +168,10 @@ watch(lastMessageContent, () => {
 
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
-  await nextTick();
-  chatInput.value?.focus();
+  if (!isMobile) {
+    await nextTick();
+    chatInput.value?.focus();
+  }
 });
 
 onUnmounted(() => {
@@ -202,9 +208,10 @@ watch(
       const savedInput = await promptStore.loadUserTyping(newFile);
       userInput.value = savedInput;
 
-      nextTick(() => {
+      if (!isMobile) {
+        await nextTick();
         chatInput.value?.focus();
-      });
+      }
     } else {
       userInput.value = '';
     }
@@ -237,7 +244,14 @@ watch(
     </div>
     <div class="chat-interface-form-container">
       <!-- Standard Chat Form -->
-      <div v-if="!chatSelectionStore.isSelectionMode" id="chat-form" class="chat-form">
+      <div
+        v-show="
+          !chatSelectionStore.isSelectionMode &&
+          (isMobile ? !layoutStore.isLeftSidebarOpen && !layoutStore.isRightSidebarOpen : true)
+        "
+        id="chat-form"
+        class="chat-form"
+      >
         <div class="chat-form-inner">
           <div class="chat-form-actions-left">
             <Button
@@ -302,7 +316,7 @@ watch(
       </div>
 
       <!-- Selection Mode Toolbar -->
-      <div v-else class="selection-toolbar">
+      <div v-show="chatSelectionStore.isSelectionMode" class="selection-toolbar">
         <div class="selection-info">
           <span
             >{{ chatSelectionStore.selectedMessageIndices.size }} {{ t('common.selected') }} ({{

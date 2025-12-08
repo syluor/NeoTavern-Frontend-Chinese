@@ -158,6 +158,14 @@ export function activate(api: ChatBranchingAPI) {
           },
           {} as Record<string, ChatInfo>,
         ),
+        onSelect: async (id: string) => {
+          try {
+            await chat.load(id);
+          } catch (error) {
+            console.error('Failed to load selected chat', error);
+            ui.showToast(t('extensionsBuiltin.chatBranching.loadChatFailed'), 'error');
+          }
+        },
       },
       wide: true,
       large: true,

@@ -1081,6 +1081,7 @@ export interface MessageSchema {
       noChatLoaded: string;
       branchCreationFailed: string;
       branchName: string;
+      loadChatFailed: string;
     };
   };
   persona: {

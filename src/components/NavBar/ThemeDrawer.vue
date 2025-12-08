@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { CollapsibleSection, FileInput, FormItem, Input, RangeControl } from '../../components/UI';
 import { PresetControl, SidebarHeader } from '../../components/common';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { usePopupStore } from '../../stores/popup.store';
+import { useSettingsStore } from '../../stores/settings.store';
 import { useThemeStore } from '../../stores/theme.store';
 import { POPUP_TYPE } from '../../types';
 import type { ThemeVariables } from '../../types/theme';
@@ -11,12 +12,8 @@ import { THEME_CATEGORIES, VARIABLE_LABELS, VARIABLE_TYPES } from '../../types/t
 
 const themeStore = useThemeStore();
 const popupStore = usePopupStore();
+const settingsStore = useSettingsStore();
 const { t } = useStrictI18n();
-
-onMounted(async () => {
-  await themeStore.fetchThemes();
-  themeStore.loadCurrentDOMStyles();
-});
 
 const themeOptions = computed(() => {
   const list = [{ label: 'Default', value: 'Default' }];
@@ -28,6 +25,7 @@ const themeOptions = computed(() => {
 
 function onThemeChange(name: string | number) {
   themeStore.loadTheme(String(name));
+  settingsStore.settings.ui.selectedTheme = String(name);
 }
 
 function getVariable(key: keyof ThemeVariables) {

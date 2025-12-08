@@ -82,6 +82,7 @@ export function createDefaultSettings(): Settings {
         forbidExternalMedia: true,
       },
       disableAnimations: false,
+      selectedTheme: 'Default',
     },
     worldInfo: structuredClone(defaultWorldInfoSettings),
   };
@@ -240,6 +241,7 @@ export function migrateLegacyToExperimental(
         forbidExternalMedia: p.forbid_external_media ?? true,
       },
       disableAnimations: p.reduced_motion ?? false,
+      selectedTheme: 'Default',
     },
     chat: {
       sendOnEnter: p.send_on_enter,

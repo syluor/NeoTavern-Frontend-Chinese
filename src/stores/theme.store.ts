@@ -6,6 +6,7 @@ import { toast } from '../composables/useToast';
 import type { Theme, ThemeVariables } from '../types/theme';
 import { VARIABLE_TYPES } from '../types/theme';
 import { downloadFile } from '../utils/commons';
+import { useSettingsStore } from './settings.store';
 
 // TODO: i18n
 
@@ -15,6 +16,8 @@ export const useThemeStore = defineStore('theme', () => {
 
   // The current working state of variables (what is seen on screen)
   const currentVariables = ref<Partial<ThemeVariables>>({});
+
+  const settingsStore = useSettingsStore();
 
   /**
    * Reads current computed styles from the DOM to populate initial state
@@ -49,6 +52,10 @@ export const useThemeStore = defineStore('theme', () => {
   async function fetchThemes() {
     try {
       themes.value = await api.fetchAllThemes();
+      activeThemeName.value = settingsStore.settings.ui.selectedTheme;
+      if (activeThemeName.value !== 'Default') {
+        await loadTheme(activeThemeName.value);
+      }
       // Ensure there is at least a default if API returns empty or specific logic needed
     } catch (error) {
       console.error('Failed to fetch themes', error);

@@ -277,6 +277,7 @@ export interface Settings {
       forbidExternalMedia: boolean;
     };
     disableAnimations: boolean;
+    selectedTheme: string;
   };
   chat: {
     sendOnEnter: SendOnEnterOptions;

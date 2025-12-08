@@ -266,6 +266,7 @@ onMounted(async () => {
   await chatStore.refreshChats();
   await extensionStore.initializeExtensions();
 
+  themeStore.loadCurrentDOMStyles();
   await themeStore.fetchThemes();
 
   // Mark initialization as complete

@@ -82,7 +82,7 @@ function resetPrompt() {
             {{ t('common.reset') }}
           </Button>
         </div>
-        <Textarea v-model="settings.prompt" class="prompt-area" :rows="10" />
+        <Textarea v-model="settings.prompt" allow-maximize class="prompt-area" :rows="10" />
       </template>
     </FormItem>
   </div>

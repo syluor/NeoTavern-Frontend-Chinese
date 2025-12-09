@@ -66,7 +66,7 @@ function resetPrompt() {
               {{ t('extensionsBuiltin.rerollContinue.settings.reset') }}
             </Button>
           </div>
-          <Textarea v-model="settings.impersonatePrompt" class="prompt-area" :rows="8" />
+          <Textarea v-model="settings.impersonatePrompt" allow-maximize class="prompt-area" :rows="8" />
         </template>
       </FormItem>
     </CollapsibleSection>

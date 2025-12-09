@@ -3,7 +3,7 @@
 A modern, experimental frontend for SillyTavern.
 
 > [!IMPORTANT]  
-> This is a pre-alpha release. Features may be incomplete and bugs are expected.
+> This is a pre-alpha release. Features may be incomplete, and bugs are expected.
 
 > [!WARNING]  
 > If you are highly dependent on STScript or existing SillyTavern extensions, we do not recommend using this yet.
@@ -15,9 +15,9 @@ Why another frontend for SillyTavern? For detailed reasoning, see the hackmd pos
 **Features compared to the SillyTavern:**
 
 - New UI. See [screenshots](https://imgur.com/a/puRlyQO)
-- There is no Chat/Text Completion seperation.
-- There is single prompt manager.
-- All chats are group chats. Add/remove member anytime.
+- There is no Chat/Text Completion separation.
+- There is a single prompt manager.
+- All chats are group chats. Add/remove a member anytime.
 - Assigning multiple lorebooks per persona/chat.
 - Assigning a connection profile per chat.
 
@@ -33,12 +33,12 @@ Why another frontend for SillyTavern? For detailed reasoning, see the hackmd pos
 - Mobile Support: Basic layout is responsive, but there are still some rough edges.
 - UI/UX: It needs polish and improvements.
 - World Info: Outlets and timed effects are not implemented.
-- Local Providers: Currently there is only koboldcpp support. There is no Text Completion provider. Ollama/LM Studio support is planned.
-- Instruct Templates: We can import/edit/use them. But we are not implemented the whole fields such as `wrap`.
+- Local Providers: Currently, there is only koboldcpp support. There is no Text Completion provider. Ollama/LM Studio support is planned.
+- Instruct Templates: We can import/edit/use them. But we have not implemented the whole field, such as `wrap`.
 
 **For extension developers:**
 
-- Read the above hackmd post for design philosophy. Currently, there is no documentation or NPM package for types. Because extensions are not prioritized yet.
+- Read the above HackMD post for design philosophy. Currently, there is no documentation or NPM package for types. Because extensions are not prioritized yet.
 
 ## Prerequisites
 
@@ -74,11 +74,11 @@ The script will automatically install dependencies, build the project, and launc
 
 ### Android (Termux)
 
-This guide is containing from scratch installation of SillyTavern, NeoTavern-Server-Plugin, and NeoTavern-Frontend unlike others. Because mobile users are something special.
+This guide contains from scratch installation of SillyTavern, NeoTavern-Server-Plugin, and NeoTavern-Frontend, unlike others. Because mobile users are something special.
 
 #### 1. Prepare Termux
 
-1. Install Termux from [GitHub releases](https://github.com/termux/termux-app/releases) or **F-Droid**. (the Google Play Store version is outdated).
+1. Install Termux from [GitHub releases](https://github.com/termux/termux-app/releases) or **F-Droid**. (The Google Play Store version is outdated.)
 2. Open Termux and install the required packages:
    ```bash
    pkg update && pkg upgrade

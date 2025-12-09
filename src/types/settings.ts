@@ -261,6 +261,21 @@ export interface LegacyOaiPresetSettings {
   openrouter_providers?: string[];
 }
 
+export type CodeMirrorTarget =
+  | 'character.description'
+  | 'character.first_mes'
+  | 'character.personality'
+  | 'character.scenario'
+  | 'character.note'
+  | 'character.mes_example'
+  | 'character.post_history_instructions'
+  | 'character.creator_notes'
+  | 'persona.description'
+  | 'world_info.content'
+  | 'prompt.content'
+  | 'chat.input'
+  | 'chat.edit_message';
+
 export interface Settings {
   ui: {
     background: {
@@ -275,6 +290,10 @@ export interface Settings {
     chat: {
       reasoningCollapsed: boolean;
       forbidExternalMedia: boolean;
+    };
+    editor: {
+      codeMirrorIdentifiers: CodeMirrorTarget[];
+      codeMirrorExpanded: boolean;
     };
     disableAnimations: boolean;
     selectedTheme: string;
@@ -430,6 +449,11 @@ export interface SettingOption {
   label: I18nKey;
 }
 
+export interface GroupedSettingOption {
+  label: I18nKey;
+  options: SettingOption[];
+}
+
 export interface SettingDefinition {
   id: SettingsPath;
   label: I18nKey;
@@ -442,5 +466,8 @@ export interface SettingDefinition {
   min?: number;
   max?: number;
   step?: number;
-  options?: SettingOption[];
+  options?: SettingOption[] | GroupedSettingOption[];
+  multiple?: boolean;
+  searchable?: boolean;
+  groupSelect?: boolean;
 }

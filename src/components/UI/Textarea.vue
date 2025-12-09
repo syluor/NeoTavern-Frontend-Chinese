@@ -3,7 +3,8 @@
 import { computed, markRaw, ref } from 'vue';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { usePopupStore } from '../../stores/popup.store';
-import { POPUP_TYPE } from '../../types';
+import { useSettingsStore } from '../../stores/settings.store';
+import { POPUP_TYPE, type CodeMirrorTarget } from '../../types';
 import CodeMirrorEditor from './CodeMirrorEditor.vue';
 import TextareaExpanded from './TextareaExpanded.vue';
 
@@ -16,6 +17,7 @@ interface Props {
   resizable?: boolean;
   allowMaximize?: boolean;
   codeMirror?: boolean;
+  identifier?: CodeMirrorTarget;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,16 +28,26 @@ const props = withDefaults(defineProps<Props>(), {
   label: undefined,
   placeholder: '',
   codeMirror: false,
+  identifier: undefined,
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const popupStore = usePopupStore();
+const settingsStore = useSettingsStore();
 
 const { t } = useStrictI18n();
 
 const textareaRef = ref<HTMLTextAreaElement>();
 const codeEditorRef = ref<InstanceType<typeof CodeMirrorEditor>>();
+
+const isCodeMirrorActive = computed(() => {
+  if (props.codeMirror) return true;
+  if (props.identifier && settingsStore.settings.ui.editor.codeMirrorIdentifiers.includes(props.identifier)) {
+    return true;
+  }
+  return false;
+});
 
 function onInput(event: Event) {
   emit('update:modelValue', (event.target as HTMLTextAreaElement).value);
@@ -47,7 +59,7 @@ function onCodeMirrorUpdate(value: string) {
 
 defineExpose({
   focus() {
-    if (props.codeMirror && codeEditorRef.value) {
+    if (isCodeMirrorActive.value && codeEditorRef.value) {
       codeEditorRef.value.focus();
     } else if (textareaRef.value) {
       textareaRef.value.focus();
@@ -66,7 +78,7 @@ async function maximizeEditor() {
     componentProps: {
       value: props.modelValue,
       label: props.label,
-      codeMirror: props.codeMirror,
+      codeMirror: isCodeMirrorActive.value,
       'onUpdate:value': (value: string) => {
         emit('update:modelValue', value);
       },
@@ -91,7 +103,7 @@ const cmMinHeight = computed(() => {
     </div>
 
     <CodeMirrorEditor
-      v-if="codeMirror"
+      v-if="isCodeMirrorActive"
       ref="codeEditorRef"
       :model-value="modelValue"
       :disabled="disabled"

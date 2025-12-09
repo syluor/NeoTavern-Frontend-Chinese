@@ -116,4 +116,61 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: false,
   },
+
+  // --- Editor ---
+  {
+    id: 'ui.editor.codeMirrorExpanded',
+    label: 'settings.ui.editor.codeMirrorExpanded.label',
+    description: 'settings.ui.editor.codeMirrorExpanded.description',
+    category: 'Editor',
+    type: 'boolean',
+    widget: 'checkbox',
+    defaultValue: false,
+  },
+  {
+    id: 'ui.editor.codeMirrorIdentifiers',
+    label: 'settings.ui.editor.codeMirrorIdentifiers.label',
+    description: 'settings.ui.editor.codeMirrorIdentifiers.description',
+    category: 'Editor',
+    type: 'enum',
+    widget: 'select',
+    multiple: true,
+    searchable: true,
+    groupSelect: true,
+    defaultValue: [],
+    options: [
+      {
+        label: 'settings.ui.editor.groups.character',
+        options: [
+          { value: 'character.description', label: 'settings.ui.editor.fields.description' },
+          { value: 'character.first_mes', label: 'settings.ui.editor.fields.firstMessage' },
+          { value: 'character.personality', label: 'settings.ui.editor.fields.personality' },
+          { value: 'character.scenario', label: 'settings.ui.editor.fields.scenario' },
+          { value: 'character.note', label: 'settings.ui.editor.fields.characterNote' },
+          { value: 'character.mes_example', label: 'settings.ui.editor.fields.dialogueExamples' },
+          { value: 'character.post_history_instructions', label: 'settings.ui.editor.fields.postHistoryInstructions' },
+          { value: 'character.creator_notes', label: 'settings.ui.editor.fields.creatorNotes' },
+        ],
+      },
+      {
+        label: 'settings.ui.editor.groups.persona',
+        options: [{ value: 'persona.description', label: 'settings.ui.editor.fields.description' }],
+      },
+      {
+        label: 'settings.ui.editor.groups.worldInfo',
+        options: [{ value: 'world_info.content', label: 'settings.ui.editor.fields.content' }],
+      },
+      {
+        label: 'settings.ui.editor.groups.promptManager',
+        options: [{ value: 'prompt.content', label: 'settings.ui.editor.fields.content' }],
+      },
+      {
+        label: 'settings.ui.editor.groups.chat',
+        options: [
+          { value: 'chat.input', label: 'settings.ui.editor.fields.input' },
+          { value: 'chat.edit_message', label: 'settings.ui.editor.fields.editMessage' },
+        ],
+      },
+    ],
+  },
 ];

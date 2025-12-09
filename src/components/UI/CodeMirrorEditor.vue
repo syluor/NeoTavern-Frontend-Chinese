@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { indentWithTab } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
-import { EditorState } from '@codemirror/state';
+import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap, placeholder as placeholderExt, ViewUpdate } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -28,6 +28,7 @@ const emit = defineEmits(['update:modelValue', 'focus', 'blur']);
 
 const editorContainer = ref<HTMLElement>();
 let editorView: EditorView | null = null;
+const readOnlyCompartment = new Compartment();
 
 // Custom theme to match application styles
 const appTheme = EditorView.theme(
@@ -102,7 +103,7 @@ const initEditor = () => {
         }
       }),
       props.placeholder ? placeholderExt(props.placeholder) : [],
-      EditorState.readOnly.of(props.disabled),
+      readOnlyCompartment.of(EditorState.readOnly.of(props.disabled)),
     ],
   });
 
@@ -144,7 +145,7 @@ watch(
   (val) => {
     if (editorView) {
       editorView.dispatch({
-        effects: EditorState.readOnly.reconfigure(val),
+        effects: readOnlyCompartment.reconfigure(EditorState.readOnly.of(val)),
       });
     }
   },

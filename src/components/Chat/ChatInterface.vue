@@ -15,7 +15,7 @@ import { usePromptStore } from '../../stores/prompt.store';
 import { useSettingsStore } from '../../stores/settings.store';
 import { useWorldInfoStore } from '../../stores/world-info.store';
 import { POPUP_RESULT, POPUP_TYPE } from '../../types';
-import { Button } from '../UI';
+import { Button, Textarea } from '../UI';
 import ChatMessage from './ChatMessage.vue';
 
 const chatStore = useChatStore();
@@ -31,7 +31,7 @@ const { t } = useStrictI18n();
 
 const userInput = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
-const chatInput = ref<HTMLTextAreaElement | null>(null);
+const chatInput = ref<InstanceType<typeof Textarea> | null>(null);
 
 const isOptionsMenuVisible = ref(false);
 const optionsButtonRef = ref<HTMLElement | null>(null);
@@ -275,15 +275,17 @@ watch(
               @click.stop="isOptionsMenuVisible = !isOptionsMenuVisible"
             />
           </div>
-          <textarea
+          <Textarea
             id="chat-input"
             ref="chatInput"
             v-model="userInput"
             :placeholder="t('chat.inputPlaceholder')"
             autocomplete="off"
             :disabled="chatStore.isGenerating"
+            :allow-maximize="false"
+            identifier="chat.input"
             @keydown="handleKeydown"
-          ></textarea>
+          />
           <div class="chat-form-actions-right">
             <Button
               v-show="chatStore.isGenerating"

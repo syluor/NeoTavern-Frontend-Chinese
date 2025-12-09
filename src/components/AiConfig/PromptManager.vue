@@ -207,6 +207,7 @@ function getBadgeClass(role?: string) {
               <FormItem :label="t('aiConfig.promptManager.content')">
                 <Textarea
                   v-show="!prompt.marker"
+                  identifier="prompt.content"
                   :model-value="prompt.content || ''"
                   :rows="5"
                   @update:model-value="(v) => updatePromptField(index, 'content', v)"

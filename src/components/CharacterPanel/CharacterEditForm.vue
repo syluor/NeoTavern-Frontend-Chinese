@@ -641,6 +641,7 @@ const embeddedLorebookName = computed({
             v-model="localCharacter.description!"
             :rows="12"
             :placeholder="t('characterEditor.descriptionPlaceholder')"
+            identifier="character.description"
             @maximize="openMaximizeEditor('description', t('characterEditor.description'))"
           >
             <template #footer>
@@ -664,6 +665,7 @@ const embeddedLorebookName = computed({
             v-model="localCharacter.first_mes!"
             :rows="10"
             :placeholder="t('characterEditor.firstMessagePlaceholder')"
+            identifier="character.first_mes"
             @maximize="openMaximizeEditor('first_mes', t('characterEditor.firstMessage'))"
           >
             <template #footer>
@@ -681,6 +683,7 @@ const embeddedLorebookName = computed({
             v-model="localCharacter.personality!"
             :rows="4"
             :placeholder="t('characterEditor.advanced.personalityPlaceholder')"
+            identifier="character.personality"
             @maximize="openMaximizeEditor('personality', t('characterEditor.advanced.personality'))"
           >
             <template #footer>
@@ -696,6 +699,7 @@ const embeddedLorebookName = computed({
             v-model="localCharacter.scenario!"
             :rows="4"
             :placeholder="t('characterEditor.advanced.scenarioPlaceholder')"
+            identifier="character.scenario"
             @maximize="openMaximizeEditor('scenario', t('characterEditor.advanced.scenario'))"
           >
             <template #footer>
@@ -714,6 +718,7 @@ const embeddedLorebookName = computed({
                 v-model="localCharacter.data.depth_prompt.prompt"
                 :rows="5"
                 :placeholder="t('characterEditor.advanced.characterNotePlaceholder')"
+                identifier="character.note"
                 @maximize="openMaximizeEditor('data.depth_prompt.prompt', t('characterEditor.advanced.characterNote'))"
               />
             </FormItem>
@@ -745,15 +750,12 @@ const embeddedLorebookName = computed({
 
         <hr />
 
-        <FormItem
-          :label="t('characterEditor.advanced.dialogueExamples')"
-          :description="t('characterEditor.advanced.dialogueExamplesHint')"
-          data-field-name="mes_example"
-        >
+        <FormItem :label="t('characterEditor.advanced.dialogueExamples')" data-field-name="mes_example">
           <Textarea
             v-model="localCharacter.mes_example!"
             :rows="6"
             :placeholder="t('characterEditor.advanced.dialogueExamplesPlaceholder')"
+            identifier="character.mes_example"
             @maximize="openMaximizeEditor('mes_example', t('characterEditor.advanced.dialogueExamples'))"
           >
             <template #footer>
@@ -771,30 +773,13 @@ const embeddedLorebookName = computed({
           :title="t('characterEditor.advanced.promptOverrides')"
         >
           <div class="inline-drawer-content--column">
-            <small>{{ t('characterEditor.advanced.promptHint') }}</small>
-            <div v-if="localCharacter.data" data-field-name="data.system_prompt">
-              <FormItem :label="t('characterEditor.advanced.mainPrompt')">
-                <Textarea
-                  v-model="localCharacter.data.system_prompt!"
-                  :rows="3"
-                  :placeholder="t('characterEditor.advanced.mainPromptPlaceholder')"
-                  @maximize="openMaximizeEditor('data.system_prompt', t('characterEditor.advanced.mainPrompt'))"
-                >
-                  <template #footer>
-                    <div class="token-counter">
-                      {{ t('common.tokens') }}: <span>{{ tokenCounts['data.system_prompt'] || 0 }}</span>
-                    </div>
-                  </template>
-                </Textarea>
-              </FormItem>
-            </div>
-
             <div v-if="localCharacter.data" data-field-name="data.post_history_instructions">
               <FormItem :label="t('characterEditor.advanced.postHistoryInstructions')">
                 <Textarea
                   v-model="localCharacter.data.post_history_instructions!"
                   :rows="3"
                   :placeholder="t('characterEditor.advanced.postHistoryInstructionsPlaceholder')"
+                  identifier="character.post_history_instructions"
                   @maximize="
                     openMaximizeEditor(
                       'data.post_history_instructions',
@@ -857,6 +842,7 @@ const embeddedLorebookName = computed({
                     v-model="localCharacter.data.creator_notes!"
                     :rows="4"
                     :placeholder="t('characterEditor.advanced.creatorNotesPlaceholder')"
+                    identifier="character.creator_notes"
                     @maximize="openMaximizeEditor('data.creator_notes', t('characterEditor.advanced.creatorNotes'))"
                   />
                 </FormItem>

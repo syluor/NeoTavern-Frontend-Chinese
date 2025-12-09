@@ -708,9 +708,6 @@ export interface MessageSchema {
     };
     advanced: {
       promptOverrides: string;
-      promptHint: string;
-      mainPrompt: string;
-      mainPromptPlaceholder: string;
       postHistoryInstructions: string;
       postHistoryInstructionsPlaceholder: string;
       metadata: string;
@@ -738,7 +735,6 @@ export interface MessageSchema {
       talkativenessNormal: string;
       talkativenessChatty: string;
       dialogueExamples: string;
-      dialogueExamplesHint: string;
       dialogueExamplesPlaceholder: string;
       editingTitle: string;
       roles: {
@@ -1048,6 +1044,36 @@ export interface MessageSchema {
         forbidExternalMedia: {
           label: string;
           description: string;
+        };
+      };
+      editor: {
+        codeMirrorExpanded: {
+          label: string;
+          description: string;
+        };
+        codeMirrorIdentifiers: {
+          label: string;
+          description: string;
+        };
+        fields: {
+          description: string;
+          firstMessage: string;
+          personality: string;
+          scenario: string;
+          characterNote: string;
+          dialogueExamples: string;
+          postHistoryInstructions: string;
+          creatorNotes: string;
+          content: string;
+          input: string;
+          editMessage: string;
+        };
+        groups: {
+          character: string;
+          persona: string;
+          worldInfo: string;
+          promptManager: string;
+          chat: string;
         };
       };
     };

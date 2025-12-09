@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useSettingsStore } from '../../stores/settings.store';
 import CodeMirrorEditor from './CodeMirrorEditor.vue';
 
 const props = withDefaults(
@@ -18,6 +19,11 @@ const props = withDefaults(
 
 const emit = defineEmits(['update:value']);
 const inputValue = ref(props.value);
+const settingsStore = useSettingsStore();
+
+const isCodeMirrorActive = computed(() => {
+  return props.codeMirror || settingsStore.settings.ui.editor.codeMirrorExpanded;
+});
 
 watch(
   () => props.value,
@@ -33,10 +39,10 @@ function updateValue(val: string) {
 </script>
 
 <template>
-  <div class="expanded-textarea-container" :class="{ 'is-codemirror': codeMirror }">
+  <div class="expanded-textarea-container" :class="{ 'is-codemirror': isCodeMirrorActive }">
     <label v-if="label" class="expanded-label">{{ label }}</label>
 
-    <div v-if="codeMirror" class="expanded-codemirror-wrapper">
+    <div v-if="isCodeMirrorActive" class="expanded-codemirror-wrapper">
       <CodeMirrorEditor
         :model-value="inputValue"
         autofocus

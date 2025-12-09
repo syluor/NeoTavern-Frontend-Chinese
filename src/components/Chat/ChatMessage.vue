@@ -368,10 +368,23 @@ async function showPromptItemization() {
       <div v-show="isEditing" class="message-edit-area">
         <transition name="expand">
           <div v-show="isEditingReasoning" class="message-reasoning-edit-area">
-            <Textarea v-model="editedReasoning" :label="t('chat.reasoning.title')" :rows="3" :resizable="true" />
+            <Textarea
+              v-model="editedReasoning"
+              identifier="chat.edit_message"
+              :label="t('chat.reasoning.title')"
+              :rows="3"
+              :resizable="true"
+            />
           </div>
         </transition>
-        <Textarea ref="editTextarea" v-model="editedContent" :rows="5" :resizable="true" @keydown="handleEditKeydown" />
+        <Textarea
+          ref="editTextarea"
+          v-model="editedContent"
+          identifier="chat.edit_message"
+          :rows="5"
+          :resizable="true"
+          @keydown="handleEditKeydown"
+        />
       </div>
 
       <div v-show="canSwipe && !isSelectionMode" class="message-footer">

@@ -705,9 +705,6 @@
     },
     "advanced": {
       "promptOverrides": "Prompt Overrides",
-      "promptHint": "Insert {'{{original}}'} into either box to include the respective default prompt.",
-      "mainPrompt": "Main Prompt",
-      "mainPromptPlaceholder": "Any contents here will replace the default Main Prompt.",
       "postHistoryInstructions": "Post-History Instructions",
       "postHistoryInstructionsPlaceholder": "Any contents here will replace the default Post-History Instructions.",
       "metadata": "Creator's Metadata",
@@ -735,7 +732,6 @@
       "talkativenessNormal": "Normal",
       "talkativenessChatty": "Chatty",
       "dialogueExamples": "Examples of dialogue",
-      "dialogueExamplesHint": "Important to set the character's writing style.",
       "dialogueExamplesPlaceholder": "(Examples of chat dialog. Begin each example with <START> on a new line.)",
       "editingTitle": "Editing: {title}",
       "roles": {
@@ -1045,6 +1041,36 @@
         "forbidExternalMedia": {
           "label": "Forbid External Media",
           "description": "Prevent loading of external media in chat messages."
+        }
+      },
+      "editor": {
+        "codeMirrorExpanded": {
+          "label": "Expanded CodeMirror Editor",
+          "description": "Use the expanded CodeMirror editor for better markdown support."
+        },
+        "codeMirrorIdentifiers": {
+          "label": "CodeMirror Fields",
+          "description": "Select which fields should use the CodeMirror editor."
+        },
+        "fields": {
+          "description": "Description",
+          "firstMessage": "First Message",
+          "personality": "Personality",
+          "scenario": "Scenario",
+          "characterNote": "Character's Note",
+          "dialogueExamples": "Examples of dialogue",
+          "postHistoryInstructions": "Post-History Instructions",
+          "creatorNotes": "Creator's Note",
+          "content": "Content",
+          "input": "Input",
+          "editMessage": "Edit Message"
+        },
+        "groups": {
+          "character": "Character",
+          "persona": "Persona",
+          "worldInfo": "World Info",
+          "promptManager": "Prompt Manager",
+          "chat": "Chat"
         }
       }
     },

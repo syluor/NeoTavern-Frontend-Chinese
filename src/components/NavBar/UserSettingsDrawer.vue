@@ -3,8 +3,7 @@ import { computed, ref } from 'vue';
 import { Checkbox, CollapsibleSection, FormItem, RangeControl, Search, Select } from '../../components/UI';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
-import type { SettingDefinition, Settings, SettingsPath } from '../../types';
-import type { I18nKey } from '../../types/i18n';
+import type { GroupedSettingOption, SettingDefinition, SettingOption, Settings, SettingsPath } from '../../types';
 import type { ValueForPath } from '../../types/utils';
 import { SidebarHeader } from '../common';
 
@@ -62,8 +61,16 @@ function updateSetting<P extends SettingsPath>(id: P, value: any) {
   settingsStore.setSetting(id, typedValue as ValueForPath<Settings, P>);
 }
 
-function formatOptions(options: { label: I18nKey; value: string | number }[]) {
-  return options.map((o) => ({ label: t(o.label), value: o.value }));
+function formatOptions(options: (SettingOption | GroupedSettingOption)[]) {
+  return options.map((o) => {
+    if ('options' in o) {
+      return {
+        label: t(o.label),
+        options: o.options.map((opt) => ({ label: t(opt.label), value: opt.value })),
+      };
+    }
+    return { label: t(o.label), value: o.value };
+  });
 }
 </script>
 
@@ -107,6 +114,9 @@ function formatOptions(options: { label: I18nKey; value: string | number }[]) {
                     <Select
                       :model-value="getSettingValue(setting.id)"
                       :options="formatOptions(setting.options || [])"
+                      :multiple="setting.multiple"
+                      :searchable="setting.searchable"
+                      :group-select="setting.groupSelect"
                       @update:model-value="(val) => updateSetting(setting.id, val)"
                     />
                   </div>

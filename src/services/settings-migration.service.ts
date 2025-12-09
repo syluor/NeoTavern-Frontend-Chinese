@@ -81,6 +81,10 @@ export function createDefaultSettings(): Settings {
         reasoningCollapsed: true,
         forbidExternalMedia: true,
       },
+      editor: {
+        codeMirrorExpanded: false,
+        codeMirrorIdentifiers: [],
+      },
       disableAnimations: false,
       selectedTheme: 'Default',
     },
@@ -239,6 +243,10 @@ export function migrateLegacyUserSettings(
       chat: {
         reasoningCollapsed: false,
         forbidExternalMedia: p.forbid_external_media ?? true,
+      },
+      editor: {
+        codeMirrorExpanded: false,
+        codeMirrorIdentifiers: [],
       },
       disableAnimations: p.reduced_motion ?? false,
       selectedTheme: 'Default',

@@ -15,6 +15,53 @@ const popupStore = usePopupStore();
 const settingsStore = useSettingsStore();
 const { t } = useStrictI18n();
 
+// Utility function to convert RGBA to Hex (for color picker display)
+function rgbaToHex(rgba: string): string {
+  // Match rgba(r, g, b, a) format
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+  if (!match) {
+    // If it's already in hex format or invalid, return as is
+    return rgba;
+  }
+
+  const r = parseInt(match[1], 10);
+  const g = parseInt(match[2], 10);
+  const b = parseInt(match[3], 10);
+  // For hex conversion, we ignore alpha channel
+
+  return (
+    '#' +
+    [r, g, b]
+      .map((x) => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      })
+      .join('')
+  );
+}
+
+// Utility function to merge hex color with existing alpha
+function mergeWithAlpha(hex: string, original: string): string {
+  // Extract alpha from original rgba value
+  const alphaMatch = original.match(/rgba?\(\d+,\s*\d+,\s*\d+(?:,\s*([\d.]+))?\)/);
+  const alpha = alphaMatch && alphaMatch[1] ? parseFloat(alphaMatch[1]) : 1;
+
+  // If alpha is 1 (fully opaque), just return the hex value
+  if (alpha === 1) {
+    return hex;
+  }
+
+  // Convert hex to rgb
+  if (hex.startsWith('#')) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  return hex;
+}
+
 const themeOptions = computed(() => {
   const list = [{ label: 'Default', value: 'Default' }];
   themeStore.themes.forEach((t) => {
@@ -32,8 +79,28 @@ function getVariable(key: keyof ThemeVariables) {
   return themeStore.currentVariables[key] || '';
 }
 
+function getVariableForColorInput(key: keyof ThemeVariables) {
+  const value = getVariable(key);
+  // Convert RGBA to hex for color inputs
+  if (value.startsWith('rgba(') || value.startsWith('rgb(')) {
+    return rgbaToHex(value);
+  }
+  return value;
+}
+
 function setVariable(key: keyof ThemeVariables, value: string | number) {
-  themeStore.updateVariable(key, String(value));
+  let newValue = String(value);
+
+  // If this is a color variable and the original value was rgba,
+  // try to preserve the alpha channel
+  if (isColor(key)) {
+    const originalValue = getVariable(key);
+    if (originalValue.startsWith('rgba(')) {
+      newValue = mergeWithAlpha(newValue, originalValue);
+    }
+  }
+
+  themeStore.updateVariable(key, newValue);
 }
 
 // Helpers for specific input types
@@ -124,7 +191,7 @@ function onImport(files: File[]) {
                 <div class="color-input-wrapper">
                   <input
                     type="color"
-                    :value="getVariable(key)"
+                    :value="getVariableForColorInput(key)"
                     @input="(e) => setVariable(key, (e.target as HTMLInputElement).value)"
                   />
                   <span class="color-value">{{ getVariable(key) }}</span>

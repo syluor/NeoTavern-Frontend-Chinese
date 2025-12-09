@@ -1,4 +1,3 @@
-import * as bytes from 'bytes';
 import * as Vue from 'vue';
 import { createVNode, render, type App } from 'vue';
 import { EventPriority, GenerationMode, GroupGenerationHandlingMode, default_avatar } from '../constants';
@@ -13,7 +12,7 @@ import type {
   WorldInfoBook,
 } from '../types';
 import { sanitizeSelector } from './client';
-import { getMessageTimeStamp, uuidv4 } from './commons';
+import { formatFileSize, getMessageTimeStamp, uuidv4 } from './commons';
 
 // Internal Store Imports
 import { ChatCompletionService, buildChatCompletionPayload } from '../api/generation';
@@ -364,7 +363,7 @@ const baseExtensionAPI: ExtensionAPI = {
         chat_items: messages.length,
         file_id: finalFilename,
         file_name: `${finalFilename}.jsonl`,
-        file_size: bytes.format(JSON.stringify(chat).length)!,
+        file_size: formatFileSize(JSON.stringify(chat).length),
         last_mes: getMessageTimeStamp(),
         mes: last?.mes || '',
       };

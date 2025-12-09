@@ -110,6 +110,21 @@ export function readFileAsText(file: File): Promise<string> {
   });
 }
 
+const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'] as const;
+
+export function formatFileSize(value: number, decimals = 2): string {
+  const bytes = Number(value);
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0B';
+
+  const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), FILE_SIZE_UNITS.length - 1);
+  const scaled = bytes / 1024 ** unitIndex;
+  const decimalPlaces = unitIndex === 0 ? 0 : scaled >= 10 ? 0 : Math.max(0, decimals);
+  const formatted =
+    decimalPlaces > 0 ? Number(scaled.toFixed(decimalPlaces)).toString() : Math.round(scaled).toString();
+
+  return `${formatted}${FILE_SIZE_UNITS[unitIndex]}`;
+}
+
 export function downloadFile(content: string, fileName: string, contentType: string) {
   const a = document.createElement('a');
   const file = new Blob([content], { type: contentType });

@@ -1,4 +1,3 @@
-import * as bytes from 'bytes';
 import { defineStore } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { type ChatExportRequest } from '../api/chat';
@@ -19,7 +18,7 @@ import {
 } from '../types';
 import { getCharacterDifferences } from '../utils/character';
 import { getFirstMessage } from '../utils/chat';
-import { downloadFile, getMessageTimeStamp, uuidv4 } from '../utils/commons';
+import { downloadFile, formatFileSize, getMessageTimeStamp, uuidv4 } from '../utils/commons';
 import { eventEmitter } from '../utils/extensions';
 import { useCharacterStore } from './character.store';
 import { useChatSelectionStore } from './chat-selection.store';
@@ -364,7 +363,7 @@ export const useChatStore = defineStore('chat', () => {
         chat_items: messages.length,
         file_id: filename,
         file_name: fullFilename,
-        file_size: bytes.format(JSON.stringify(fullChat).length)!,
+        file_size: formatFileSize(JSON.stringify(fullChat).length),
         last_mes: getMessageTimeStamp(),
         mes: firstMessage?.mes || '',
       };
@@ -663,7 +662,7 @@ export const useChatStore = defineStore('chat', () => {
         const chatInfo: ChatInfo = {
           file_id: fileId,
           file_name: fileName,
-          file_size: bytes.format(JSON.stringify(fullChat).length)!,
+          file_size: formatFileSize(JSON.stringify(fullChat).length),
           chat_items: messages.length,
           mes: lastMessage?.mes.slice(0, 100) ?? '',
           last_mes: lastMessage ? lastMessage.send_date : getMessageTimeStamp(),

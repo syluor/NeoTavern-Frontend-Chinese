@@ -58,9 +58,7 @@ const appTheme = EditorView.theme(
       overflow: 'auto',
     },
     '.cm-gutters': {
-      backgroundColor: 'var(--black-30a)',
-      color: 'var(--theme-emphasis-color)',
-      borderRight: '1px solid var(--theme-border-color)',
+      display: 'none',
     },
     '.cm-activeLineGutter': {
       backgroundColor: 'var(--white-20a)',
@@ -103,7 +101,6 @@ const initEditor = () => {
         }
       }),
       props.placeholder ? placeholderExt(props.placeholder) : [],
-      readOnlyCompartment.of(EditorState.readOnly.of(props.disabled)),
     ],
   });
 

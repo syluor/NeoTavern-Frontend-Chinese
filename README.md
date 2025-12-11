@@ -45,7 +45,7 @@ Why another frontend for [SillyTavern?](https://github.com/SillyTavern/SillyTave
 
 - **Node.js:** Version 20 or higher is required.
 - **SillyTavern:** You must have a running instance of the [SillyTavern](https://github.com/SillyTavern/SillyTavern). Make sure the branch is set to `staging`.
-- **NeoTavern-Server-Plugin:** You must install the [NeoTavern-Server-Plugin](https://github.com/NeoTavern/NeoTavern-Server-Plugin) plugin.
+- **NeoTavern-Server-Plugin:** You must install the [NeoTavern-Server-Plugin](https://github.com/NeoTavern/NeoTavern-Server-Plugin).
 
 ## Installation and Usage
 

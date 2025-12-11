@@ -1,6 +1,6 @@
-A modern, experimental frontend for [SillyTavern](https://github.com/SillyTavern/SillyTavern).
-
 [![Discord](https://img.shields.io/badge/Discord-SillyTavern-5865F2?logo=discord&logoColor=white)](https://discord.gg/sillytavern)
+
+A modern, experimental frontend for [SillyTavern](https://github.com/SillyTavern/SillyTavern).
 
 > [!IMPORTANT]  
 > This is a pre-alpha release. Features may be incomplete, and bugs are expected.

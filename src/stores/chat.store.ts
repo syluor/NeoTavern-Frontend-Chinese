@@ -283,6 +283,8 @@ export const useChatStore = defineStore('chat', () => {
           metadata: metadataItem.chat_metadata,
           messages: response as ChatMessage[],
         };
+
+        chatUiStore.resetRenderedMessagesCount(settingsStore.settings.ui.chat.messagesToLoad || 100);
       }
 
       if (activeChatFile.value) {
@@ -372,6 +374,8 @@ export const useChatStore = defineStore('chat', () => {
       recentChats.value.push(cInfo);
       chatInfos.value.sort((a, b) => a.last_mes.localeCompare(b.last_mes));
       recentChats.value.sort((a, b) => a.last_mes.localeCompare(b.last_mes));
+
+      chatUiStore.resetRenderedMessagesCount(settingsStore.settings.ui.chat.messagesToLoad || 100);
 
       await nextTick();
       await eventEmitter.emit('chat:entered', filename);

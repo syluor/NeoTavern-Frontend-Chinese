@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Checkbox, CollapsibleSection, FormItem, RangeControl, Search, Select } from '../../components/UI';
+import { Checkbox, CollapsibleSection, FormItem, Input, RangeControl, Search, Select } from '../../components/UI';
 import { useStrictI18n } from '../../composables/useStrictI18n';
 import { useSettingsStore } from '../../stores/settings.store';
 import type { GroupedSettingOption, SettingDefinition, SettingOption, Settings, SettingsPath } from '../../types';
@@ -53,7 +53,7 @@ function updateSetting<P extends SettingsPath>(id: P, value: any) {
   let typedValue = value;
 
   if (definition?.type === 'number') {
-    typedValue = parseFloat(value);
+    typedValue = Number(value);
   } else if (definition?.type === 'boolean') {
     typedValue = !!value;
   }
@@ -129,6 +129,19 @@ function formatOptions(options: (SettingOption | GroupedSettingOption)[]) {
                       :max="setting.max"
                       :step="setting.step"
                       @update:model-value="(val) => updateSetting(setting.id, val)"
+                    />
+                  </div>
+
+                  <!-- Text/Number Input -->
+                  <div v-if="setting.widget === 'text'" style="width: 220px">
+                  <!-- If we remove brackets, vue type checker thinks we are using vue filter. So I added bracket to bypass this. However prettier removig the brackets. So we need to find a solution. Maybe 2 different input blocks? -->
+                    <Input
+                      :model-value="(getSettingValue(setting.id) as string | number)"
+                      :type="setting.type === 'number' ? 'number' : 'text'"
+                      :min="setting.min"
+                      :max="setting.max"
+                      :step="setting.step"
+                      @update:model-value="(val: string | number) => updateSetting(setting.id, val)"
                     />
                   </div>
                 </FormItem>

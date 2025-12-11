@@ -8,6 +8,7 @@ import { GenerationMode } from '../../constants';
 import { convertCharacterBookToWorldInfoBook } from '../../services/world-info';
 import { useCharacterStore } from '../../stores/character.store';
 import { useChatSelectionStore } from '../../stores/chat-selection.store';
+import { useChatUiStore } from '../../stores/chat-ui.store';
 import { useChatStore } from '../../stores/chat.store';
 import { useLayoutStore } from '../../stores/layout.store';
 import { usePopupStore } from '../../stores/popup.store';
@@ -19,6 +20,7 @@ import { Button, Textarea } from '../UI';
 import ChatMessage from './ChatMessage.vue';
 
 const chatStore = useChatStore();
+const chatUiStore = useChatUiStore();
 const settingsStore = useSettingsStore();
 const characterStore = useCharacterStore();
 const chatSelectionStore = useChatSelectionStore();
@@ -36,6 +38,7 @@ const chatInput = ref<InstanceType<typeof Textarea> | null>(null);
 const isOptionsMenuVisible = ref(false);
 const optionsButtonRef = ref<HTMLElement | null>(null);
 const optionsMenuRef = ref<HTMLElement | null>(null);
+const shouldScrollInstant = ref(false);
 
 const { floatingStyles: optionsMenuStyles } = useFloating(optionsButtonRef, optionsMenuRef, {
   placement: 'top-start',
@@ -138,16 +141,56 @@ async function checkAndImportCharacterBooks() {
   }
 }
 
-// 1. Compute specific things to watch instead of the whole object
-const messagesLength = computed(() => chatStore.activeChat?.messages.length || 0);
-
 const lastMessageContent = computed(() => {
   const msgs = chatStore.activeChat?.messages;
   if (!msgs || msgs.length === 0) return '';
   return msgs[msgs.length - 1].mes;
 });
 
-// 2. Efficient Scroll Handler using requestAnimationFrame
+// Virtualization Logic
+const visibleMessages = computed(() => {
+  const allMessages = chatStore.activeChat?.messages || [];
+  const limit = chatUiStore.renderedMessagesCount;
+  const start = Math.max(0, allMessages.length - limit);
+
+  return allMessages.slice(start).map((msg, index) => ({
+    message: msg,
+    index: start + index, // Real index in the store
+  }));
+});
+
+const hasMoreMessages = computed(() => {
+  const allMessages = chatStore.activeChat?.messages || [];
+  return allMessages.length > chatUiStore.renderedMessagesCount;
+});
+
+function loadMoreMessages() {
+  const el = messagesContainer.value;
+  if (!el) return;
+
+  const oldScrollHeight = el.scrollHeight;
+  const oldScrollTop = el.scrollTop;
+
+  const step = settingsStore.settings.ui.chat.messagesToLoad || 100;
+  chatUiStore.loadMoreMessages(step);
+
+  // Restore scroll position
+  nextTick(() => {
+    const newScrollHeight = el.scrollHeight;
+    const diff = newScrollHeight - oldScrollHeight;
+    el.scrollTop = oldScrollTop + diff;
+  });
+}
+
+const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+  nextTick(() => {
+    const el = messagesContainer.value;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior });
+    }
+  });
+};
+
 const handleStreamingScroll = () => {
   const el = messagesContainer.value;
   if (!el) return;
@@ -157,23 +200,33 @@ const handleStreamingScroll = () => {
     const isScrolledToBottom = el.scrollHeight - el.clientHeight <= el.scrollTop + 100;
 
     if (isScrolledToBottom) {
-      // Use 'auto' (instant) instead of 'smooth' for streaming to prevent lag/jitter
       el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
     }
   });
 };
 
-// 3. Watch for NEW message blocks (User sent, or bot started replying)
-watch(messagesLength, () => {
-  nextTick(() => {
-    const el = messagesContainer.value;
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+// Scroll watcher
+watch(
+  visibleMessages,
+  (newVal, oldVal) => {
+    if (shouldScrollInstant.value) {
+      scrollToBottom('auto');
+      shouldScrollInstant.value = false;
+      return;
     }
-  });
-});
 
-// 4. Watch for STREAMING content (Text updating within the last message)
+    const oldEnd = oldVal[oldVal.length - 1]?.index ?? -1;
+    const newEnd = newVal[newVal.length - 1]?.index ?? -1;
+
+    // New message added at the bottom
+    if (newEnd > oldEnd) {
+      scrollToBottom('smooth');
+    }
+  },
+  { deep: false },
+);
+
+// Streaming content watcher
 watch(lastMessageContent, () => {
   handleStreamingScroll();
 });
@@ -194,6 +247,7 @@ watch(
   () => chatStore.activeChatFile,
   (newFile) => {
     if (newFile) {
+      shouldScrollInstant.value = true;
       checkAndImportCharacterBooks();
     }
   },
@@ -241,12 +295,14 @@ watch(
     </div>
 
     <div id="chat-messages-container" ref="messagesContainer" class="chat-interface-messages">
-      <ChatMessage
-        v-for="(message, index) in chatStore.activeChat?.messages"
-        :key="index"
-        :message="message"
-        :index="index"
-      />
+      <div v-if="hasMoreMessages" class="chat-load-more-container">
+        <Button class="load-more-btn" variant="ghost" @click="loadMoreMessages">
+          <i class="fa-solid fa-arrow-up"></i>
+          {{ t('chat.loadMoreMessages') }}
+        </Button>
+      </div>
+
+      <ChatMessage v-for="item in visibleMessages" :key="item.index" :message="item.message" :index="item.index" />
       <div v-show="chatStore.isGenerating" class="chat-interface-typing-indicator">
         <span>{{ t('chat.typingIndicator') }}</span>
         <div class="dot dot1"></div>
@@ -367,3 +423,20 @@ watch(
     </div>
   </div>
 </template>
+
+<style scoped>
+.chat-load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.load-more-btn {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.load-more-btn:hover {
+  opacity: 1;
+}
+</style>

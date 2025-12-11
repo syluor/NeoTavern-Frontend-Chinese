@@ -543,6 +543,7 @@ export interface MessageSchema {
     createError: string;
     emptyLog: string;
     groupChat: string;
+    loadMoreMessages: string;
     generate: {
       noPrompts: string;
       errorFallback: string;
@@ -1042,6 +1043,10 @@ export interface MessageSchema {
           description: string;
         };
         forbidExternalMedia: {
+          label: string;
+          description: string;
+        };
+        messagesToLoad: {
           label: string;
           description: string;
         };

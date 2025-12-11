@@ -94,6 +94,17 @@ export const settingsDefinition: SettingDefinition[] = [
     widget: 'checkbox',
     defaultValue: true,
   },
+  {
+    id: 'ui.chat.messagesToLoad',
+    label: 'settings.ui.chat.messagesToLoad.label',
+    description: 'settings.ui.chat.messagesToLoad.description',
+    category: 'Chat/Message Handling',
+    type: 'number',
+    widget: 'text',
+    defaultValue: 100,
+    min: 10,
+    step: 10,
+  },
 
   // --- UI & Display ---
   {

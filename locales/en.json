@@ -540,6 +540,7 @@
     "createError": "Failed to create chat message.",
     "emptyLog": "Empty chat log",
     "groupChat": "Group Chat",
+    "loadMoreMessages": "Load more messages",
     "generate": {
       "noPrompts": "No prompts were built for the AI. Please check your prompt settings.",
       "errorFallback": "Failed to get a response from the AI.",
@@ -1041,6 +1042,10 @@
         "forbidExternalMedia": {
           "label": "Forbid External Media",
           "description": "Prevent loading of external media in chat messages."
+        },
+        "messagesToLoad": {
+          "label": "Messages to Load",
+          "description": "Number of messages to load when loading more messages in chat."
         }
       },
       "editor": {

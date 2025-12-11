@@ -80,6 +80,7 @@ export function createDefaultSettings(): Settings {
       chat: {
         reasoningCollapsed: true,
         forbidExternalMedia: true,
+        messagesToLoad: 100,
       },
       editor: {
         codeMirrorExpanded: false,
@@ -243,6 +244,7 @@ export function migrateLegacyUserSettings(
       chat: {
         reasoningCollapsed: false,
         forbidExternalMedia: p.forbid_external_media ?? true,
+        messagesToLoad: 100,
       },
       editor: {
         codeMirrorExpanded: false,

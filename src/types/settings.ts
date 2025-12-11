@@ -290,6 +290,7 @@ export interface Settings {
     chat: {
       reasoningCollapsed: boolean;
       forbidExternalMedia: boolean;
+      messagesToLoad: number;
     };
     editor: {
       codeMirrorIdentifiers: CodeMirrorTarget[];

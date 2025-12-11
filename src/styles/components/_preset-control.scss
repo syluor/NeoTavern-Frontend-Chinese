@@ -5,6 +5,7 @@
   gap: var(--spacing-xs);
   align-items: center;
   @include flex-container(row, flex-start, center);
+  flex-wrap: wrap;
 
   &-selector {
     flex-grow: 1;

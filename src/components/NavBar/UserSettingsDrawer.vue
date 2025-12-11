@@ -109,7 +109,7 @@ function formatOptions(options: (SettingOption | GroupedSettingOption)[]) {
                   horizontal
                 >
                   <!-- Select -->
-                  <div v-if="setting.widget === 'select'" style="width: 220px">
+                  <div v-if="setting.widget === 'select'">
                     <!-- @vue-ignore -->
                     <Select
                       :model-value="getSettingValue(setting.id)"
@@ -122,7 +122,7 @@ function formatOptions(options: (SettingOption | GroupedSettingOption)[]) {
                   </div>
 
                   <!-- Slider -->
-                  <div v-if="setting.widget === 'slider'" style="width: 220px">
+                  <div v-if="setting.widget === 'slider'">
                     <RangeControl
                       :model-value="getSettingValue(setting.id) as number"
                       :min="setting.min"
@@ -133,7 +133,7 @@ function formatOptions(options: (SettingOption | GroupedSettingOption)[]) {
                   </div>
 
                   <!-- Text/Number Input -->
-                  <div v-if="setting.widget === 'text'" style="width: 220px">
+                  <div v-if="setting.widget === 'text'">
                     <!-- If we remove brackets, vue type checker thinks we are using vue filter. So I added bracket to bypass this. However prettier removig the brackets. So we need to find a solution. Maybe 2 different input blocks? -->
                     <Input
                       :model-value="(getSettingValue(setting.id) as string | number)"

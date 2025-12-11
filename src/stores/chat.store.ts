@@ -233,6 +233,8 @@ export const useChatStore = defineStore('chat', () => {
     chatUiStore.isChatLoading = true;
     triggerSave.cancel();
 
+    if (activeChatFile.value) await promptStore.clearUserTyping(activeChatFile.value);
+
     if (activeChat.value) activeChat.value.messages = [];
     activeChatFile.value = null;
     activeChat.value = null;
@@ -241,8 +243,6 @@ export const useChatStore = defineStore('chat', () => {
     promptStore.itemizedPrompts = [];
     selectionStore.isSelectionMode = false;
     selectionStore.selectedMessageIndices.clear();
-
-    if (activeChatFile.value) promptStore.clearUserTyping(activeChatFile.value);
 
     await nextTick();
     await eventEmitter.emit('chat:cleared');
@@ -558,6 +558,7 @@ export const useChatStore = defineStore('chat', () => {
       for (const idx of indicesToDelete) {
         if (idx >= 0 && idx < activeChat.value.messages.length) {
           activeChat.value.messages.splice(idx, 1);
+          promptStore.clearItemizedPrompt(idx);
         }
       }
       selectionStore.deselectAll();

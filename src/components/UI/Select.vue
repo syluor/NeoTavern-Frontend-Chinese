@@ -60,7 +60,7 @@ const { floatingStyles } = useFloating(triggerRef, dropdownRef, {
   middleware: [
     offset(4),
     flip({ padding: 10 }),
-    shift({ padding: 10 }),
+    shift({}),
     size({
       apply({ rects, elements }) {
         Object.assign(elements.floating.style, {

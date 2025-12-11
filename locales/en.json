@@ -1018,7 +1018,7 @@
         "description": "Show a confirmation dialog before deleting a chat message."
       },
       "tagImportSetting": {
-        "label": "Tag Import Behavior",
+        "label": "Tag Import Behavior (popup not implemented)",
         "description": "How to handle tags when importing characters.",
         "options": {
           "none": "Do not import tags",

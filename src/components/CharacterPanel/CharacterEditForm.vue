@@ -39,9 +39,11 @@ const layoutStore = useLayoutStore();
 const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 const isCreating = computed(() => characterUiStore.isCreating);
 
-const isPeeking = ref(false);
+const isPeeking = ref<boolean | null>(null);
 const isSpoilerModeActive = computed(() => !settingsStore.settings.character.spoilerFreeMode);
-const areDetailsHidden = computed(() => isSpoilerModeActive.value && !isPeeking.value && !isCreating.value);
+const areDetailsHidden = computed(() =>
+  !isCreating.value && isPeeking.value === null ? isSpoilerModeActive.value : !isPeeking.value,
+);
 
 const isExportMenuVisible = ref(false);
 const exportButtonRef = ref<HTMLElement | null>(null);
@@ -139,7 +141,7 @@ function toggleFavorite() {
 }
 
 function peekSpoilerMode() {
-  isPeeking.value = !isPeeking.value;
+  isPeeking.value = isPeeking.value === null ? areDetailsHidden.value : !isPeeking.value;
 }
 
 function openMaximizeEditor(fieldName: EditableField, title: string) {
@@ -619,6 +621,7 @@ const embeddedLorebookName = computed({
       <CollapsibleSection v-model:is-open="isCreatorNotesOpen!" :title="t('characterEditor.creatorNotes')">
         <template #actions>
           <Button
+            v-show="!isCreating"
             variant="ghost"
             icon="fa-eye"
             :title="t('characterEditor.toggleSpoiler')"

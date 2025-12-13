@@ -1,6 +1,8 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-defineProps<{
+import { uuidv4 } from '../../utils/commons';
+
+const props = defineProps<{
   modelValue: boolean;
   label: string;
   description?: string;
@@ -8,6 +10,9 @@ defineProps<{
 }>();
 
 const emit = defineEmits(['update:modelValue']);
+
+const id = `checkbox-${uuidv4()}`;
+const descriptionId = props.description ? `${id}-desc` : undefined;
 
 function onChange(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -17,10 +22,19 @@ function onChange(event: Event) {
 
 <template>
   <div class="checkbox-container">
-    <label class="checkbox-label" :class="{ disabled }">
-      <input type="checkbox" :checked="modelValue" :disabled="disabled" @change="onChange" />
+    <label class="checkbox-label" :class="{ disabled }" :for="id">
+      <input
+        :id="id"
+        type="checkbox"
+        :checked="modelValue"
+        :disabled="disabled"
+        :aria-describedby="descriptionId"
+        @change="onChange"
+      />
       <span>{{ label }}</span>
     </label>
-    <div v-if="description" class="checkbox-description">{{ description }}</div>
+    <div v-if="description" :id="descriptionId" class="checkbox-description">
+      {{ description }}
+    </div>
   </div>
 </template>

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useStrictI18n } from '../../composables/useStrictI18n';
+import { uuidv4 } from '../../utils/commons';
+
+const { t } = useStrictI18n();
+
 interface Props {
   modelValue: number;
   min?: number;
@@ -6,6 +11,7 @@ interface Props {
   step?: number;
   label?: string;
   disabled?: boolean;
+  title?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -14,9 +20,13 @@ withDefaults(defineProps<Props>(), {
   step: 1,
   disabled: false,
   label: undefined,
+  title: undefined,
 });
 
 const emit = defineEmits(['update:modelValue']);
+
+const rangeId = `range-${uuidv4()}`;
+const labelId = `range-label-${uuidv4()}`;
 
 function update(val: number | string) {
   const num = typeof val === 'string' ? parseFloat(val) : val;
@@ -27,10 +37,13 @@ function update(val: number | string) {
 </script>
 
 <template>
-  <div class="range-block">
-    <div v-if="label" class="range-block-title">{{ label }}</div>
+  <div class="range-block" :title="title">
+    <div v-if="label" :id="labelId" class="range-block-title">
+      <label :for="rangeId">{{ label }}</label>
+    </div>
     <div class="range-block-range-and-counter">
       <input
+        :id="rangeId"
         type="range"
         class="neo-range-slider"
         :min="min"
@@ -38,6 +51,7 @@ function update(val: number | string) {
         :step="step"
         :value="modelValue"
         :disabled="disabled"
+        :aria-labelledby="label ? labelId : undefined"
         @input="update(($event.target as HTMLInputElement).value)"
       />
       <input
@@ -48,6 +62,7 @@ function update(val: number | string) {
         :step="step"
         :value="modelValue"
         :disabled="disabled"
+        :aria-label="label ? `${label} ${t('a11y.rangeControl.valueLower')}` : t('a11y.rangeControl.value')"
         @input="update(($event.target as HTMLInputElement).value)"
       />
     </div>

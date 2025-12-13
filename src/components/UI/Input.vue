@@ -1,5 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
+import { uuidv4 } from '../../utils/commons';
+
 interface Props {
   modelValue: string | number;
   label?: string;
@@ -23,6 +25,8 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:modelValue', 'input', 'change']);
 
+const inputId = `input-${uuidv4()}`;
+
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement;
   let val: string | number = target.value;
@@ -38,8 +42,9 @@ function handleInput(event: Event) {
 
 <template>
   <div class="input-wrapper">
-    <label v-if="label" class="input-label">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="input-label">{{ label }}</label>
     <input
+      :id="inputId"
       class="text-pole"
       :type="type"
       :value="modelValue"
@@ -48,6 +53,7 @@ function handleInput(event: Event) {
       :min="min"
       :max="max"
       :step="step"
+      :aria-label="!label ? placeholder : undefined"
       @input="handleInput"
       @change="$emit('change', $event)"
     />

@@ -521,7 +521,10 @@
     "create": "Create",
     "rename": "Rename",
     "activate": "Activate",
-    "add": "Add"
+    "add": "Add",
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar",
+    "loadingButton": "Loading"
   },
   "popup": {
     "cropAvatar": {
@@ -541,7 +544,8 @@
     "previous": "Previous Page",
     "next": "Next Page",
     "last": "Last Page",
-    "perPage": "{count} / page"
+    "perPage": "{count} / page",
+    "itemsPerPageLabel": "Items per page"
   },
   "chat": {
     "inputPlaceholder": "Type a message",
@@ -1177,6 +1181,50 @@
       "none": "None",
       "force": "Force",
       "include": "Include"
+    }
+  },
+  "a11y": {
+    "tagInput": {
+      "description": "Type a tag and press Enter or Comma to add it.",
+      "tagsList": "Selected Tags",
+      "removeTag": "Remove tag: {tag}",
+      "addTag": "Add Tag"
+    },
+    "pagination": {
+      "navigation": "Pagination"
+    },
+    "backgrounds": {
+      "images": "Background Images",
+      "scrollToTop": "Scroll to top"
+    },
+    "navbar": {
+      "navigation": "Application navigation"
+    },
+    "sidebar": {
+      "close": "Close Sidebar",
+      "resizeLeft": "Resize Left Sidebar",
+      "resizeRight": "Resize Right Sidebar",
+      "menu": "Menu",
+      "options": "Options"
+    },
+    "rangeControl": {
+      "value": "Value",
+      "valueLower": "value"
+    },
+    "select": {
+      "filterOptions": "Filter options",
+      "searchPlaceholder": "Search...",
+      "noOptions": "No options found"
+    },
+    "smartAvatar": {
+      "groupAvatar": "Group Avatar",
+      "singleAvatar": "Avatar"
+    },
+    "tabs": {
+      "list": "Tabs"
+    },
+    "codeMirrorEditor": {
+      "label": "Code Editor"
     }
   }
 }

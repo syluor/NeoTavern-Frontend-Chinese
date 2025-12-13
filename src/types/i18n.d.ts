@@ -525,6 +525,9 @@ export interface MessageSchema {
     rename: string;
     activate: string;
     add: string;
+    collapseSidebar: string;
+    expandSidebar: string;
+    loadingButton: string;
   };
   popup: {
     cropAvatar: {
@@ -545,6 +548,7 @@ export interface MessageSchema {
     next: string;
     last: string;
     perPage: string;
+    itemsPerPageLabel: string;
   };
   chat: {
     inputPlaceholder: string;
@@ -1180,6 +1184,50 @@ export interface MessageSchema {
       none: string;
       force: string;
       include: string;
+    };
+  };
+  a11y: {
+    tagInput: {
+      description: string;
+      tagsList: string;
+      removeTag: string;
+      addTag: string;
+    };
+    pagination: {
+      navigation: string;
+    };
+    backgrounds: {
+      images: string;
+      scrollToTop: string;
+    };
+    navbar: {
+      navigation: string;
+    };
+    sidebar: {
+      close: string;
+      resizeLeft: string;
+      resizeRight: string;
+      menu: string;
+      options: string;
+    };
+    rangeControl: {
+      value: string;
+      valueLower: string;
+    };
+    select: {
+      filterOptions: string;
+      searchPlaceholder: string;
+      noOptions: string;
+    };
+    smartAvatar: {
+      groupAvatar: string;
+      singleAvatar: string;
+    };
+    tabs: {
+      list: string;
+    };
+    codeMirrorEditor: {
+      label: string;
     };
   };
 }

@@ -448,7 +448,7 @@ const moreOptions = computed(() => [
   { value: 'rename', label: t('characterEditor.moreOptions.rename') },
 ]);
 
-async function handleMoreAction(action: string) {
+async function handleMoreAction(action: string | string[]) {
   if (!localCharacter.value) return;
 
   switch (action) {
@@ -607,7 +607,6 @@ const embeddedLorebookName = computed({
           </div>
 
           <div v-show="!isCreating">
-            <!-- @vue-ignore -->
             <Select :model-value="'default'" :options="moreOptions" @update:model-value="handleMoreAction" />
           </div>
         </div>

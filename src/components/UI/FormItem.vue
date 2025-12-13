@@ -18,6 +18,6 @@ defineProps<{
     </div>
 
     <small v-if="description" class="form-item-description">{{ description }}</small>
-    <small v-if="error" class="form-item-error">{{ error }}</small>
+    <small v-if="error" class="form-item-error" role="alert">{{ error }}</small>
   </div>
 </template>

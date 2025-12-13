@@ -40,7 +40,7 @@ const tokenCounts = computed(() => characterStore.tokenCounts.fields);
 const isCreating = computed(() => characterUiStore.isCreating);
 
 const isPeeking = ref<boolean | null>(null);
-const isSpoilerModeActive = computed(() => !settingsStore.settings.character.spoilerFreeMode);
+const isSpoilerModeActive = computed(() => settingsStore.settings.character.spoilerFreeMode);
 const areDetailsHidden = computed(() =>
   !isCreating.value && isPeeking.value === null ? isSpoilerModeActive.value : !isPeeking.value,
 );

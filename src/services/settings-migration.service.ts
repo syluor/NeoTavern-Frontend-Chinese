@@ -49,7 +49,7 @@ export function createDefaultSettings(): Settings {
       instructTemplateName: '',
     },
     character: {
-      spoilerFreeMode: true,
+      spoilerFreeMode: false,
       worldImportDialog: true,
       tagImportSetting: TagImportSetting.ASK,
     },

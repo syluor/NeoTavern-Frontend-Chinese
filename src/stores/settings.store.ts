@@ -77,6 +77,9 @@ export const useSettingsStore = defineStore('settings', () => {
 
         try {
           const neoSettings = await fetchNeoSettings();
+          if (Object.keys(neoSettings).length === 0) {
+            throw new Error('Empty Neo settings');
+          }
           const result = mergeWithDefaults(neoSettings, legacySettings);
           experimentalSettings = result.settings;
         } catch (neoError) {

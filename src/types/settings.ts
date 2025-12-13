@@ -451,7 +451,18 @@ export interface LegacySettings {
   proxies?: Omit<Proxy, 'id'>[];
   extension_settings?: {
     connectionManager?: {
-      profiles?: Record<string, { id: string; mode: 'cc' | 'tc'; api: ApiProvider; model: string }>;
+      profiles?: Record<
+        string,
+        {
+          id: string;
+          mode: 'cc' | 'tc';
+          api?: ApiProvider;
+          model?: string;
+          preset?: string;
+          name: string;
+          'prompt-post-processing'?: CustomPromptPostProcessing;
+        }
+      >;
       selected?: string;
     };
   };

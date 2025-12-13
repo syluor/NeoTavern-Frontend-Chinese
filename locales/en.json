@@ -693,7 +693,7 @@
     "creatorNotes": "Creator's Notes",
     "toggleSpoiler": "Show / Hide character details",
     "noCreatorNotes": "No Creator's Notes provided.",
-    "detailsHidden": "Character details are hidden. Click the above eye icon or enable \"Spoiler Free Mode\" in settings.",
+    "detailsHidden": "Character details are hidden. Click the above eye icon or disable \"Spoiler Free Mode\" in settings.",
     "description": "Description",
     "firstMessage": "First message",
     "namePlaceholder": "Enter character name here",

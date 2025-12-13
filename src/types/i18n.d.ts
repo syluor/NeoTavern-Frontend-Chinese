@@ -666,7 +666,6 @@ export interface MessageSchema {
     pinToggle: string;
     createNew: string;
     importFile: string;
-    importUrl: string;
     searchToggle: string;
     searchPlaceholder: string;
     sorting: {

@@ -663,7 +663,6 @@
     "pinToggle": "Locked = Character Management panel will stay open",
     "createNew": "Create New Character",
     "importFile": "Import Character from File",
-    "importUrl": "Import content from external URL",
     "searchToggle": "Toggle search bar",
     "searchPlaceholder": "Search...",
     "sorting": {

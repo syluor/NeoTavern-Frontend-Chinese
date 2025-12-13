@@ -137,7 +137,6 @@ onMounted(async () => {
             :label="t('characterPanel.importFile')"
             @change="handleFileImport"
           />
-          <Button variant="ghost" icon="fa-cloud-arrow-down" :title="t('characterPanel.importUrl')" />
 
           <div id="extension-buttons-container"></div>
 

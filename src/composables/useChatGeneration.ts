@@ -336,7 +336,6 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
     if (mode === GenerationMode.ADD_SWIPE) {
       if (lastMessage && !lastMessage.is_user) {
         context.history.pop();
-        lastMessage = context.history.length > 0 ? context.history[context.history.length - 1] : null;
       }
     }
 

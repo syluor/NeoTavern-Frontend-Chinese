@@ -233,14 +233,24 @@ watch(lastMessageContent, () => {
 
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
-  if (!isDeviceMobile.value) {
-    await nextTick();
-    chatInput.value?.focus();
-  }
+  nextTick().then(() => {
+    if (!isDeviceMobile.value) {
+      chatInput.value?.focus();
+    }
+
+    const el = document.getElementById('chat-input');
+    if (el) {
+      const textarea = el.tagName === 'TEXTAREA' ? (el as HTMLTextAreaElement) : el.querySelector('textarea');
+      if (textarea instanceof HTMLTextAreaElement) {
+        chatUiStore.setChatInputElement(textarea);
+      }
+    }
+  });
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  chatUiStore.setChatInputElement(null);
 });
 
 watch(

@@ -13,6 +13,12 @@ import type { ApiFormatter, SamplerSettings, Settings, SettingsPath } from './se
 import type { Path, ValueForPath } from './utils';
 import type { WorldInfoBook, WorldInfoEntry, WorldInfoHeader, WorldInfoSettings } from './world-info';
 
+export interface ChatInputDetail {
+  value: string;
+  selectionStart: number;
+  selectionEnd: number;
+}
+
 export interface LlmGenerationOptions {
   connectionProfileName?: string;
   formatter?: ApiFormatter;
@@ -303,6 +309,8 @@ export interface ExtensionAPI<TSettings = Record<string, any>> {
     continueResponse: (options?: { generationId?: string }) => Promise<void>;
     clear: () => Promise<void>;
     abortGeneration: () => void;
+    getChatInput: () => ChatInputDetail | null;
+    setChatInput: (value: string) => void;
     generate: (
       payload: ChatCompletionPayload,
       formatter: ApiFormatter,

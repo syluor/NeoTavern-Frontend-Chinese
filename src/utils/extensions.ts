@@ -20,6 +20,7 @@ import { toast } from '../composables/useToast';
 import { chatService } from '../services/chat.service';
 import { useApiStore } from '../stores/api.store';
 import { useCharacterStore } from '../stores/character.store';
+import { useChatUiStore } from '../stores/chat-ui.store';
 import { useChatStore } from '../stores/chat.store';
 import { getExtensionContainerId } from '../stores/extension.store';
 import { usePersonaStore } from '../stores/persona.store';
@@ -266,6 +267,22 @@ const baseExtensionAPI: ExtensionAPI = {
     },
     abortGeneration: () => {
       useChatStore().abortGeneration();
+    },
+    getChatInput: () => {
+      const el = useChatUiStore().chatInputElement;
+      if (!el) return null;
+      return {
+        value: el.value,
+        selectionStart: el.selectionStart,
+        selectionEnd: el.selectionEnd,
+      };
+    },
+    setChatInput: (value: string) => {
+      const el = useChatUiStore().chatInputElement;
+      if (el) {
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     },
     generate: async (payload, formatter, signal) => {
       return await ChatCompletionService.generate(payload, formatter, signal);

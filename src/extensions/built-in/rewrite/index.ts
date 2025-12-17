@@ -166,7 +166,8 @@ export function activate(api: ExtensionAPI<RewriteSettings>) {
 
   unbinds.push(
     api.events.on('message:created', (message) => {
-      const messageIndex = api.chat.getHistory().indexOf(message);
+      let messageIndex = api.chat.getHistory().indexOf(message);
+      messageIndex = messageIndex >= 0 ? messageIndex : api.chat.getHistory().length - 1;
       const messageElement = document.querySelector(`.message[data-message-index="${messageIndex}"]`);
       if (messageElement) injectSingleButton(messageElement as HTMLElement, messageIndex);
     }),

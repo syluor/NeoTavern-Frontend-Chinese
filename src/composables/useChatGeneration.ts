@@ -346,12 +346,11 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
 
     // Handle "Stop if line starts with non-active character" logic
     const stopOnNameHijack = settings.chat.stopOnNameHijack ?? 'all';
-    const isGroupChat = groupChatStore.isGroupChat;
     const shouldCheckHijack =
       effectivePostProcessing || // Post processing already prefixing names
       stopOnNameHijack === 'all' ||
-      (stopOnNameHijack === 'group' && isGroupChat) ||
-      (stopOnNameHijack === 'single' && !isGroupChat);
+      (stopOnNameHijack === 'group' && groupChatStore.isGroupChat) ||
+      (stopOnNameHijack === 'single' && !groupChatStore.isGroupChat);
 
     const stopNames = new Set<string>();
     if (shouldCheckHijack) {
@@ -397,11 +396,12 @@ export function useChatGeneration(deps: ChatGenerationDependencies) {
     const messages = await promptBuilder.build();
     if (messages.length === 0) throw new Error(t('chat.generate.noPrompts'));
 
+    bypassPrefill = groupChatStore.isGroupChat ? false : bypassPrefill;
+
     // Bypass prefill for Single Chats
     // Because group chats already have the speaker prefix injected
     if (
       bypassPrefill &&
-      !groupChatStore.isGroupChat &&
       [GenerationMode.NEW, GenerationMode.REGENERATE, GenerationMode.ADD_SWIPE].includes(mode) &&
       !lastMessage?.is_system &&
       !lastMessage?.is_user

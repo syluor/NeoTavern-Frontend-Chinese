@@ -233,6 +233,8 @@ export const useApiStore = defineStore('api', () => {
           chat_completion_source: apiSettings.provider,
           reverse_proxy: apiSettings.proxy?.url,
           proxy_password: apiSettings.proxy?.password,
+          custom_url:
+            apiSettings.provider === api_providers.CUSTOM ? apiSettings.providerSpecific.custom.url : undefined,
         });
       }
 

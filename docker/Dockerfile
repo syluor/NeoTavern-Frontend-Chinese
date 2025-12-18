@@ -1,7 +1,6 @@
 FROM node:20-alpine
 
-# Install git (for versioning) and socat (for port forwarding)
-RUN apk add --no-cache git socat
+RUN apk add --no-cache git socat dos2unix
 
 WORKDIR /app
 
@@ -16,6 +15,8 @@ RUN npm run build:deploy
 EXPOSE 4173
 
 COPY docker/entrypoint.sh /entrypoint.sh
+
+RUN dos2unix /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
